@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.0
+Aktuell: Version 0.1.1
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -9,6 +9,21 @@ ist die Weiterentwicklung. Der Quellcode lag nicht mehr vor und wurde aus dem
 Build zurueckgewonnen.
 
 Regeln fuer alle, die hier mitarbeiten (auch KI-Assistenten): `CLAUDE.md`.
+Wie das Original funktioniert und welche Fehler bekannt sind: `docs/REKONSTRUKTION.md`.
+
+## Stand
+
+Skripte, Modelle, Sprites, Input Actions, Pakete und Layer sind da. **Szene und Prefabs
+fehlen noch**, sie muessen im Editor nach `docs/hierarchy.txt` und `docs/ui_layout.json`
+nachgebaut oder per AssetRipper uebernommen werden (Anleitung in `docs/REKONSTRUKTION.md`).
+Bis dahin startet das Spiel nicht.
+
+Naechste Schritte:
+
+1. Szene und Prefabs herstellen, Spiel mit zwei Instanzen (ParrelSync) zum Laufen bringen.
+2. Fehler beheben, die das Spiel kaputt machen: Endlosschleife, Abklingzeit, Mehrfachkills, Singletons.
+3. Treffer auf dem Server pruefen, Spieler ueber NetworkObjectId statt Namen erkennen.
+4. Neue Features (Sound, Runden, Teams, Maps).
 
 ## Aufbau
 
@@ -16,11 +31,14 @@ Das Unity-Projekt liegt direkt im Wurzelordner:
 
 | Pfad | Inhalt |
 |---|---|
-| `Assets/` | Spiel: Szenen, Skripte, Prefabs, Modelle, Sprites |
+| `Assets/Scripts/` | Spielcode (bereinigt aus dem Build), `Netz/Spielversion.cs` neu |
+| `Assets/Models/`, `Assets/Sprites/`, `Assets/Input/` | Maps, Spieler, Laser als GLB, UI-Grafiken, Input Actions |
 | `Packages/`, `ProjectSettings/` | Unity-Pakete und Projekteinstellungen |
-| `docs/` | Rekonstruktion: Hierarchie, UI-Layout, Tuning-Werte |
+| `docs/REKONSTRUKTION.md` | Technik, Architektur, Netzwerkfluss, bekannte Fehler |
+| `docs/hierarchy.txt`, `docs/*.json` | Szenen- und Prefab-Hierarchie, UI-Layout, Tuning-Werte |
+| `docs/dekompiliert_roh/` | Unveraenderte Ausgabe des Decompilers, nur zum Nachschlagen |
 | `tools/pruefe_verbotenes.sh` | Prueft, dass kein Foto und keine Zugangsdaten im Repo landen |
-| `.githooks/` | pre-commit-Hook, der diese Pruefung vor jedem Commit startet |
+| `.githooks/` | pre-commit-Hook mit dieser Pruefung, dazu die Hooks von Git LFS |
 
 `Library/`, `Temp/`, `Logs/` und Builds erzeugt Unity selbst, sie sind nicht im Repo.
 
@@ -33,8 +51,12 @@ Das Unity-Projekt liegt direkt im Wurzelordner:
    cd Shootout
    git config core.hooksPath .githooks
    ```
+   Der letzte Befehl schaltet die Pruefung vor jedem Commit ein. In `.githooks/` liegen
+   auch die Hooks von Git LFS, damit Bilder und Modelle danach weiter hochgeladen werden.
 2. **Unity 2021.3.4f1** ueber den Unity Hub installieren (Archiv:
-   unity.com/releases/editor/archive) und den Ordner als Projekt oeffnen.
+   unity.com/releases/editor/archive), im Hub *Add project from disk* und den Ordner waehlen.
+   Beim ersten Oeffnen laedt Unity alle Pakete. Die Frage nach dem neuen Input System mit
+   **Yes** beantworten.
 3. In Unity pruefen: *Project Settings > Editor*: Asset Serialization = **Force Text**,
    Version Control = **Visible Meta Files**.
 4. **Szenen-Merge** einrichten, damit Konflikte in Szenen und Prefabs meist von
@@ -46,10 +68,9 @@ Das Unity-Projekt liegt direkt im Wurzelordner:
        driver = 'C:/Program Files/Unity/Hub/Editor/2021.3.4f1/Editor/Data/Tools/UnityYAMLMerge.exe' merge -p %O %B %A %A
        recursive = binary
    ```
-5. **Mehrspieler im Editor testen:** Paket ParrelSync installieren
-   (*Package Manager > + > Add package from git URL*:
-   `https://github.com/VeriorPies/ParrelSync.git?path=/ParrelSync`).
-   Damit laufen Host und Client gleichzeitig auf einem PC.
+5. **Mehrspieler im Editor testen:** ParrelSync ist schon im Manifest. Menue
+   *ParrelSync > Clones Manager*, einen Klon anlegen und oeffnen. Dann laufen Host und
+   Client gleichzeitig auf einem PC.
 
 ## Arbeitsablauf
 
@@ -74,4 +95,5 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.1 | Inhalt der Rekonstruktion uebernommen: Skripte, Modelle, Sprites, Input Actions, `docs/`. Unity-Geruest: `Packages/manifest.json` (Netcode 1.14.1, Input System 1.7.0, glTFast, ParrelSync), Unity 2021.3.4f1, Layer `Enemy` und `EnemyBody`. Acht weitere bekannte Fehler in `docs/REKONSTRUKTION.md`. |
 | 0.1.0 | Repo eingerichtet: `.gitignore`, `.gitattributes` mit LFS und Unity-Merge, Pruefung auf Foto und Schluessel (Hook und GitHub Actions), `CLAUDE.md`. **Netz:** Versionspruefung beim Verbinden (`Spielversion.cs`, noch ungetestet, kommt auf das NetworkManager-Objekt). |

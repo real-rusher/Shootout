@@ -1,0 +1,356 @@
+### sharedassets0.assets
+player L2 <CharacterController, NetworkObject, NetworkClientTransform, playermovment, playerlooking, Playermanager, playershooting>
+  Main Camera L2 <Camera, AudioListener, NetworkClientTransform>
+    Laserpointer L2 <MeshFilter, MeshRenderer>
+  playerbody L2 <MeshFilter, MeshRenderer, CapsuleCollider>
+  NameLabel L2 <MeshRenderer, TextMeshPro>
+### sharedassets0.assets
+MessyRoomparts L2 <BoxCollider, BoxCollider, BoxCollider, BoxCollider, BoxCollider, BoxCollider>
+  Room <MeshFilter, MeshRenderer, MeshCollider>
+  corner-desk <MeshFilter, MeshRenderer, MeshCollider>
+  tafeln
+    Cube.059 <MeshFilter, MeshRenderer, MeshCollider>
+    Cube.060 <MeshFilter, MeshRenderer, MeshCollider>
+    Cube.061 <MeshFilter, MeshRenderer, MeshCollider>
+  window <MeshFilter, MeshRenderer, MeshCollider>
+  monitor <MeshFilter, MeshRenderer, MeshCollider>
+  monitor (1) <MeshFilter, MeshRenderer, MeshCollider>
+  window (1) <MeshFilter, MeshRenderer, MeshCollider>
+  window (2) <MeshFilter, MeshRenderer, MeshCollider>
+  window (3) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (1) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (2) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (3) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (4) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (5) <MeshFilter, MeshRenderer, MeshCollider>
+  Table (6) <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (1)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (2)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (3)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (4)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (5)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (6)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (7)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (8)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  doubleDesk (9)
+    PC (1)
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+    Chair (1) <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    Table <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  SingleDesk
+    SingleTable <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  SingleDesk (1)
+    SingleTable <MeshFilter, MeshRenderer, MeshCollider>
+    Chair <MeshFilter, MeshRenderer, MeshCollider>
+    PC
+      Cube <MeshFilter, MeshRenderer, MeshCollider>
+      Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  Point Light Info <Light>
+  Chair (2) <MeshFilter, MeshRenderer, MeshCollider>
+### sharedassets0.assets
+Laser <MeshFilter, MeshRenderer, LaserEffect>
+### sharedassets0.assets
+Row L5 <CanvasRenderer, Image, playerListRow>
+  indexTxt L5 <CanvasRenderer, TextMeshProUGUI>
+  playerNameTxt L5 <CanvasRenderer, TextMeshProUGUI>
+  killsTxt L5 <CanvasRenderer, TextMeshProUGUI>
+  deathTxt L5 <CanvasRenderer, TextMeshProUGUI>
+  k/dTxt L5 <CanvasRenderer, TextMeshProUGUI>
+### sharedassets0.assets
+Shooter-Map L2 <BoxCollider, BoxCollider, BoxCollider, BoxCollider>
+  Cube <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.001 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.002 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.003 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.004 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.005 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.006 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.007 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.008 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.009 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.010 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.011 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.012 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.013 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.014 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.015 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.016 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.017 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.018 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube.019 <MeshFilter, MeshRenderer, MeshCollider>
+  Cylinder <MeshFilter, MeshRenderer, MeshCollider>
+  Cylinder.001 <MeshFilter, MeshRenderer, MeshCollider>
+  Cylinder.002 <MeshFilter, MeshRenderer, MeshCollider>
+  Cylinder.003 <MeshFilter, MeshRenderer, MeshCollider>
+  Cylinder.004 <MeshFilter, MeshRenderer, MeshCollider>
+  Cube (1) <MeshFilter, MeshRenderer, BoxCollider>
+  Point Light Raum <Light>
+### level0
+Canvas L5 <Canvas, CanvasScaler, GraphicRaycaster, UIManager, UIGameManager, SettingsManager>
+  Start Screen L5 <CanvasRenderer, Image>
+    UI L5 <CanvasRenderer, Image>
+      Game Name Txt L5 <CanvasRenderer, TextMeshProUGUI>
+      Press a key Txt [inaktiv] L5 <CanvasRenderer, TextMeshProUGUI, Animation>
+      PlayBtn L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+      OptionsBtn L5 <CanvasRenderer, Image, Button>
+        icon L5 <CanvasRenderer, Image>
+      QuitBtn L5 <CanvasRenderer, Image, Button>
+        icon L5 <CanvasRenderer, Image>
+    Enter Username [inaktiv] L5 <CanvasRenderer, Image>
+      UI L5 <CanvasRenderer, Image>
+        UsernameField L5 <CanvasRenderer, Image, TMP_InputField>
+          Text Area L5 <RectMask2D>
+            Placeholder L5 <CanvasRenderer, TextMeshProUGUI, LayoutElement>
+            Text L5 <CanvasRenderer, TextMeshProUGUI>
+        EnterUsernameBtn L5 <CanvasRenderer, Image, Button>
+          EnterText L5 <CanvasRenderer, TextMeshProUGUI>
+      Lobby Screen [inaktiv] L5 <CanvasRenderer, Image>
+        UI L5 <CanvasRenderer, Image>
+          ServerBtn [inaktiv] L5 <CanvasRenderer, Image, Button>
+            ServerText L5 <CanvasRenderer, TextMeshProUGUI>
+          GHostBtn L5 <CanvasRenderer, Image, Button>
+            GHostText L5 <CanvasRenderer, TextMeshProUGUI>
+          GClientBtn L5 <CanvasRenderer, Image, Button>
+            GClientText L5 <CanvasRenderer, TextMeshProUGUI>
+          LHostBtn L5 <CanvasRenderer, Image, Button>
+            LHostText L5 <CanvasRenderer, TextMeshProUGUI>
+          LClientBtn L5 <CanvasRenderer, Image, Button>
+            LClientText L5 <CanvasRenderer, TextMeshProUGUI>
+        Join a LAN Game [inaktiv] L5 <CanvasRenderer, Image>
+          UI L5 <CanvasRenderer, Image>
+            IP-AdressField L5 <CanvasRenderer, Image, TMP_InputField>
+              Text Area L5 <RectMask2D>
+                Placeholder L5 <CanvasRenderer, TextMeshProUGUI, LayoutElement>
+                Text L5 <CanvasRenderer, TextMeshProUGUI>
+            ConnectBtn L5 <CanvasRenderer, Image, Button>
+              ConnectText L5 <CanvasRenderer, TextMeshProUGUI>
+        Join a GLOBAL Game [inaktiv] L5 <CanvasRenderer, Image>
+          UI L5 <CanvasRenderer, Image>
+            IP-AdressField L5 <CanvasRenderer, Image, TMP_InputField>
+              Text Area L5 <RectMask2D>
+                Placeholder L5 <CanvasRenderer, TextMeshProUGUI, LayoutElement>
+                Text L5 <CanvasRenderer, TextMeshProUGUI>
+            ConnectBtn L5 <CanvasRenderer, Image, Button>
+              ConnectText L5 <CanvasRenderer, TextMeshProUGUI>
+          Joining Game [inaktiv] L5 <CanvasRenderer, Image>
+        Host a LAN Game [inaktiv] L5 <CanvasRenderer, Image>
+          UI L5 <CanvasRenderer, Image>
+            BedRoomBtn L5 <CanvasRenderer, Image, Button, Mask>
+              Img L5 <CanvasRenderer, Image>
+              Image L5 <CanvasRenderer, Image>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+            InfoRoomBtn L5 <CanvasRenderer, Image, Button, Mask>
+              Img L5 <CanvasRenderer, Image>
+              Image L5 <CanvasRenderer, Image>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+            wähleTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        Host a GLOBAL Game [inaktiv] L5 <CanvasRenderer, Image>
+          UI L5 <CanvasRenderer, Image>
+            BedRoomBtn L5 <CanvasRenderer, Image, Button, Mask>
+              Img L5 <CanvasRenderer, Image>
+              Image L5 <CanvasRenderer, Image>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+            InfoRoomBtn L5 <CanvasRenderer, Image, Button, Mask>
+              Img L5 <CanvasRenderer, Image>
+              Image L5 <CanvasRenderer, Image>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+            wähleTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        Play a Global Game [inaktiv] L5 <CanvasRenderer, Image>
+        Connecting [inaktiv] L5 <CanvasRenderer, Image>
+          UI L5 <CanvasRenderer, Image>
+            ConnectingTxt L5 <CanvasRenderer, TextMeshProUGUI, connectingAnim>
+        You Got Disconnected [inaktiv] L5 <CanvasRenderer, Image>
+          YouDisconnectedTxt L5 <CanvasRenderer, TextMeshProUGUI>
+          closeBtn L5 <CanvasRenderer, Image, Button>
+            Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+        Couldnt connect [inaktiv] L5 <CanvasRenderer, Image>
+          couldnt connectTxt L5 <CanvasRenderer, TextMeshProUGUI>
+          closeBtn L5 <CanvasRenderer, Image, Button>
+            Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+  Game Screen [inaktiv] L5 <CanvasRenderer, Image>
+    GameUI L5 <CanvasRenderer, Image>
+      Crosshair L5 <CanvasRenderer, Image>
+      Hitmarker [inaktiv] L5 <CanvasRenderer, Image>
+      KillCount L5 <CanvasRenderer, TextMeshProUGUI>
+      DeathCount L5 <CanvasRenderer, TextMeshProUGUI>
+      CoolDown [inaktiv] L5 <Slider>
+        Background L5 <CanvasRenderer, Image>
+          Fill Area L5
+            Fill L5 <CanvasRenderer, Image>
+    PauseUI [inaktiv] L5 <CanvasRenderer, Image>
+      bar L5 <CanvasRenderer, Image>
+        ContinueTxt L5 <CanvasRenderer, TextMeshProUGUI, Animation>
+        Lobbycode [inaktiv] L5 <CanvasRenderer, TextMeshProUGUI>
+        CopyIPBtn [inaktiv] L5 <CanvasRenderer, Image, Button>
+          icon L5 <CanvasRenderer, Image>
+        OptionsBtn L5 <CanvasRenderer, Image, Button>
+          icon L5 <CanvasRenderer, Image>
+        QuitBtn L5 <CanvasRenderer, Image, Button>
+          icon L5 <CanvasRenderer, Image>
+    DeathUI [inaktiv] L5 <CanvasRenderer, Image>
+      Bar L5 <CanvasRenderer, Image>
+        Upper L5 <CanvasRenderer, Image>
+        Lower L5 <CanvasRenderer, Image>
+        OptionsBtn L5 <CanvasRenderer, Image, Button>
+          icon L5 <CanvasRenderer, Image>
+        QuitBtn L5 <CanvasRenderer, Image, Button>
+          icon L5 <CanvasRenderer, Image>
+        KilledByField L5 <CanvasRenderer, TextMeshProUGUI>
+        KilledByTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        PressSpace L5 <CanvasRenderer, TextMeshProUGUI, Animation>
+    Playerlist [inaktiv] L5 <CanvasRenderer, Image>
+      SpaltenNamen L5 <CanvasRenderer, Image, playerListRow>
+        indexTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        playerNameTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        killsTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        deathTxt L5 <CanvasRenderer, TextMeshProUGUI>
+        k/dTxt L5 <CanvasRenderer, TextMeshProUGUI>
+  SettingsScreen [inaktiv] L5 <CanvasRenderer, Image>
+    Tabs L5 <CanvasRenderer, Image>
+      SettingsTxt L5 <CanvasRenderer, TextMeshProUGUI>
+      VideoTab L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+      SoundsTab L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+      ControllTab L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+      ChangeNameField L5 <CanvasRenderer, Image, TMP_InputField>
+        Text Area L5 <RectMask2D>
+          Placeholder L5 <CanvasRenderer, TextMeshProUGUI, LayoutElement>
+          Text L5 <CanvasRenderer, TextMeshProUGUI>
+      ChangeNameBtn L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+      ExitBtn L5 <CanvasRenderer, Image, Button>
+        Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+    SettingsScroller L5 <CanvasRenderer, Image, ScrollRect>
+      Viewport L5 <CanvasRenderer, Image, Mask>
+        VideoSettings [inaktiv] L5 <CanvasRenderer, Image>
+          DisplayFPS L5 <CanvasRenderer, Image>
+            Title L5 <CanvasRenderer, TextMeshProUGUI>
+            Toggle L5 <Toggle>
+              Background L5 <CanvasRenderer, Image>
+                Checkmark L5 <CanvasRenderer, Image>
+          WindowMode L5 <CanvasRenderer, Image>
+            Title L5 <CanvasRenderer, TextMeshProUGUI>
+            Windowed L5 <CanvasRenderer, Image, Button>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+            FullScreen L5 <CanvasRenderer, Image, Button>
+              Text (TMP) L5 <CanvasRenderer, TextMeshProUGUI>
+        SoundSettings L5 <CanvasRenderer, Image>
+        ControllSettings L5 <CanvasRenderer, Image>
+          Sensitivity L5 <CanvasRenderer, Image>
+            Title L5 <CanvasRenderer, TextMeshProUGUI>
+            Slider L5 <Slider>
+              Background L5 <CanvasRenderer, Image>
+                Image L5 <CanvasRenderer, Image>
+              Fill Area L5
+                Fill L5 <CanvasRenderer, Image>
+              Handle Slide Area L5
+                Handle L5 <CanvasRenderer, Image>
+      Scrollbar Vertical L5 <CanvasRenderer, Image, Scrollbar>
+        Sliding Area L5
+          Handle L5 <CanvasRenderer, Image>
+### level0
+Game Manager L2 <Manager, PlayerInput, ConnectionManager, PlayersManager, NetworkObject, BoxCollider, BoxCollider, BoxCollider, BoxCollider, Spawnlocation>
+### level0
+Camera <Camera, AudioListener>
+### level0
+Network Manager <NetworkManager, UnityTransport>
+### level0
+EventSystem <EventSystem, InputSystemUIInputModule>
+### level0
+Lights
+  Directional Light (1) <Light>
+  Directional Light (2) <Light>

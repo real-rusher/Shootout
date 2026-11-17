@@ -1,0 +1,200 @@
+{
+ "name": "Row",
+ "active": true,
+ "rect": {
+  "anchorMin": [
+   0.0,
+   1.0
+  ],
+  "anchorMax": [
+   1.0,
+   1.0
+  ],
+  "pos": [
+   0.0,
+   -75.0
+  ],
+  "size": [
+   0.0,
+   50.0
+  ],
+  "pivot": [
+   0.5,
+   0.5
+  ]
+ },
+ "image": {
+  "color": "#b4b4b464",
+  "sprite": null
+ },
+ "scripts": [
+  "playerListRow"
+ ],
+ "children": [
+  {
+   "name": "indexTxt",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     0.0,
+     1.0
+    ],
+    "pos": [
+     30.5,
+     0.0
+    ],
+    "size": [
+     61.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "text": {
+    "text": "22",
+    "size": 36.0,
+    "color": "#ffffffff",
+    "align": 2,
+    "bold": false
+   }
+  },
+  {
+   "name": "playerNameTxt",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     0.0,
+     1.0
+    ],
+    "pos": [
+     283.8,
+     0.0
+    ],
+    "size": [
+     473.4,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "text": {
+    "text": "WWWWWWWWWWWWWWW",
+    "size": 36.0,
+    "color": "#ffffffff",
+    "align": 1,
+    "bold": true
+   }
+  },
+  {
+   "name": "killsTxt",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     0.0,
+     1.0
+    ],
+    "pos": [
+     559.0,
+     0.0
+    ],
+    "size": [
+     78.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "text": {
+    "text": "109",
+    "size": 36.0,
+    "color": "#ffffffff",
+    "align": 4,
+    "bold": false
+   }
+  },
+  {
+   "name": "deathTxt",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     0.0,
+     1.0
+    ],
+    "pos": [
+     637.0,
+     0.0
+    ],
+    "size": [
+     78.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "text": {
+    "text": "887",
+    "size": 36.0,
+    "color": "#ffffffff",
+    "align": 4,
+    "bold": false
+   }
+  },
+  {
+   "name": "k/dTxt",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     0.0,
+     1.0
+    ],
+    "pos": [
+     757.5,
+     0.0
+    ],
+    "size": [
+     84.9,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "text": {
+    "text": "5.55",
+    "size": 36.0,
+    "color": "#ffffffff",
+    "align": 4,
+    "bold": false
+   }
+  }
+ ]
+}

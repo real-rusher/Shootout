@@ -1,0 +1,5457 @@
+{
+ "name": "Canvas",
+ "active": true,
+ "rect": {
+  "anchorMin": [
+   0.0,
+   0.0
+  ],
+  "anchorMax": [
+   0.0,
+   0.0
+  ],
+  "pos": [
+   0.0,
+   0.0
+  ],
+  "size": [
+   0.0,
+   0.0
+  ],
+  "pivot": [
+   0.0,
+   0.0
+  ]
+ },
+ "scripts": [
+  "CanvasScaler",
+  "GraphicRaycaster",
+  "UIManager",
+  "UIGameManager",
+  "SettingsManager"
+ ],
+ "children": [
+  {
+   "name": "Start Screen",
+   "active": true,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     1.0,
+     1.0
+    ],
+    "pos": [
+     0.0,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "image": {
+    "color": "#ffffff00",
+    "sprite": null
+   },
+   "children": [
+    {
+     "name": "UI",
+     "active": true,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       0.0,
+       0.0
+      ],
+      "size": [
+       0.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#000000e3",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "Game Name Txt",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         282.0
+        ],
+        "size": [
+         1195.4,
+         307.2
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "text": {
+        "text": "Shootout",
+        "size": 158.7,
+        "color": "#949affff",
+        "align": 2,
+        "bold": true
+       }
+      },
+      {
+       "name": "Press a key Txt",
+       "active": false,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         -390.0
+        ],
+        "size": [
+         561.3,
+         72.5
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "text": {
+        "text": "(Press any key to start)",
+        "size": 36.9,
+        "color": "#ffffffff",
+        "align": 2,
+        "bold": false
+       }
+      },
+      {
+       "name": "PlayBtn",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         420.0,
+         140.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:124"
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).continueBranch(Enter Username)"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Play",
+          "size": 77.4,
+          "color": "#323232ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      },
+      {
+       "name": "OptionsBtn",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         -115.0,
+         -160.0
+        ],
+        "size": [
+         190.0,
+         110.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:124"
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).openSettings()"
+        ]
+       },
+       "children": [
+        {
+         "name": "icon",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.0
+          ],
+          "anchorMax": [
+           0.5,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           70.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:125"
+         }
+        }
+       ]
+      },
+      {
+       "name": "QuitBtn",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         115.0,
+         -160.0
+        ],
+        "size": [
+         190.0,
+         110.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:124"
+       },
+       "Button": {
+        "onEvent": [
+         "Game Manager(MonoBehaviour).QuitApp()"
+        ]
+       },
+       "children": [
+        {
+         "name": "icon",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.0
+          ],
+          "anchorMax": [
+           0.5,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           70.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:131"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Enter Username",
+     "active": false,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       0.0,
+       0.0
+      ],
+      "size": [
+       0.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#ffffff00",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "UI",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         0.0,
+         0.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#000000e3",
+        "sprite": null
+       },
+       "children": [
+        {
+         "name": "UsernameField",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.5
+          ],
+          "anchorMax": [
+           0.5,
+           0.5
+          ],
+          "pos": [
+           -0.0,
+           0.0
+          ],
+          "size": [
+           823.0,
+           113.6
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:120"
+         },
+         "TMP_InputField": {
+          "onEvent": []
+         },
+         "children": [
+          {
+           "name": "Text Area",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             -0.5
+            ],
+            "size": [
+             -20.0,
+             -13.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "scripts": [
+            "RectMask2D"
+           ],
+           "children": [
+            {
+             "name": "Placeholder",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "enter Username...\n",
+              "size": 40.0,
+              "color": "#00000087",
+              "align": 2,
+              "bold": false
+             },
+             "scripts": [
+              "LayoutElement"
+             ]
+            },
+            {
+             "name": "Text",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "​",
+              "size": 40.0,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "EnterUsernameBtn",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.5
+          ],
+          "anchorMax": [
+           0.5,
+           0.5
+          ],
+          "pos": [
+           0.0,
+           -176.0
+          ],
+          "size": [
+           534.5,
+           142.2
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#353535ff",
+          "sprite": "ext:3:118"
+         },
+         "Button": {
+          "onEvent": [
+           "Canvas(MonoBehaviour).EnterUsernameBtn()"
+          ]
+         },
+         "children": [
+          {
+           "name": "EnterText",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "text": {
+            "text": "Continue",
+            "size": 50.0,
+            "color": "#ffffffff",
+            "align": 2,
+            "bold": true
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Lobby Screen",
+       "active": false,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         0.0,
+         0.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffff00",
+        "sprite": null
+       },
+       "children": [
+        {
+         "name": "UI",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#000000e3",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "ServerBtn",
+           "active": false,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             0.0,
+             220.0
+            ],
+            "size": [
+             500.0,
+             150.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#353535ff",
+            "sprite": "ext:3:118"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).continueBranch(Play a Global Game)"
+            ]
+           },
+           "children": [
+            {
+             "name": "ServerText",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Server",
+              "size": 79.9,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          },
+          {
+           "name": "GHostBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             -400.0,
+             100.0
+            ],
+            "size": [
+             500.0,
+             150.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#353535ff",
+            "sprite": "ext:3:118"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).continueBranch(Host a GLOBAL Game)"
+            ]
+           },
+           "children": [
+            {
+             "name": "GHostText",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Host Global",
+              "size": 50.0,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          },
+          {
+           "name": "GClientBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             -400.0,
+             -100.0
+            ],
+            "size": [
+             500.0,
+             150.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#353535ff",
+            "sprite": "ext:3:118"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).continueBranch(Join a GLOBAL Game)"
+            ]
+           },
+           "children": [
+            {
+             "name": "GClientText",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Join Global",
+              "size": 50.0,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          },
+          {
+           "name": "LHostBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             400.0,
+             100.0
+            ],
+            "size": [
+             500.0,
+             150.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#353535ff",
+            "sprite": "ext:3:118"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).continueBranch(Host a LAN Game)"
+            ]
+           },
+           "children": [
+            {
+             "name": "LHostText",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Host Local",
+              "size": 50.0,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          },
+          {
+           "name": "LClientBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             400.0,
+             -100.0
+            ],
+            "size": [
+             500.0,
+             150.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#353535ff",
+            "sprite": "ext:3:118"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).continueBranch(Join a LAN Game)"
+            ]
+           },
+           "children": [
+            {
+             "name": "LClientText",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Join Local",
+              "size": 50.0,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "Join a LAN Game",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#38383800",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "UI",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#000000e3",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "IP-AdressField",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               -0.0,
+               0.0
+              ],
+              "size": [
+               1000.0,
+               113.6
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": "ext:3:120"
+             },
+             "TMP_InputField": {
+              "onEvent": []
+             },
+             "children": [
+              {
+               "name": "Text Area",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 -0.5
+                ],
+                "size": [
+                 -20.0,
+                 -13.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "scripts": [
+                "RectMask2D"
+               ],
+               "children": [
+                {
+                 "name": "Placeholder",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   1.0,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   0.0,
+                   0.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "text": {
+                  "text": "enter Lobbycode...\n",
+                  "size": 40.0,
+                  "color": "#00000087",
+                  "align": 2,
+                  "bold": false
+                 },
+                 "scripts": [
+                  "LayoutElement"
+                 ]
+                },
+                {
+                 "name": "Text",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   1.0,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   0.0,
+                   0.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "text": {
+                  "text": "​",
+                  "size": 40.0,
+                  "color": "#323232ff",
+                  "align": 2,
+                  "bold": true
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "name": "ConnectBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               0.0,
+               -176.0
+              ],
+              "size": [
+               534.5,
+               142.2
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#353535ff",
+              "sprite": "ext:3:118"
+             },
+             "Button": {
+              "onEvent": [
+               "Canvas(MonoBehaviour).connectAsClientBtn()"
+              ]
+             },
+             "children": [
+              {
+               "name": "ConnectText",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 0.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "connect to Host",
+                "size": 50.0,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": true
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "Join a GLOBAL Game",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#38383800",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "UI",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#000000e3",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "IP-AdressField",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               -0.0,
+               0.0
+              ],
+              "size": [
+               1000.0,
+               113.6
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": "ext:3:120"
+             },
+             "TMP_InputField": {
+              "onEvent": []
+             },
+             "children": [
+              {
+               "name": "Text Area",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 -0.5
+                ],
+                "size": [
+                 -20.0,
+                 -13.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "scripts": [
+                "RectMask2D"
+               ],
+               "children": [
+                {
+                 "name": "Placeholder",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   1.0,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   0.0,
+                   0.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "text": {
+                  "text": "enter Lobbycode...\n",
+                  "size": 40.0,
+                  "color": "#00000087",
+                  "align": 2,
+                  "bold": false
+                 },
+                 "scripts": [
+                  "LayoutElement"
+                 ]
+                },
+                {
+                 "name": "Text",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   1.0,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   0.0,
+                   0.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "text": {
+                  "text": "​",
+                  "size": 40.0,
+                  "color": "#323232ff",
+                  "align": 2,
+                  "bold": true
+                 }
+                }
+               ]
+              }
+             ]
+            },
+            {
+             "name": "ConnectBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               0.0,
+               -176.0
+              ],
+              "size": [
+               534.5,
+               142.2
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#353535ff",
+              "sprite": "ext:3:118"
+             },
+             "Button": {
+              "onEvent": [
+               "Canvas(MonoBehaviour).connectAsClientBtn()"
+              ]
+             },
+             "children": [
+              {
+               "name": "ConnectText",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 0.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "connect to Host",
+                "size": 50.0,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": true
+               }
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "name": "Joining Game",
+           "active": false,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffff00",
+            "sprite": null
+           }
+          }
+         ]
+        },
+        {
+         "name": "Host a LAN Game",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#38383800",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "UI",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#000000e3",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "BedRoomBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               -454.0,
+               -92.0
+              ],
+              "size": [
+               720.2,
+               732.9
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": [
+               "Game Manager(MonoBehaviour).startHost(1)"
+              ]
+             },
+             "scripts": [
+              "Mask"
+             ],
+             "children": [
+              {
+               "name": "Img",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.5,
+                 0.0
+                ],
+                "anchorMax": [
+                 0.5,
+                 1.0
+                ],
+                "pos": [
+                 190.0,
+                 0.0
+                ],
+                "size": [
+                 1634.1,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#ffffffff",
+                "sprite": "ext:3:122"
+               }
+              },
+              {
+               "name": "Image",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#000000c8",
+                "sprite": null
+               }
+              },
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Zimmer\n",
+                "size": 77.5,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": false
+               }
+              }
+             ]
+            },
+            {
+             "name": "InfoRoomBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               454.0,
+               -92.0
+              ],
+              "size": [
+               720.2,
+               732.9
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": [
+               "Game Manager(MonoBehaviour).startHost(2)"
+              ]
+             },
+             "scripts": [
+              "Mask"
+             ],
+             "children": [
+              {
+               "name": "Img",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.5,
+                 0.0
+                ],
+                "anchorMax": [
+                 0.5,
+                 1.0
+                ],
+                "pos": [
+                 190.0,
+                 0.0
+                ],
+                "size": [
+                 1634.1,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#ffffffff",
+                "sprite": "ext:3:130"
+               }
+              },
+              {
+               "name": "Image",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#000000c8",
+                "sprite": null
+               }
+              },
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Info-Raum",
+                "size": 77.5,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": false
+               }
+              }
+             ]
+            },
+            {
+             "name": "wähleTxt",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               1.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               -124.5
+              ],
+              "size": [
+               0.0,
+               249.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "wähle:",
+              "size": 97.2,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": false
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "Host a GLOBAL Game",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#38383800",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "UI",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#000000e3",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "BedRoomBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               -454.0,
+               -92.0
+              ],
+              "size": [
+               720.2,
+               732.9
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": [
+               "Game Manager(MonoBehaviour).globalstartHost(1)"
+              ]
+             },
+             "scripts": [
+              "Mask"
+             ],
+             "children": [
+              {
+               "name": "Img",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.5,
+                 0.0
+                ],
+                "anchorMax": [
+                 0.5,
+                 1.0
+                ],
+                "pos": [
+                 190.0,
+                 0.0
+                ],
+                "size": [
+                 1634.1,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#ffffffff",
+                "sprite": "ext:3:122"
+               }
+              },
+              {
+               "name": "Image",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#000000c8",
+                "sprite": null
+               }
+              },
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Zimmer\n",
+                "size": 77.5,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": false
+               }
+              }
+             ]
+            },
+            {
+             "name": "InfoRoomBtn",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               454.0,
+               -92.0
+              ],
+              "size": [
+               720.2,
+               732.9
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": [
+               "Game Manager(MonoBehaviour).globalstartHost(2)"
+              ]
+             },
+             "scripts": [
+              "Mask"
+             ],
+             "children": [
+              {
+               "name": "Img",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.5,
+                 0.0
+                ],
+                "anchorMax": [
+                 0.5,
+                 1.0
+                ],
+                "pos": [
+                 190.0,
+                 0.0
+                ],
+                "size": [
+                 1634.1,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#ffffffff",
+                "sprite": "ext:3:130"
+               }
+              },
+              {
+               "name": "Image",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#000000c8",
+                "sprite": null
+               }
+              },
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.0
+                ],
+                "pos": [
+                 0.0,
+                 63.5
+                ],
+                "size": [
+                 0.0,
+                 127.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Info-Raum",
+                "size": 77.5,
+                "color": "#ffffffff",
+                "align": 2,
+                "bold": false
+               }
+              }
+             ]
+            },
+            {
+             "name": "wähleTxt",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               1.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               -124.5
+              ],
+              "size": [
+               0.0,
+               249.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "wähle:",
+              "size": 97.2,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": false
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "Play a Global Game",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffff00",
+          "sprite": null
+         }
+        },
+        {
+         "name": "Connecting",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#38383800",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "UI",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#383838ff",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "ConnectingTxt",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               284.9,
+               50.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "connecting...",
+              "size": 36.0,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": false
+             },
+             "scripts": [
+              "connectingAnim"
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "You Got Disconnected",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#383838ff",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "YouDisconnectedTxt",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             0.0,
+             180.0
+            ],
+            "size": [
+             987.3,
+             214.4
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "text": {
+            "text": "You lost the connection to the server :(",
+            "size": 77.1,
+            "color": "#ffffffff",
+            "align": 2,
+            "bold": true
+           }
+          },
+          {
+           "name": "closeBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             0.0,
+             -218.0
+            ],
+            "size": [
+             329.2,
+             96.7
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:124"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).revertBranch(Enter Username)"
+            ]
+           },
+           "children": [
+            {
+             "name": "Text (TMP)",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "close",
+              "size": 65.6,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "Couldnt connect",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#383838ff",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "couldnt connectTxt",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             0.0,
+             180.0
+            ],
+            "size": [
+             987.3,
+             214.4
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "text": {
+            "text": "unable to connect to the server :(",
+            "size": 77.1,
+            "color": "#ffffffff",
+            "align": 2,
+            "bold": true
+           }
+          },
+          {
+           "name": "closeBtn",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.5
+            ],
+            "anchorMax": [
+             0.5,
+             0.5
+            ],
+            "pos": [
+             0.0,
+             -218.0
+            ],
+            "size": [
+             329.2,
+             96.7
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:124"
+           },
+           "Button": {
+            "onEvent": [
+             "Canvas(MonoBehaviour).revertBranch(Enter Username)"
+            ]
+           },
+           "children": [
+            {
+             "name": "Text (TMP)",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               0.0,
+               0.0
+              ],
+              "size": [
+               0.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "close",
+              "size": 65.6,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "Game Screen",
+   "active": false,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     1.0,
+     1.0
+    ],
+    "pos": [
+     0.0,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "image": {
+    "color": "#ffffff00",
+    "sprite": null
+   },
+   "children": [
+    {
+     "name": "GameUI",
+     "active": true,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       0.0,
+       0.0
+      ],
+      "size": [
+       0.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#ffffff00",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "Crosshair",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         60.0,
+         60.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:123"
+       }
+      },
+      {
+       "name": "Hitmarker",
+       "active": false,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         50.0,
+         50.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:126"
+       }
+      },
+      {
+       "name": "KillCount",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         1.0,
+         1.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         -250.0,
+         -25.0
+        ],
+        "size": [
+         500.0,
+         50.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "text": {
+        "text": "Kills: 0",
+        "size": 36.0,
+        "color": "#000000ff",
+        "align": 4,
+        "bold": false
+       }
+      },
+      {
+       "name": "DeathCount",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         1.0,
+         1.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         -250.0,
+         -75.0
+        ],
+        "size": [
+         500.0,
+         50.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "text": {
+        "text": "Deaths: 0",
+        "size": 36.0,
+        "color": "#000000ff",
+        "align": 4,
+        "bold": false
+       }
+      },
+      {
+       "name": "CoolDown",
+       "active": false,
+       "rect": {
+        "anchorMin": [
+         0.5,
+         0.5
+        ],
+        "anchorMax": [
+         0.5,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         -29.7
+        ],
+        "size": [
+         60.0,
+         9.4
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "Slider": {
+        "onEvent": [],
+        "min": 0.0,
+        "max": 1.0,
+        "value": 0.0
+       },
+       "children": [
+        {
+         "name": "Background",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.2
+          ],
+          "anchorMax": [
+           1.0,
+           0.8
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#b9b9b9ff",
+          "sprite": "ext:3:119"
+         },
+         "children": [
+          {
+           "name": "Fill Area",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.2
+            ],
+            "anchorMax": [
+             1.0,
+             0.8
+            ],
+            "pos": [
+             -2.2,
+             0.0
+            ],
+            "size": [
+             -4.3,
+             2.3
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "children": [
+            {
+             "name": "Fill",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               0.0,
+               1.0
+              ],
+              "pos": [
+               2.2,
+               0.0
+              ],
+              "size": [
+               4.4,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": "ext:3:118"
+             }
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "PauseUI",
+     "active": false,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       0.0,
+       0.0
+      ],
+      "size": [
+       0.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#2a2a2ad9",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "bar",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         0.0
+        ],
+        "pos": [
+         0.0,
+         76.9
+        ],
+        "size": [
+         0.0,
+         153.7
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:127"
+       },
+       "children": [
+        {
+         "name": "ContinueTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           0.0
+          ],
+          "pos": [
+           706.6,
+           36.7
+          ],
+          "size": [
+           -1413.2,
+           73.3
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "(press escape to continue)",
+          "size": 39.4,
+          "color": "#ffffffff",
+          "align": 1,
+          "bold": false
+         }
+        },
+        {
+         "name": "Lobbycode",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           16.6,
+           -114.0
+          ],
+          "size": [
+           -1018.7,
+           50.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Your Lobbycode is: 2a7f",
+          "size": 38.9,
+          "color": "#ffffffff",
+          "align": 4,
+          "bold": false
+         }
+        },
+        {
+         "name": "CopyIPBtn",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           0.0
+          ],
+          "pos": [
+           446.0,
+           44.1
+          ],
+          "size": [
+           106.8,
+           68.3
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+         },
+         "Button": {
+          "onEvent": [
+           "Game Manager(MonoBehaviour).copyIPAdress()"
+          ]
+         },
+         "children": [
+          {
+           "name": "icon",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.0
+            ],
+            "anchorMax": [
+             0.5,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             53.6,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:128"
+           }
+          }
+         ]
+        },
+        {
+         "name": "OptionsBtn",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           0.0
+          ],
+          "pos": [
+           255.0,
+           70.0
+          ],
+          "size": [
+           130.0,
+           100.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+         },
+         "Button": {
+          "onEvent": [
+           "Canvas(MonoBehaviour).openSettings()"
+          ]
+         },
+         "children": [
+          {
+           "name": "icon",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.0
+            ],
+            "anchorMax": [
+             0.5,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             70.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:125"
+           }
+          }
+         ]
+        },
+        {
+         "name": "QuitBtn",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           0.0
+          ],
+          "pos": [
+           95.0,
+           70.0
+          ],
+          "size": [
+           130.0,
+           100.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+         },
+         "Button": {
+          "onEvent": [
+           "Game Manager(MonoBehaviour).leaveGame()"
+          ]
+         },
+         "children": [
+          {
+           "name": "icon",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.0
+            ],
+            "anchorMax": [
+             0.5,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             70.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:131"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "DeathUI",
+     "active": false,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       0.0,
+       0.0
+      ],
+      "size": [
+       0.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#2a2a2ad9",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "Bar",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         0.0
+        ],
+        "pos": [
+         0.0,
+         100.0
+        ],
+        "size": [
+         0.0,
+         200.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffff00",
+        "sprite": null
+       },
+       "children": [
+        {
+         "name": "Upper",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           -59.4
+          ],
+          "size": [
+           0.0,
+           118.9
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:127"
+         }
+        },
+        {
+         "name": "Lower",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           0.0
+          ],
+          "pos": [
+           0.0,
+           61.3
+          ],
+          "size": [
+           0.0,
+           122.7
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#343334ff",
+          "sprite": null
+         }
+        },
+        {
+         "name": "OptionsBtn",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           0.0
+          ],
+          "pos": [
+           95.0,
+           70.0
+          ],
+          "size": [
+           130.0,
+           100.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+         },
+         "Button": {
+          "onEvent": [
+           "Canvas(MonoBehaviour).openSettings()"
+          ]
+         },
+         "children": [
+          {
+           "name": "icon",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.0
+            ],
+            "anchorMax": [
+             0.5,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             70.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:125"
+           }
+          }
+         ]
+        },
+        {
+         "name": "QuitBtn",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           1.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           0.0
+          ],
+          "pos": [
+           -95.0,
+           70.0
+          ],
+          "size": [
+           130.0,
+           100.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+         },
+         "Button": {
+          "onEvent": [
+           "Game Manager(MonoBehaviour).leaveGame()"
+          ]
+         },
+         "children": [
+          {
+           "name": "icon",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.5,
+             0.0
+            ],
+            "anchorMax": [
+             0.5,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             70.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:131"
+           }
+          }
+         ]
+        },
+        {
+         "name": "KilledByField",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           239.2,
+           -33.2
+          ],
+          "size": [
+           478.4,
+           66.5
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Name",
+          "size": 44.1,
+          "color": "#ffffffff",
+          "align": 4,
+          "bold": true
+         }
+        },
+        {
+         "name": "KilledByTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.5
+          ],
+          "anchorMax": [
+           0.5,
+           0.5
+          ],
+          "pos": [
+           -589.9,
+           20.1
+          ],
+          "size": [
+           183.3,
+           40.2
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Killed by",
+          "size": 30.0,
+          "color": "#9f9f9fff",
+          "align": 4,
+          "bold": false
+         }
+        },
+        {
+         "name": "PressSpace",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.5,
+           0.5
+          ],
+          "anchorMax": [
+           0.5,
+           0.5
+          ],
+          "pos": [
+           0.0,
+           -29.0
+          ],
+          "size": [
+           550.1,
+           50.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "(press space to respawn)",
+          "size": 36.0,
+          "color": "#ffffffff",
+          "align": 2,
+          "bold": false
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "Playerlist",
+     "active": false,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       0.0,
+       1.0
+      ],
+      "pos": [
+       400.0,
+       0.0
+      ],
+      "size": [
+       800.0,
+       0.0
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#ffffff00",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "SpaltenNamen",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         1.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         -25.0
+        ],
+        "size": [
+         0.0,
+         50.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#3f3f3fff",
+        "sprite": null
+       },
+       "scripts": [
+        "playerListRow"
+       ],
+       "children": [
+        {
+         "name": "indexTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           30.5,
+           0.0
+          ],
+          "size": [
+           61.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Nr.",
+          "size": 27.0,
+          "color": "#ffffffff",
+          "align": 2,
+          "bold": false
+         }
+        },
+        {
+         "name": "playerNameTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           283.8,
+           0.0
+          ],
+          "size": [
+           473.4,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Name",
+          "size": 27.0,
+          "color": "#ffffffff",
+          "align": 1,
+          "bold": true
+         }
+        },
+        {
+         "name": "killsTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           556.5,
+           0.0
+          ],
+          "size": [
+           73.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "kills",
+          "size": 27.0,
+          "color": "#ffffffff",
+          "align": 4,
+          "bold": false
+         }
+        },
+        {
+         "name": "deathTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           647.8,
+           0.0
+          ],
+          "size": [
+           99.6,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "deaths",
+          "size": 27.0,
+          "color": "#ffffffff",
+          "align": 4,
+          "bold": false
+         }
+        },
+        {
+         "name": "k/dTxt",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           0.0,
+           1.0
+          ],
+          "pos": [
+           757.5,
+           0.0
+          ],
+          "size": [
+           84.9,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "k/d",
+          "size": 27.0,
+          "color": "#ffffffff",
+          "align": 4,
+          "bold": false
+         }
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "SettingsScreen",
+   "active": false,
+   "rect": {
+    "anchorMin": [
+     0.0,
+     0.0
+    ],
+    "anchorMax": [
+     1.0,
+     1.0
+    ],
+    "pos": [
+     0.0,
+     0.0
+    ],
+    "size": [
+     0.0,
+     0.0
+    ],
+    "pivot": [
+     0.5,
+     0.5
+    ]
+   },
+   "image": {
+    "color": "#383838ff",
+    "sprite": null
+   },
+   "children": [
+    {
+     "name": "Tabs",
+     "active": true,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.5
+      ],
+      "anchorMax": [
+       0.0,
+       0.5
+      ],
+      "pos": [
+       400.0,
+       0.0
+      ],
+      "size": [
+       500.0,
+       917.8
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#2b2b2bff",
+      "sprite": null
+     },
+     "children": [
+      {
+       "name": "SettingsTxt",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         1.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         -71.1
+        ],
+        "size": [
+         0.0,
+         142.3
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "text": {
+        "text": "Settings",
+        "size": 51.0,
+        "color": "#ffffffff",
+        "align": 2,
+        "bold": true
+       }
+      },
+      {
+       "name": "VideoTab",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.5
+        ],
+        "anchorMax": [
+         1.0,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         100.0
+        ],
+        "size": [
+         0.0,
+         100.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).setTab()"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Video",
+          "size": 35.9,
+          "color": "#c8c8c8ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      },
+      {
+       "name": "SoundsTab",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.5
+        ],
+        "anchorMax": [
+         1.0,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         0.0,
+         100.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).setTab(1)"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Sound",
+          "size": 35.9,
+          "color": "#c8c8c8ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      },
+      {
+       "name": "ControllTab",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.5
+        ],
+        "anchorMax": [
+         1.0,
+         0.5
+        ],
+        "pos": [
+         0.0,
+         -100.0
+        ],
+        "size": [
+         0.0,
+         100.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).setTab(2)"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Controlls",
+          "size": 35.9,
+          "color": "#c8c8c8ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      },
+      {
+       "name": "ChangeNameField",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         0.0
+        ],
+        "pos": [
+         -70.0,
+         220.0
+        ],
+        "size": [
+         -160.0,
+         75.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "TMP_InputField": {
+        "onEvent": []
+       },
+       "children": [
+        {
+         "name": "Text Area",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           -0.5
+          ],
+          "size": [
+           -20.0,
+           -13.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "scripts": [
+          "RectMask2D"
+         ],
+         "children": [
+          {
+           "name": "Placeholder",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "text": {
+            "text": "change Username",
+            "size": 20.0,
+            "color": "#ffffff29",
+            "align": 2,
+            "bold": false
+           },
+           "scripts": [
+            "LayoutElement"
+           ]
+          },
+          {
+           "name": "Text",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             0.0,
+             0.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "text": {
+            "text": "​",
+            "size": 20.0,
+            "color": "#ffffffff",
+            "align": 2,
+            "bold": true
+           }
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "ChangeNameBtn",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         0.0
+        ],
+        "pos": [
+         175.0,
+         220.0
+        ],
+        "size": [
+         -350.0,
+         75.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).setUserName()"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "change\nUsername",
+          "size": 18.4,
+          "color": "#616161ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      },
+      {
+       "name": "ExitBtn",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         0.0
+        ],
+        "pos": [
+         0.0,
+         50.0
+        ],
+        "size": [
+         0.0,
+         100.0
+        ],
+        "pivot": [
+         0.5,
+         0.5
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": null
+       },
+       "Button": {
+        "onEvent": [
+         "Canvas(MonoBehaviour).closeSettings(2)"
+        ]
+       },
+       "children": [
+        {
+         "name": "Text (TMP)",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           0.0,
+           0.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "text": {
+          "text": "Exit",
+          "size": 35.9,
+          "color": "#c8c8c8ff",
+          "align": 2,
+          "bold": true
+         }
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "name": "SettingsScroller",
+     "active": true,
+     "rect": {
+      "anchorMin": [
+       0.0,
+       0.0
+      ],
+      "anchorMax": [
+       1.0,
+       1.0
+      ],
+      "pos": [
+       310.0,
+       0.0
+      ],
+      "size": [
+       -820.0,
+       -162.2
+      ],
+      "pivot": [
+       0.5,
+       0.5
+      ]
+     },
+     "image": {
+      "color": "#454545ff",
+      "sprite": null
+     },
+     "scripts": [
+      "ScrollRect"
+     ],
+     "children": [
+      {
+       "name": "Viewport",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         0.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         -17.0,
+         0.0
+        ],
+        "pivot": [
+         0.0,
+         1.0
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:121"
+       },
+       "scripts": [
+        "Mask"
+       ],
+       "children": [
+        {
+         "name": "VideoSettings",
+         "active": false,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           -459.0
+          ],
+          "size": [
+           0.0,
+           918.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffff00",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "DisplayFPS",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             1.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             -200.0
+            ],
+            "size": [
+             0.0,
+             100.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffff00",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "Title",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               0.0,
+               1.0
+              ],
+              "pos": [
+               250.0,
+               0.0
+              ],
+              "size": [
+               500.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Show FPS",
+              "size": 30.0,
+              "color": "#c3c3c3ff",
+              "align": 1,
+              "bold": false
+             }
+            },
+            {
+             "name": "Toggle",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               1.0,
+               0.0
+              ],
+              "anchorMax": [
+               1.0,
+               1.0
+              ],
+              "pos": [
+               -225.0,
+               0.0
+              ],
+              "size": [
+               450.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "Toggle": {
+              "onEvent": []
+             },
+             "children": [
+              {
+               "name": "Background",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.5,
+                 0.5
+                ],
+                "anchorMax": [
+                 0.5,
+                 0.5
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 50.0,
+                 50.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#bfbfbfff",
+                "sprite": "ext:3:118"
+               },
+               "children": [
+                {
+                 "name": "Checkmark",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.5,
+                   0.5
+                  ],
+                  "anchorMax": [
+                   0.5,
+                   0.5
+                  ],
+                  "pos": [
+                   0.0,
+                   6.0
+                  ],
+                  "size": [
+                   110.0,
+                   100.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "image": {
+                  "color": "#ffffffff",
+                  "sprite": "ext:3:117"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          },
+          {
+           "name": "WindowMode",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             1.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             -300.0
+            ],
+            "size": [
+             0.0,
+             100.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffff00",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "Title",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               0.0,
+               1.0
+              ],
+              "pos": [
+               250.0,
+               0.0
+              ],
+              "size": [
+               500.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Window Mode",
+              "size": 30.0,
+              "color": "#c3c3c3ff",
+              "align": 1,
+              "bold": false
+             }
+            },
+            {
+             "name": "Windowed",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               170.0,
+               0.0
+              ],
+              "size": [
+               200.0,
+               50.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": []
+             },
+             "children": [
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 0.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Windowed",
+                "size": 24.0,
+                "color": "#d1d1d1ff",
+                "align": 2,
+                "bold": true
+               }
+              }
+             ]
+            },
+            {
+             "name": "FullScreen",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               370.0,
+               0.0
+              ],
+              "size": [
+               200.0,
+               50.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "image": {
+              "color": "#ffffffff",
+              "sprite": null
+             },
+             "Button": {
+              "onEvent": []
+             },
+             "children": [
+              {
+               "name": "Text (TMP)",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 0.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "text": {
+                "text": "Fullscreen",
+                "size": 24.0,
+                "color": "#d1d1d1ff",
+                "align": 2,
+                "bold": true
+               }
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        },
+        {
+         "name": "SoundSettings",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           -459.0
+          ],
+          "size": [
+           0.0,
+           918.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffff00",
+          "sprite": null
+         }
+        },
+        {
+         "name": "ControllSettings",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           1.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           -459.0
+          ],
+          "size": [
+           0.0,
+           918.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "image": {
+          "color": "#ffffff00",
+          "sprite": null
+         },
+         "children": [
+          {
+           "name": "Sensitivity",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             1.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             -200.0
+            ],
+            "size": [
+             0.0,
+             100.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffff00",
+            "sprite": null
+           },
+           "children": [
+            {
+             "name": "Title",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.0,
+               0.0
+              ],
+              "anchorMax": [
+               0.0,
+               1.0
+              ],
+              "pos": [
+               250.0,
+               0.0
+              ],
+              "size": [
+               500.0,
+               0.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "text": {
+              "text": "Mouse Sensitivity",
+              "size": 30.0,
+              "color": "#c3c3c3ff",
+              "align": 1,
+              "bold": false
+             }
+            },
+            {
+             "name": "Slider",
+             "active": true,
+             "rect": {
+              "anchorMin": [
+               0.5,
+               0.5
+              ],
+              "anchorMax": [
+               0.5,
+               0.5
+              ],
+              "pos": [
+               200.0,
+               0.0
+              ],
+              "size": [
+               350.0,
+               40.0
+              ],
+              "pivot": [
+               0.5,
+               0.5
+              ]
+             },
+             "Slider": {
+              "onEvent": [
+               "Canvas(MonoBehaviour).changeSensi()"
+              ],
+              "min": 0.5,
+              "max": 5.0,
+              "value": 1.0
+             },
+             "children": [
+              {
+               "name": "Background",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.2
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.8
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 0.0,
+                 30.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "image": {
+                "color": "#3a3a3a00",
+                "sprite": null
+               },
+               "children": [
+                {
+                 "name": "Image",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   1.0,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   0.0,
+                   -30.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "image": {
+                  "color": "#3b3b3bff",
+                  "sprite": "ext:3:119"
+                 }
+                }
+               ]
+              },
+              {
+               "name": "Fill Area",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.2
+                ],
+                "anchorMax": [
+                 1.0,
+                 0.8
+                ],
+                "pos": [
+                 -5.0,
+                 0.0
+                ],
+                "size": [
+                 -20.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "children": [
+                {
+                 "name": "Fill",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.0,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   0.1,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   10.0,
+                   0.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "image": {
+                  "color": "#424242ff",
+                  "sprite": "ext:3:118"
+                 }
+                }
+               ]
+              },
+              {
+               "name": "Handle Slide Area",
+               "active": true,
+               "rect": {
+                "anchorMin": [
+                 0.0,
+                 0.0
+                ],
+                "anchorMax": [
+                 1.0,
+                 1.0
+                ],
+                "pos": [
+                 0.0,
+                 0.0
+                ],
+                "size": [
+                 -20.0,
+                 0.0
+                ],
+                "pivot": [
+                 0.5,
+                 0.5
+                ]
+               },
+               "children": [
+                {
+                 "name": "Handle",
+                 "active": true,
+                 "rect": {
+                  "anchorMin": [
+                   0.1,
+                   0.0
+                  ],
+                  "anchorMax": [
+                   0.1,
+                   1.0
+                  ],
+                  "pos": [
+                   0.0,
+                   0.0
+                  ],
+                  "size": [
+                   40.0,
+                   10.0
+                  ],
+                  "pivot": [
+                   0.5,
+                   0.5
+                  ]
+                 },
+                 "image": {
+                  "color": "#878787ff",
+                  "sprite": "ext:3:118"
+                 }
+                }
+               ]
+              }
+             ]
+            }
+           ]
+          }
+         ]
+        }
+       ]
+      },
+      {
+       "name": "Scrollbar Vertical",
+       "active": true,
+       "rect": {
+        "anchorMin": [
+         1.0,
+         0.0
+        ],
+        "anchorMax": [
+         1.0,
+         1.0
+        ],
+        "pos": [
+         0.0,
+         0.0
+        ],
+        "size": [
+         20.0,
+         -17.0
+        ],
+        "pivot": [
+         1.0,
+         1.0
+        ]
+       },
+       "image": {
+        "color": "#ffffffff",
+        "sprite": "ext:3:119"
+       },
+       "scripts": [
+        "Scrollbar"
+       ],
+       "children": [
+        {
+         "name": "Sliding Area",
+         "active": true,
+         "rect": {
+          "anchorMin": [
+           0.0,
+           0.0
+          ],
+          "anchorMax": [
+           1.0,
+           1.0
+          ],
+          "pos": [
+           0.0,
+           0.0
+          ],
+          "size": [
+           -20.0,
+           -20.0
+          ],
+          "pivot": [
+           0.5,
+           0.5
+          ]
+         },
+         "children": [
+          {
+           "name": "Handle",
+           "active": true,
+           "rect": {
+            "anchorMin": [
+             0.0,
+             0.0
+            ],
+            "anchorMax": [
+             1.0,
+             1.0
+            ],
+            "pos": [
+             0.0,
+             0.0
+            ],
+            "size": [
+             20.0,
+             20.0
+            ],
+            "pivot": [
+             0.5,
+             0.5
+            ]
+           },
+           "image": {
+            "color": "#ffffffff",
+            "sprite": "ext:3:118"
+           }
+          }
+         ]
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

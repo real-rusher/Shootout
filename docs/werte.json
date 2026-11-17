@@ -1,0 +1,370 @@
+{
+ "_hinweis": "Werte direkt aus dem Build ausgelesen (Prefabs/Szene). Physics.gravity = (0, -9.81, 0), playermovment multipliziert mit mass = 4.",
+ "unity_version": "2021.3.4f1",
+ "komponenten": {
+  "playerlooking": [
+   {
+    "zoomOutSpeed": 3.0,
+    "zoomOutDistance": 3.0
+   }
+  ],
+  "LaserEffect": [
+   {
+    "effectTime": 0.30000001192092896,
+    "effectWidth": 40
+   }
+  ],
+  "playershooting": [
+   {
+    "coolDown": 0.699999988079071
+   }
+  ],
+  "NetworkClientTransform": [
+   {
+    "SyncPositionX": 1,
+    "SyncPositionY": 1,
+    "SyncPositionZ": 1,
+    "SyncRotAngleX": 0,
+    "SyncRotAngleY": 1,
+    "SyncRotAngleZ": 0,
+    "SyncScaleX": 0,
+    "SyncScaleY": 0,
+    "SyncScaleZ": 0,
+    "PositionThreshold": 0.0010000000474974513,
+    "RotAngleThreshold": 1.0,
+    "ScaleThreshold": 0.009999999776482582,
+    "InLocalSpace": 0,
+    "Interpolate": 1
+   },
+   {
+    "SyncPositionX": 0,
+    "SyncPositionY": 0,
+    "SyncPositionZ": 0,
+    "SyncRotAngleX": 1,
+    "SyncRotAngleY": 0,
+    "SyncRotAngleZ": 1,
+    "SyncScaleX": 0,
+    "SyncScaleY": 0,
+    "SyncScaleZ": 0,
+    "PositionThreshold": 0.0010000000474974513,
+    "RotAngleThreshold": 3.0,
+    "ScaleThreshold": 0.009999999776482582,
+    "InLocalSpace": 0,
+    "Interpolate": 1
+   }
+  ],
+  "playermovment": [
+   {
+    "movementSpeed": 10.0,
+    "jumpSpeed": 20.0,
+    "prejumpTime": 0.10000000149011612,
+    "mass": 4.0,
+    "groundAcceleration": 10.0,
+    "airAccelerationAnteil": 0.20000000298023224
+   }
+  ],
+  "Unity.Netcode.NetworkManager": [
+   {
+    "RunInBackground": 1,
+    "LogLevel": 1,
+    "NetworkConfig": {
+     "ProtocolVersion": 0,
+     "NetworkTransport": {
+      "m_FileID": 0,
+      "m_PathID": 702
+     },
+     "PlayerPrefab": {
+      "m_FileID": 3,
+      "m_PathID": 137
+     },
+     "NetworkPrefabs": [
+      {
+       "Override": 0,
+       "Prefab": {
+        "m_FileID": 3,
+        "m_PathID": 137
+       },
+       "SourcePrefabToOverride": {
+        "m_FileID": 0,
+        "m_PathID": 0
+       },
+       "SourceHashToOverride": 0,
+       "OverridingTargetPrefab": {
+        "m_FileID": 0,
+        "m_PathID": 0
+       }
+      }
+     ],
+     "TickRate": 60,
+     "ClientConnectionBufferTimeout": 10,
+     "ConnectionApproval": 0,
+     "ConnectionData": [],
+     "EnableTimeResync": 0,
+     "TimeResyncInterval": 30,
+     "EnsureNetworkVariableLengthSafety": 0,
+     "EnableSceneManagement": 1,
+     "ForceSamePrefabs": 1,
+     "RecycleNetworkIds": 1,
+     "NetworkIdRecycleDelay": 120.0,
+     "RpcHashSize": 0,
+     "LoadSceneTimeOut": 120,
+     "SpawnTimeout": 1.0,
+     "EnableNetworkLogs": 1
+    }
+   }
+  ],
+  "Unity.Netcode.Transports.UTP.UnityTransport": [
+   {
+    "m_ProtocolType": 0,
+    "m_MaxPacketQueueSize": 128,
+    "m_MaxPayloadSize": 6144,
+    "m_HeartbeatTimeoutMS": 500,
+    "m_ConnectTimeoutMS": 1000,
+    "m_MaxConnectAttempts": 60,
+    "m_DisconnectTimeoutMS": 30000,
+    "ConnectionData": {
+     "Address": "1",
+     "Port": 1,
+     "ServerListenAddress": ""
+    },
+    "DebugSimulator": {
+     "PacketDelayMS": 0,
+     "PacketJitterMS": 0,
+     "PacketDropRate": 0
+    }
+   }
+  ]
+ },
+ "szene": {
+  "Map1_Zimmer (oldMapPrefab, Wurzel \"Shooter-Map\")": {
+   "spawnBoxes_lokal": [
+    {
+     "center": [
+      -9.4,
+      6.76,
+      -13.93
+     ],
+     "size": [
+      19.8,
+      0.43,
+      10.66
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      18.97,
+      13.23,
+      8.08
+     ],
+     "size": [
+      1.24,
+      0.28,
+      7.43
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      -18.19,
+      12.65,
+      13.83
+     ],
+     "size": [
+      2.88,
+      0.63,
+      5.78
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      16.97,
+      19.13,
+      -15.17
+     ],
+     "size": [
+      5.06,
+      0.46,
+      8.91
+     ],
+     "isTrigger": true
+    }
+   ],
+   "rootTransform": {
+    "m_LocalPosition": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "m_LocalScale": {
+     "x": 1.0,
+     "y": 1.0,
+     "z": 1.0
+    }
+   }
+  },
+  "Map2_InfoRaum (newMapPrefab, Wurzel \"MessyRoomparts\")": {
+   "spawnBoxes_lokal": [
+    {
+     "center": [
+      -40.03,
+      15.93,
+      -34.63
+     ],
+     "size": [
+      7.73,
+      1.78,
+      9.54
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      32.68,
+      4.05,
+      22.11
+     ],
+     "size": [
+      17.41,
+      1.74,
+      4.46
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      -18.74,
+      20.85,
+      -68.08
+     ],
+     "size": [
+      31.75,
+      1.0,
+      1.58
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      105.99,
+      12.48,
+      13.1
+     ],
+     "size": [
+      6.9,
+      1.47,
+      3.83
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      27.96,
+      14.08,
+      -25.31
+     ],
+     "size": [
+      70.74,
+      1.58,
+      17.06
+     ],
+     "isTrigger": true
+    },
+    {
+     "center": [
+      65.89,
+      3.7,
+      -66.01
+     ],
+     "size": [
+      8.47,
+      1.04,
+      6.04
+     ],
+     "isTrigger": true
+    }
+   ],
+   "rootTransform": {
+    "m_LocalPosition": {
+     "x": 0.0,
+     "y": 0.0,
+     "z": 0.0
+    },
+    "m_LocalScale": {
+     "x": 0.800000011920929,
+     "y": 0.800000011920929,
+     "z": 0.800000011920929
+    }
+   }
+  },
+  "RenderSettings": {
+   "ambientMode": 0,
+   "ambientSky": [
+    0.63,
+    0.63,
+    0.63
+   ],
+   "fog": false
+  },
+  "Layer": {
+   "0": "Default",
+   "1": "TransparentFX",
+   "2": "Ignore Raycast",
+   "4": "Water",
+   "5": "UI",
+   "8": "Enemy",
+   "9": "EnemyBody"
+  },
+  "Lights": [
+   {
+    "go": "Point Light Info",
+    "type": "Point",
+    "color": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "intensity": 1.3799999952316284,
+    "range": 78.9000015258789,
+    "shadows": 0
+   },
+   {
+    "go": "Point Light Raum",
+    "type": "Point",
+    "color": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "intensity": 1.3799999952316284,
+    "range": 56.59000015258789,
+    "shadows": 0
+   },
+   {
+    "go": "Directional Light (1)",
+    "type": "Directional",
+    "color": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "intensity": 0.6600000262260437,
+    "range": 10.0,
+    "shadows": 0
+   },
+   {
+    "go": "Directional Light (2)",
+    "type": "Directional",
+    "color": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "intensity": 1.2100000381469727,
+    "range": 10.0,
+    "shadows": 2
+   }
+  ]
+ }
+}
