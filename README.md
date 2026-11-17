@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.2
+Aktuell: Version 0.1.3
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -88,6 +88,28 @@ unter Windows: `%USERPROFILE%\AppData\LocalLow\<Firma>\<Spiel>\Player.log`.
 * Alle muessen dieselbe Version haben, der Host lehnt sonst ab.
 * Host und Client brauchen UDP-Port 7777 frei in der Firewall und muessen im selben
   /24-Netz sein (der Lobbycode ist die letzte Zahl der IP).
+* In der Schule immer **Host Local / Join Local** nehmen. Dieser Weg ist von den Admins
+  freigeschaltet und bleibt im Code unveraendert.
+
+## Online spielen (ausserhalb der Schule)
+
+**Host Global / Join Global** laeuft ueber Unity Relay: Host und Gaeste verbinden sich mit
+einem Server von Unity, niemand braucht eine Portfreigabe. Der Host bekommt einen Join-Code
+aus sechs Zeichen (im Pausemenue als Lobbycode, mit Kopierknopf), die anderen geben ihn bei
+Join Global ein. Bis zu 10 Spieler pro Runde.
+
+Einmal einrichten (Besitzer des Projekts):
+
+1. Im Unity-Editor mit dem Unity-Konto anmelden.
+2. *Edit > Project Settings > Services*: Projekt mit einer Unity-Cloud-Projekt-ID verknuepfen
+   (neu anlegen oder vorhandene waehlen). Die ID landet in `ProjectSettings/ProjectSettings.asset`
+   und ist kein Geheimnis, sie darf ins Repo.
+3. Auf cloud.unity.com im Projekt **Relay** aktivieren (Bereich Multiplayer). Relay hat ein
+   kostenloses Kontingent, die genauen Bedingungen stehen im Dashboard.
+4. Neu bauen. Builds ohne verknuepftes Projekt zeigen bei Global "unable to connect" und
+   schreiben die Ursache ins Log.
+
+Ob Relay im Schulnetz durchkommt, haengt von der Firewall ab. Fuer die Schule ist LAN gedacht.
 
 ## Versionen
 
@@ -95,6 +117,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.3 | **Netz:** Online-Runden ueber Unity Relay (Host Global / Join Global mit Join-Code), Pakete `com.unity.services.relay` 1.2.0 und `com.unity.services.authentication` 2.7.4. Die alte Global-Verbindung ueber die oeffentliche IP ist raus. LAN unveraendert, nach einer Online-Runde stellt `ConnectionManager` den Transport zurueck auf direktes UDP. Braucht einmal die Einrichtung unter "Online spielen". |
 | 0.1.2 | Editor-Skript `Assets/Editor/SzeneAufbauen.cs` (Menue Shootout > Szene und Prefabs aufbauen): baut Szene, UI und die Prefabs `player`, `Laser`, `Row` und beide Maps aus `docs/`. Ungetestet in Unity, aber gegen TextMeshPro und Input System kompiliert. **Netz:** Szene und Player-Prefab entstehen neu, Host und Client brauchen denselben Stand. |
 | 0.1.1 | Inhalt der Rekonstruktion uebernommen: Skripte, Modelle, Sprites, Input Actions, `docs/`. Unity-Geruest: `Packages/manifest.json` (Netcode 1.14.1, Input System 1.7.0, glTFast, ParrelSync), Unity 2021.3.4f1, Layer `Enemy` und `EnemyBody`. Acht weitere bekannte Fehler in `docs/REKONSTRUKTION.md`. |
 | 0.1.0 | Repo eingerichtet: `.gitignore`, `.gitattributes` mit LFS und Unity-Merge, Pruefung auf Foto und Schluessel (Hook und GitHub Actions), `CLAUDE.md`. **Netz:** Versionspruefung beim Verbinden (`Spielversion.cs`, noch ungetestet, kommt auf das NetworkManager-Objekt). |

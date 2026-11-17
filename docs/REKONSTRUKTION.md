@@ -85,7 +85,7 @@ Alles haengt in einer Szene. Singletons ueber `static Instance`.
 
 1. **LAN-Host:** Eigene IPv4 wird ermittelt, Host startet auf Port 7777. Der „Lobbycode“ ist nur die **letzte Zahl der IP** (zum Beispiel `143`).
 2. **LAN-Join:** Der Client setzt die ersten drei Zahlen seiner eigenen IP vor den Code. Funktioniert also nur im selben /24-Netz.
-3. **Global:** Host holt seine oeffentliche IP von `api64.ipify.org` (kann IPv6 liefern), der Client gibt die volle IP ein. Braucht Portfreigabe, im Schulnetz praktisch nie nutzbar.
+3. **Global:** Im Original holte der Host seine oeffentliche IP von `api64.ipify.org`, der Client gab die volle IP ein (Portfreigabe noetig, funktionierte praktisch nie). Seit 0.1.3 ersetzt durch Unity Relay mit Join-Code (`ConnectionManager.OnlineHosten` / `OnlineBeitreten`).
 4. **Treffer:** Der Schuetze macht den Raycast lokal, erhoeht seine Kills selbst und schickt `playerShotServerRPC(shooter, victim)` am getroffenen Spieler. Der Server verteilt per `receiveShotClientRPC`, der Owner des Opfers erhoeht Deaths und stirbt. Spieler werden ueber **Namen als String** identifiziert.
 5. Remote-Spieler kommen auf Layer 8 (`Enemy`), ihr Koerper auf Layer 9 (`EnemyBody`). Der eigene Spieler liegt auf Layer 2 (`Ignore Raycast`), deshalb trifft man sich nicht selbst.
 
@@ -116,7 +116,7 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 
 13. **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
-14. **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
+14. **Behoben in 0.1.3 (Relay).** **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
 15. **Falscher Lobbycode moeglich.** `getLocalIPAdress` nimmt die erste IPv4-Adresse. Mit VirtualBox, Hyper-V oder VPN ist das der falsche Adapter.
 16. **Blickrichtung nach Respawn zufaellig.** `Playermanager.spawn` setzt `LookRotation(-(0, y, 0))`, also senkrecht. `playerlooking.lookTowardsCenter` liest daraus einen sinnlosen Winkel. Gemeint war vermutlich der Blick zur Mapmitte.
 17. **Spawnpunkte ungeprueft.** Zufaellig in der Box (auch in der Hoehe), ohne Pruefung auf andere Spieler in der Naehe.

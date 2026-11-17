@@ -1,10 +1,15 @@
 using System;
 using System.Collections;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
+using Unity.Networking.Transport.Relay;
+using Unity.Services.Authentication;
+using Unity.Services.Core;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
 using UnityEngine;
 
 public class ConnectionManager : NetworkBehaviour
@@ -12,6 +17,16 @@ public class ConnectionManager : NetworkBehaviour
 	public NetworkManager networkManager;
 
 	public NetworkVariable<int> chosenMap;
+
+	// Wie viele Gaeste ein Online-Host aufnimmt (ohne den Host selbst).
+	private const int ONLINE_MAX_GAESTE = 9;
+
+	// Gerade eine Online-Runde ueber Relay? Dann muss der Transport danach zurueck auf
+	// direktes UDP, damit LAN wieder genau so laeuft wie vorher.
+	private bool onlineAktiv;
+
+	// Verhindert doppelte Klicks, waehrend Anmeldung und Relay noch laufen.
+	private bool onlineStartLaeuft;
 
 	private void Awake()
 	{
@@ -67,35 +82,112 @@ public class ConnectionManager : NetworkBehaviour
 		return shortIP;
 	}
 
-	public string GlobalconnectAsHost(int pMap, ushort port = 7777)
+	// Online-Runden laufen ueber Unity Relay: Host und Gaeste verbinden sich mit einem
+	// Relay-Server von Unity, niemand braucht eine Portfreigabe. Der Lobbycode ist der
+	// Join-Code von Relay. Die LAN-Methoden oben bleiben davon unberuehrt.
+	public async void OnlineHosten(int pMap)
 	{
-		if (networkManager.IsClient || networkManager.IsServer || networkManager.IsHost)
+		if (onlineStartLaeuft || networkManager.IsClient || networkManager.IsServer || networkManager.IsHost)
 		{
-			return "";
+			return;
 		}
-		string globalIPAddress = getGlobalIPAddress();
-		if (globalIPAddress != "")
+		onlineStartLaeuft = true;
+		try
 		{
-			networkManager.GetComponent<UnityTransport>().ConnectionData.Address = globalIPAddress;
-			networkManager.GetComponent<UnityTransport>().ConnectionData.Port = port;
+			await Anmelden();
+			Allocation zuteilung = await RelayService.Instance.CreateAllocationAsync(ONLINE_MAX_GAESTE);
+			string joinCode = await RelayService.Instance.GetJoinCodeAsync(zuteilung.AllocationId);
+			onlineAktiv = true;
+			// "dtls": verschluesselte Verbindung zum Relay-Server
+			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(zuteilung, "dtls"));
+			Manager.Instance.setzeLobbycode(joinCode);
 			networkManager.StartHost();
+			chosenMap.Value = pMap;
+			StartCoroutine(waitForConnection());
 		}
-		chosenMap.Value = pMap;
-		StartCoroutine(waitForConnection());
-		return globalIPAddress;
+		catch (Exception fehler)
+		{
+			OnlineFehlgeschlagen(fehler);
+		}
+		finally
+		{
+			onlineStartLaeuft = false;
+		}
 	}
 
-	public string GlobalconnectToHost(string longIP6, ushort port = 7777)
+	public async void OnlineBeitreten(string joinCode)
 	{
+		if (onlineStartLaeuft || networkManager.IsClient || networkManager.IsServer || networkManager.IsHost)
+		{
+			return;
+		}
+		onlineStartLaeuft = true;
+		try
+		{
+			// Join-Codes sind Grossbuchstaben. Das Eingabefeld kann ein unsichtbares
+			// Leerzeichen (U+200B) enthalten.
+			string code = (joinCode ?? "").Replace("​", "").Trim().ToUpperInvariant();
+			await Anmelden();
+			JoinAllocation zuteilung = await RelayService.Instance.JoinAllocationAsync(code);
+			onlineAktiv = true;
+			networkManager.GetComponent<UnityTransport>().SetRelayServerData(new RelayServerData(zuteilung, "dtls"));
+			Manager.Instance.setzeLobbycode(code);
+			networkManager.StartClient();
+			StartCoroutine(waitForConnection());
+		}
+		catch (Exception fehler)
+		{
+			OnlineFehlgeschlagen(fehler);
+		}
+		finally
+		{
+			onlineStartLaeuft = false;
+		}
+	}
+
+	private static async Task Anmelden()
+	{
+		if (UnityServices.State == ServicesInitializationState.Uninitialized)
+		{
+			// Eigenes Profil fuer jeden Programmstart: Zwei Instanzen auf einem PC (ParrelSync,
+			// zwei Builds) teilen sonst dieselbe anonyme Anmeldung und stoeren sich.
+			InitializationOptions optionen = new InitializationOptions().SetProfile("s" + UnityEngine.Random.Range(0, int.MaxValue));
+			await UnityServices.InitializeAsync(optionen);
+		}
+		if (!AuthenticationService.Instance.IsSignedIn)
+		{
+			await AuthenticationService.Instance.SignInAnonymouslyAsync();
+		}
+	}
+
+	private void OnlineFehlgeschlagen(Exception fehler)
+	{
+		// Haeufigste Ursachen: Projekt nicht mit Unity Cloud verknuepft, Relay im Dashboard
+		// nicht aktiviert, kein Internet, falscher Join-Code.
+		Debug.LogWarning("Online-Verbindung fehlgeschlagen: " + fehler.Message);
 		if (networkManager.IsClient || networkManager.IsServer || networkManager.IsHost)
 		{
-			return "";
+			stopNetwork();
 		}
-		networkManager.GetComponent<UnityTransport>().ConnectionData.Address = longIP6;
-		networkManager.GetComponent<UnityTransport>().ConnectionData.Port = port;
-		networkManager.StartClient();
-		StartCoroutine(waitForConnection());
-		return longIP6;
+		else
+		{
+			OnlineZuruecksetzen();
+		}
+		UIManager.Instance.connectionFailed();
+	}
+
+	private void OnlineZuruecksetzen()
+	{
+		if (!onlineAktiv)
+		{
+			return;
+		}
+		onlineAktiv = false;
+		// SetConnectionData schaltet das Protokoll zurueck auf direktes UDP. Die Adressdaten
+		// bleiben dabei genau so, wie sie waren.
+		UnityTransport transport = networkManager.GetComponent<UnityTransport>();
+		UnityTransport.ConnectionAddressData daten = transport.ConnectionData;
+		transport.SetConnectionData(daten.Address, daten.Port, daten.ServerListenAddress);
 	}
 
 	private IEnumerator waitForConnection()
@@ -132,6 +224,8 @@ public class ConnectionManager : NetworkBehaviour
 			yield return null;
 		}
 		chosenMap.Value = 0;
+		// Erst nach dem Herunterfahren: Bei LAN-Runden tut das nichts.
+		OnlineZuruecksetzen();
 	}
 
 	private void OnConnectedToServer()
@@ -161,21 +255,6 @@ public class ConnectionManager : NetworkBehaviour
 			}
 		}
 		throw new Exception("No network adapters with an IPv4 address in the system!");
-	}
-
-	private string getGlobalIPAddress()
-	{
-		try
-		{
-			using StreamReader streamReader = new StreamReader(((HttpWebResponse)WebRequest.Create("https://api64.ipify.org/").GetResponse()).GetResponseStream());
-			string result = streamReader.ReadToEnd();
-			streamReader.Close();
-			return result;
-		}
-		catch (Exception)
-		{
-			return "";
-		}
 	}
 
 	private string[] getIPv4(string ip)
