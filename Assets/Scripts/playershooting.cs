@@ -23,6 +23,11 @@ public class playershooting : NetworkBehaviour
 
 	public bool _isDead => GetComponent<Playermanager>().isDead.Value;
 
+	// Nur auf dem Server: Ist der Tod dieses Spielers schon gezaehlt? Bis er wieder lebt,
+	// zaehlen weitere Treffer nicht. Sonst bringt Dauerfeuer mehrere Kills, weil weitere
+	// Schuesse ankommen, bevor das Opfer selbst gemerkt hat, dass es tot ist.
+	private bool _todGezaehlt;
+
 	private void Start()
 	{
 		playerInput = Manager.Instance.playerInput;
@@ -30,6 +35,33 @@ public class playershooting : NetworkBehaviour
 		playermanager = GetComponent<Playermanager>();
 		cam = GetComponent<playerlooking>().cameraTransform;
 		_timeSinceShot = coolDown;
+	}
+
+	public override void OnNetworkSpawn()
+	{
+		base.OnNetworkSpawn();
+		if (base.IsServer)
+		{
+			GetComponent<Playermanager>().isDead.OnValueChanged += todGeaendert;
+		}
+	}
+
+	public override void OnNetworkDespawn()
+	{
+		if (base.IsServer)
+		{
+			GetComponent<Playermanager>().isDead.OnValueChanged -= todGeaendert;
+		}
+		base.OnNetworkDespawn();
+	}
+
+	private void todGeaendert(bool vorher, bool jetzt)
+	{
+		// Wieder am Leben (Respawn): Der naechste Treffer zaehlt wieder.
+		if (!jetzt)
+		{
+			_todGezaehlt = false;
+		}
 	}
 
 	private void Update()
@@ -88,15 +120,38 @@ public class playershooting : NetworkBehaviour
 		// verhindert in Wahrheit nur die Layer-Maske (eigener Spieler liegt auf Layer 2).
 		if (!(hitPlayer == playermanager))
 		{
-			playermanager.shotOtherPlayer(hitPlayer.name);
+			// Den Kill zaehlt der Schuetze erst, wenn der Server den Treffer annimmt
+			// (killBestaetigtClientRPC). Treffer auf schon tote Spieler zaehlen nicht.
 			hitPlayer.playerShotServerRPC(base.name, hitPlayer.name);
 		}
 	}
 
+	// Laeuft am getroffenen Spieler auf dem Server.
 	[ServerRpc(RequireOwnership = false)]
-	public void playerShotServerRPC(string shooter, string victim)
+	public void playerShotServerRPC(string shooter, string victim, ServerRpcParams rpcParams = default)
 	{
+		if (_todGezaehlt)
+		{
+			return;
+		}
+		_todGezaehlt = true;
 		receiveShotClientRPC(shooter, victim);
+		// Den Schuetzen ueber seine Client-ID finden, nicht ueber den Namen (der kann sich aendern).
+		NetworkClient schuetze;
+		if (base.NetworkManager.ConnectedClients.TryGetValue(rpcParams.Receive.SenderClientId, out schuetze) && schuetze.PlayerObject != null)
+		{
+			schuetze.PlayerObject.GetComponent<playershooting>().killBestaetigtClientRPC(victim);
+		}
+	}
+
+	// Laeuft am Schuetzen. Nur sein Besitzer darf seine Kills hochzaehlen.
+	[ClientRpc]
+	public void killBestaetigtClientRPC(string victim)
+	{
+		if (base.IsOwner)
+		{
+			playermanager.shotOtherPlayer(victim);
+		}
 	}
 
 	[ClientRpc]

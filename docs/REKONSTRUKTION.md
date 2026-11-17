@@ -115,7 +115,7 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 
 Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 
-13. **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
+13. **Behoben in 0.1.4.** **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
 14. **Behoben in 0.1.3 (Relay).** **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
 15. **Falscher Lobbycode moeglich.** `getLocalIPAdress` nimmt die erste IPv4-Adresse. Mit VirtualBox, Hyper-V oder VPN ist das der falsche Adapter.
 16. **Blickrichtung nach Respawn zufaellig.** `Playermanager.spawn` setzt `LookRotation(-(0, y, 0))`, also senkrecht. `playerlooking.lookTowardsCenter` liest daraus einen sinnlosen Winkel. Gemeint war vermutlich der Blick zur Mapmitte.
