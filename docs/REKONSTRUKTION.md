@@ -127,12 +127,12 @@ Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 ## Unity-Projekt wieder aufsetzen
 
 Im Repo liegt schon das Geruest: `Packages/manifest.json` (alle Pakete, dazu
-ParrelSync), `ProjectSettings/ProjectVersion.txt` (2021.3.4f1), die Layer 8 =
+ParrelSync), `ProjectSettings/ProjectVersion.txt` (2021.3.45f2, siehe README), die Layer 8 =
 `Enemy` und 9 = `EnemyBody` in `ProjectSettings/TagManager.asset`, Skripte,
 Modelle, Sprites und Input Actions unter `Assets/`. Szene und Prefabs baut ein
 Editor-Skript aus den Daten in `docs/` (`Assets/Editor/SzeneAufbauen.cs`).
 
-1. Ordner im Unity Hub mit *Add project from disk* hinzufuegen und mit 2021.3.4f1 oeffnen.
+1. Ordner im Unity Hub mit *Add project from disk* hinzufuegen und mit 2021.3.45f2 oeffnen.
    Die Pakete laedt Unity beim ersten Oeffnen selbst. Fragt Unity, ob das neue Input
    System aktiviert werden soll: **Yes** (Unity startet neu).
 2. Menue **Shootout > Szene und Prefabs aufbauen**. Fehlen die TextMeshPro Essentials,

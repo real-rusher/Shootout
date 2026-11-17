@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.4
+Aktuell: Version 0.1.5
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -53,8 +53,10 @@ Das Unity-Projekt liegt direkt im Wurzelordner:
    ```
    Der letzte Befehl schaltet die Pruefung vor jedem Commit ein. In `.githooks/` liegen
    auch die Hooks von Git LFS, damit Bilder und Modelle danach weiter hochgeladen werden.
-2. **Unity 2021.3.4f1** ueber den Unity Hub installieren (Archiv:
-   unity.com/releases/editor/archive), im Hub *Add project from disk* und den Ordner waehlen.
+2. **Unity 2021.3.45f2** ueber den Unity Hub installieren (Eingabeaufforderung:
+   `start unityhub://2021.3.45f2/88f88f591b2e`). Nicht 2021.3.4f1 nehmen, mit der das
+   Original gebaut wurde: Unity meldet dafuer eine Sicherheitsluecke in gebauten Spielen,
+   45f2 ist die behobene Version derselben Reihe. Danach im Hub *Add project from disk* und den Ordner waehlen.
    Beim ersten Oeffnen laedt Unity alle Pakete. Die Frage nach dem neuen Input System mit
    **Yes** beantworten.
 3. In Unity pruefen: *Project Settings > Editor*: Asset Serialization = **Force Text**,
@@ -65,7 +67,7 @@ Das Unity-Projekt liegt direkt im Wurzelordner:
    ```
    [merge "unityyamlmerge"]
        name = Unity SmartMerge
-       driver = 'C:/Program Files/Unity/Hub/Editor/2021.3.4f1/Editor/Data/Tools/UnityYAMLMerge.exe' merge -p %O %B %A %A
+       driver = 'C:/Program Files/Unity/Hub/Editor/2021.3.45f2/Editor/Data/Tools/UnityYAMLMerge.exe' merge -p %O %B %A %A
        recursive = binary
    ```
 5. **Mehrspieler im Editor testen:** ParrelSync ist schon im Manifest. Menue
@@ -117,6 +119,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.5 | Editor-Version 2021.3.45f2 statt 2021.3.4f1 (Unity meldet fuer 4f1 eine Sicherheitsluecke in gebauten Spielen). `ProjectVersion.txt` mit Revision, damit der Hub die Version erkennt. Spielcode unveraendert. |
 | 0.1.4 | **Netz:** Ein Abschuss zaehlt nur noch einmal, auch bei Dauerfeuer. Der Server nimmt pro Leben nur den ersten Treffer an und schreibt erst dann dem Schuetzen den Kill gut (neues RPC `killBestaetigtClientRPC`, `playerShotServerRPC` bekommt `ServerRpcParams`). Der Hitmarker erscheint deshalb erst nach der Bestaetigung. Dauerfeuer selbst bleibt. |
 | 0.1.3 | **Netz:** Online-Runden ueber Unity Relay (Host Global / Join Global mit Join-Code), Pakete `com.unity.services.relay` 1.2.0 und `com.unity.services.authentication` 2.7.4. Die alte Global-Verbindung ueber die oeffentliche IP ist raus. LAN unveraendert, nach einer Online-Runde stellt `ConnectionManager` den Transport zurueck auf direktes UDP. Braucht einmal die Einrichtung unter "Online spielen". |
 | 0.1.2 | Editor-Skript `Assets/Editor/SzeneAufbauen.cs` (Menue Shootout > Szene und Prefabs aufbauen): baut Szene, UI und die Prefabs `player`, `Laser`, `Row` und beide Maps aus `docs/`. Ungetestet in Unity, aber gegen TextMeshPro und Input System kompiliert. **Netz:** Szene und Player-Prefab entstehen neu, Host und Client brauchen denselben Stand. |
