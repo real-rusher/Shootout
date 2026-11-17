@@ -1,0 +1,13 @@
+name: Pruefung
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  foto-und-schluessel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Kein Foto, keine Zugangsdaten
+        run: sh tools/pruefe_verbotenes.sh --alle

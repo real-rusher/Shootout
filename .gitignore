@@ -1,0 +1,56 @@
+# Unity: alles, was Unity selbst neu erzeugt, bleibt draussen.
+# Das Unity-Projekt liegt direkt im Wurzelordner (Assets/, Packages/, ProjectSettings/).
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# ParrelSync-Klone fuer den Mehrspieler-Test im Editor
+*_clone_*/
+
+# Von Unity und IDEs erzeugt
+.vs/
+.vscode/
+.idea/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-buildid.txt
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+
+# Fertige Builds nicht ins Repo, sondern als ZIP verteilen
+*.apk
+*.aab
+*.unitypackage
+*.app
+*.exe
+*.zip
+
+# Zugangsdaten des Google-Sheets-Plugins (siehe CLAUDE.md, Regel 2)
+GSTU_Config.asset
+GSTU_Config.asset.meta
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini

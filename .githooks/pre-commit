@@ -1,0 +1,3 @@
+#!/bin/sh
+# Einschalten (einmal pro Klon): git config core.hooksPath .githooks
+exec sh "$(git rev-parse --show-toplevel)/tools/pruefe_verbotenes.sh"
