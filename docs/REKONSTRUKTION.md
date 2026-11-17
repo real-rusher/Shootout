@@ -129,17 +129,32 @@ Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 Im Repo liegt schon das Geruest: `Packages/manifest.json` (alle Pakete, dazu
 ParrelSync), `ProjectSettings/ProjectVersion.txt` (2021.3.4f1), die Layer 8 =
 `Enemy` und 9 = `EnemyBody` in `ProjectSettings/TagManager.asset`, Skripte,
-Modelle, Sprites und Input Actions unter `Assets/`. Es fehlen Szene und Prefabs.
+Modelle, Sprites und Input Actions unter `Assets/`. Szene und Prefabs baut ein
+Editor-Skript aus den Daten in `docs/` (`Assets/Editor/SzeneAufbauen.cs`).
 
 1. Ordner im Unity Hub mit *Add project from disk* hinzufuegen und mit 2021.3.4f1 oeffnen.
    Die Pakete laedt Unity beim ersten Oeffnen selbst. Fragt Unity, ob das neue Input
    System aktiviert werden soll: **Yes** (Unity startet neu).
-2. Sprites in `Assets/Sprites/` markieren, im Inspector *Texture Type* = **Sprite (2D and UI)**.
-3. GLBs pruefen (glTFast importiert sie). Die Maps brauchen MeshCollider auf allen Teilen (im Original hatte jedes Mesh einen) und an der Wurzel die Trigger-BoxCollider fuer die Spawn-Zonen aus `docs/werte.json`. Prefabs `player`, `Laser` und `Row` nach `docs/hierarchy.txt` nachbauen, Werte aus `docs/werte.json` eintragen.
-4. Szene nach `docs/hierarchy.txt` aufbauen, das UI nach `docs/ui_layout.json`. Die Button-Verdrahtung steht dort unter `Button.onEvent`.
-5. Player-Prefab im NetworkManager als Player Prefab und in der Prefab-Liste eintragen. `Spielversion` auf dasselbe GameObject wie den NetworkManager legen.
+2. Menue **Shootout > Szene und Prefabs aufbauen**. Fehlen die TextMeshPro Essentials,
+   importiert das Skript sie und bittet, das Menue noch einmal aufzurufen.
+3. Ergebnis: `Assets/Scenes/SampleScene.unity` (auch in den Build Settings), Prefabs
+   `player`, `Laser`, `Row`, `Map_Zimmer`, `Map_InfoRaum` in `Assets/Prefabs/`, Netz und
+   Material des Lasers in `Assets/Erzeugt/`, `Assets/DefaultNetworkPrefabs.asset`.
+   Alles mit den `.meta`-Dateien committen.
 
-**Alternative:** Mit AssetRipper (Windows) laesst sich aus dem Original-Build ein komplettes Unity-Projekt exportieren. Danach unbedingt: GameObject `Square` aus dem Info-Raum-Prefab loeschen, Sprite und Textur `InfoEasterEgg` loeschen, `GSTU_Config` leeren oder loeschen. Erst dann Szene und Prefabs in dieses Repo uebernehmen. Die Skripte von AssetRipper durch die aus `Assets/Scripts/` ersetzen, dabei die `.meta`-Dateien von AssetRipper behalten, sonst verlieren Szene und Prefabs ihre Skript-Verweise. `tools/pruefe_verbotenes.sh` blockiert den Commit, falls `InfoEasterEgg` oder `GSTU_Config` noch irgendwo stehen.
+Was das Skript aus den Daten uebernimmt: das ganze UI mit Positionen, Farben, Texten,
+Sprites und allen 28 Knopf-Aufrufen, alle Tuning-Werte, Spawn-Zonen, Lichtstaerken,
+Layer, Verdrahtung der Skriptfelder. Was es **schaetzt**, weil der Build es nicht hergibt
+(im Code mit `GESCHAETZT` markiert): Position der Lichter und der Menue-Kamera, Dicke
+des Laserstrahls, Lage des Laserpointers an der Kamera, Groesse des Namensschilds,
+Bezugsaufloesung des Canvas (1920 x 1080). Nicht nachgebaut: die Blink-Animationen der
+Texte ("Press space ..."), die vier BoxCollider am Game Manager (im Code ungenutzt) und
+der Inhalt des Scrollbereichs in den Einstellungen.
+
+Ein zweiter Aufruf baut alles neu und ueberschreibt Aenderungen von Hand. Sobald die
+Szene im Repo ist, wird sie im Editor weiter bearbeitet und das Skript nicht mehr gebraucht.
+
+**Alternative zum Skript:** Mit AssetRipper (Windows) laesst sich aus dem Original-Build ein komplettes Unity-Projekt exportieren. Danach unbedingt: GameObject `Square` aus dem Info-Raum-Prefab loeschen, Sprite und Textur `InfoEasterEgg` loeschen, `GSTU_Config` leeren oder loeschen. Erst dann Szene und Prefabs in dieses Repo uebernehmen. Die Skripte von AssetRipper durch die aus `Assets/Scripts/` ersetzen, dabei die `.meta`-Dateien von AssetRipper behalten, sonst verlieren Szene und Prefabs ihre Skript-Verweise. `tools/pruefe_verbotenes.sh` blockiert den Commit, falls `InfoEasterEgg` oder `GSTU_Config` noch irgendwo stehen.
 
 ## Grenzen der Rekonstruktion
 

@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.1
+Aktuell: Version 0.1.2
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -14,13 +14,13 @@ Wie das Original funktioniert und welche Fehler bekannt sind: `docs/REKONSTRUKTI
 ## Stand
 
 Skripte, Modelle, Sprites, Input Actions, Pakete und Layer sind da. **Szene und Prefabs
-fehlen noch**, sie muessen im Editor nach `docs/hierarchy.txt` und `docs/ui_layout.json`
-nachgebaut oder per AssetRipper uebernommen werden (Anleitung in `docs/REKONSTRUKTION.md`).
-Bis dahin startet das Spiel nicht.
+erzeugt das Menue Shootout > Szene und Prefabs aufbauen** aus den Daten in `docs/`
+(Einzelheiten in `docs/REKONSTRUKTION.md`). Die erzeugten Dateien sind noch nicht im
+Repo, bis jemand das Menue einmal ausfuehrt und das Ergebnis committet.
 
 Naechste Schritte:
 
-1. Szene und Prefabs herstellen, Spiel mit zwei Instanzen (ParrelSync) zum Laufen bringen.
+1. Menue ausfuehren, Ergebnis committen, Spiel mit zwei Instanzen (ParrelSync) zum Laufen bringen.
 2. Fehler beheben, die das Spiel kaputt machen: Endlosschleife, Abklingzeit, Mehrfachkills, Singletons.
 3. Treffer auf dem Server pruefen, Spieler ueber NetworkObjectId statt Namen erkennen.
 4. Neue Features (Sound, Runden, Teams, Maps).
@@ -95,5 +95,6 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.2 | Editor-Skript `Assets/Editor/SzeneAufbauen.cs` (Menue Shootout > Szene und Prefabs aufbauen): baut Szene, UI und die Prefabs `player`, `Laser`, `Row` und beide Maps aus `docs/`. Ungetestet in Unity, aber gegen TextMeshPro und Input System kompiliert. **Netz:** Szene und Player-Prefab entstehen neu, Host und Client brauchen denselben Stand. |
 | 0.1.1 | Inhalt der Rekonstruktion uebernommen: Skripte, Modelle, Sprites, Input Actions, `docs/`. Unity-Geruest: `Packages/manifest.json` (Netcode 1.14.1, Input System 1.7.0, glTFast, ParrelSync), Unity 2021.3.4f1, Layer `Enemy` und `EnemyBody`. Acht weitere bekannte Fehler in `docs/REKONSTRUKTION.md`. |
 | 0.1.0 | Repo eingerichtet: `.gitignore`, `.gitattributes` mit LFS und Unity-Merge, Pruefung auf Foto und Schluessel (Hook und GitHub Actions), `CLAUDE.md`. **Netz:** Versionspruefung beim Verbinden (`Spielversion.cs`, noch ungetestet, kommt auf das NetworkManager-Objekt). |
