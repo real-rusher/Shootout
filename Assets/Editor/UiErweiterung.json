@@ -1,67 +1,67 @@
 {
   "_hinweis": "Neues UI zusaetzlich zu docs/ui_layout.json (das bleibt die Aufzeichnung des Originals). Gleiches Format. 'vorlage' kopiert einen Knoten aus ui_layout.json, 'titel' setzt dort den Text des Kindes 'Title', 'ohneEreignisse' entfernt die Knopf-Aufrufe der Vorlage. Felder der Skripte setzt SzeneAufbauen.NeueFelderSetzen.",
-  "rects": [
-    {
-      "pfad": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a LAN Game/UI/BedRoomBtn",
-      "rect": {
-        "pos": [
-          -600,
-          20
-        ],
-        "size": [
-          560,
-          560
-        ]
-      }
-    },
-    {
-      "pfad": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a LAN Game/UI/InfoRoomBtn",
-      "rect": {
-        "pos": [
-          0,
-          20
-        ],
-        "size": [
-          560,
-          560
-        ]
-      }
-    },
-    {
-      "pfad": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a GLOBAL Game/UI/BedRoomBtn",
-      "rect": {
-        "pos": [
-          -600,
-          20
-        ],
-        "size": [
-          560,
-          560
-        ]
-      }
-    },
-    {
-      "pfad": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a GLOBAL Game/UI/InfoRoomBtn",
-      "rect": {
-        "pos": [
-          0,
-          20
-        ],
-        "size": [
-          560,
-          560
-        ]
-      }
-    }
-  ],
-  "dDayKnopf": {
-    "pos": [
-      600,
-      20
+  "rects": [],
+  "kartenKnoepfe": {
+    "_hinweis": "Map-Knoepfe in den Host-Fenstern. Ohne \"karte\" ein vorhandener Knopf, mit \"karte\" eine Kopie des Info-Raum-Knopfs fuer diese Map-Nummer.",
+    "groesse": [
+      500,
+      280
     ],
-    "size": [
-      560,
-      560
+    "leiste": 64,
+    "schrift": 40,
+    "liste": [
+      {
+        "knopf": "BedRoomBtn",
+        "titel": "Zimmer",
+        "pos": [
+          -520,
+          130
+        ]
+      },
+      {
+        "knopf": "InfoRoomBtn",
+        "titel": "Info-Raum",
+        "pos": [
+          0,
+          130
+        ]
+      },
+      {
+        "knopf": "DDayBtn",
+        "karte": 3,
+        "titel": "D-Day",
+        "pos": [
+          520,
+          130
+        ]
+      },
+      {
+        "knopf": "WuestenstadtBtn",
+        "karte": 4,
+        "titel": "Wüstenstadt",
+        "pos": [
+          -520,
+          -165
+        ]
+      },
+      {
+        "knopf": "TunnelBtn",
+        "karte": 5,
+        "titel": "Tunnel",
+        "pos": [
+          0,
+          -165
+        ]
+      },
+      {
+        "knopf": "HimmelsinselnBtn",
+        "karte": 6,
+        "titel": "Himmelsinseln",
+        "pos": [
+          520,
+          -165
+        ]
+      }
     ]
   },
   "blinken": [
@@ -1558,6 +1558,57 @@
           "color": "#ffffffff",
           "align": 2,
           "bold": true
+        }
+      }
+    },
+    {
+      "eltern": "Canvas/SettingsScreen/SettingsScroller/Viewport/VideoSettings",
+      "knoten": {
+        "vorlage": "Canvas/SettingsScreen/SettingsScroller/Viewport/VideoSettings/DisplayFPS",
+        "name": "GrafikZeile",
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            1,
+            1
+          ],
+          "pos": [
+            0,
+            -500
+          ],
+          "size": [
+            0,
+            100
+          ]
+        },
+        "titel": "Krasse Grafik (Licht, Schatten, Wasser, Effekte)"
+      }
+    },
+    {
+      "eltern": "Canvas/Game Screen",
+      "knoten": {
+        "name": "Unterwasser",
+        "active": false,
+        "rect": {
+          "anchorMin": [
+            0,
+            0
+          ],
+          "anchorMax": [
+            1,
+            1
+          ],
+          "size": [
+            0,
+            0
+          ]
+        },
+        "image": {
+          "color": "#0a5a6a59",
+          "sprite": null
         }
       }
     }

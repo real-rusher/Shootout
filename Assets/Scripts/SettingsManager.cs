@@ -43,6 +43,8 @@ public class SettingsManager : MonoBehaviour
 
 	public Toggle drittePersonSchalter;
 
+	public Toggle grafikSchalter;
+
 	// Titel der Zeile "Window Mode", im Editor mit Hinweis.
 	public TMP_Text fensterTitel;
 
@@ -102,6 +104,17 @@ public class SettingsManager : MonoBehaviour
 			invertierenSchalter.SetIsOnWithoutNotify(mausInvertiert);
 			invertierenSchalter.onValueChanged.AddListener(wert => { mausInvertiert = wert; Speichern(); });
 		}
+		if (grafikSchalter != null)
+		{
+			grafikSchalter.SetIsOnWithoutNotify(PlayerPrefs.GetInt("einstellung.grafikHoch", 0) == 1);
+			grafikSchalter.onValueChanged.AddListener(wert =>
+			{
+				PlayerPrefs.SetInt("einstellung.grafikHoch", wert ? 1 : 0);
+				PlayerPrefs.Save();
+				Grafik.Setzen(wert);
+			});
+		}
+		Grafik.Setzen(PlayerPrefs.GetInt("einstellung.grafikHoch", 0) == 1);
 		if (drittePersonSchalter != null)
 		{
 			drittePersonSchalter.SetIsOnWithoutNotify(drittePerson);

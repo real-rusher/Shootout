@@ -91,6 +91,7 @@ public static partial class SzeneAufbauen
 
 			Fortschritt("Sprites", 0.05f);
 			LayerVorschauEinrichten();
+			LayerEinrichten(LAYER_NACHBEARBEITUNG, "Nachbearbeitung");
 			// Im Editor wurden Shader beim ersten Zeigen im Hintergrund uebersetzt, bis dahin
 			// war alles kurz blau. Ohne das wartet der Editor kurz, der Ladebildschirm deckt es ab.
 			EditorSettings.asyncShaderCompilation = false;
@@ -116,8 +117,15 @@ public static partial class SzeneAufbauen
 			Fortschritt("D-Day-Map", 0.5f);
 			var dDay = DDayKarte();
 
+			Fortschritt("Wuestenstadt", 0.55f);
+			var wuestenstadt = WuestenstadtKarte();
+			Fortschritt("Tunnel", 0.6f);
+			var tunnel = TunnelKarte();
+			Fortschritt("Himmelsinseln", 0.65f);
+			var himmelsinseln = HimmelsinselnKarte();
+
 			Fortschritt("Szene", 0.7f);
-			SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum, bot, dDay);
+			SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum, bot, dDay, new[] { wuestenstadt, tunnel, himmelsinseln });
 
 			EditorUtility.ClearProgressBar();
 			EditorUtility.DisplayDialog("Shootout",
@@ -314,6 +322,10 @@ public static partial class SzeneAufbauen
 		// Die Vorschau des Kopfbild-Editors steht auf einem eigenen Layer, den sieht nur ihre Kamera.
 		kamera.cullingMask = ~(1 << LAYER_VORSCHAU);
 		kameraGo.AddComponent<AudioListener>();
+		// Grafikstufe "Hoch": Nachbearbeitung, aus, bis sie eingeschaltet wird.
+		KameraNachbearbeitung(kamera);
+		Setze(blick, "nachbearbeitungRessourcen", NachbearbeitungRessourcen());
+		Setze(blick, "nachbearbeitungLayer", (LayerMask)(1 << LAYER_NACHBEARBEITUNG));
 		var netzKamera = kameraGo.AddComponent<NetworkClientTransform>();
 		WerteSetzen(netzKamera, D(transformWerte[1]));
 		// Abweichung vom Original: Dort lief die Kamera im Weltraum mit Drehung X und Z. Netcode
@@ -474,7 +486,7 @@ public static partial class SzeneAufbauen
 	// ------------------------------------------------------------------
 	// Szene
 
-	static void SzeneBauen(Dictionary<string, object> szenenWerte, GameObject spieler, GameObject zeile, GameObject zimmer, GameObject infoRaum, GameObject bot, GameObject dDay)
+	static void SzeneBauen(Dictionary<string, object> szenenWerte, GameObject spieler, GameObject zeile, GameObject zimmer, GameObject infoRaum, GameObject bot, GameObject dDay, GameObject[] weitereKarten)
 	{
 		var szene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 		// Gleich speichern: Das NetworkObject in der Szene braucht die GUID der Szene fuer seine Kennung.
@@ -484,8 +496,15 @@ public static partial class SzeneAufbauen
 		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
 		RenderSettings.fog = false;
 
-		// Vorschaubild der D-Day-Map fuer den Knopf im Host-Fenster.
-		var dDayVorschau = DDayVorschauRendern(dDay);
+		// Vorschaubilder der neuen Maps fuer die Knoepfe im Host-Fenster (Index = Map-Nummer).
+		var vorschauen = new Dictionary<int, Sprite>
+		{
+			{ 3, DDayVorschauRendern(dDay) },
+			{ 4, KarteVorschauRendern(weitereKarten[0], KARTEN + "/VorschauWuestenstadt.png", new Vector3(-95f, 45f, -95f), new Vector3(0f, 0f, 5f), null) },
+			// Beim Tunnel ohne Decken, sonst saehe man nur Beton.
+			{ 5, KarteVorschauRendern(weitereKarten[1], KARTEN + "/VorschauTunnel.png", new Vector3(-50f, 70f, -70f), new Vector3(0f, 0f, 0f), new[] { "Decke", "Gangdecke", "Birne" }) },
+			{ 6, KarteVorschauRendern(weitereKarten[2], KARTEN + "/VorschauHimmelsinseln.png", new Vector3(-30f, 50f, -110f), new Vector3(0f, 8f, 0f), null) },
+		};
 
 		// Lichter. GESCHAETZT: Richtungen.
 		var lichter = new GameObject("Lights");
@@ -503,8 +522,11 @@ public static partial class SzeneAufbauen
 		kameraGo.tag = "MainCamera";
 		kameraGo.transform.position = new Vector3(15f, 15f, -15f);
 		kameraGo.transform.LookAt(new Vector3(-5f, 5f, 5f));
-		kameraGo.AddComponent<Camera>().cullingMask = ~(1 << LAYER_VORSCHAU);
+		var menueKamera = kameraGo.AddComponent<Camera>();
+		menueKamera.cullingMask = ~(1 << LAYER_VORSCHAU);
 		kameraGo.AddComponent<AudioListener>();
+		KameraNachbearbeitung(menueKamera);
+		NachbearbeitungVolumen();
 
 		var vorschau = KopfbildVorschauBauen();
 
@@ -563,6 +585,7 @@ public static partial class SzeneAufbauen
 		Setze(manager, "oldMapPrefab", zimmer);
 		Setze(manager, "newMapPrefab", infoRaum);
 		Setze(manager, "dDayMapPrefab", dDay);
+		Setze(manager, "weitereKartenPrefabs", weitereKarten);
 		Setze(manager, "playerInput", eingabe);
 		Setze(manager, "connectionManager", verbindung);
 		Setze(manager, "uiCam", kameraGo);
@@ -573,7 +596,7 @@ public static partial class SzeneAufbauen
 		var uiDaten = D(JsonDatei(UI_DATEN));
 		var canvasGo = UiKnoten(uiDaten, null, null, bau);
 		// Neues UI (Einstellungen, HUD, Aussehen, Host-Optionen, D-Day-Knopf) aus UiErweiterung.json.
-		UiErweitern(bau, uiDaten, dDayVorschau);
+		UiErweitern(bau, uiDaten, vorschauen);
 		var canvas = canvasGo.GetComponent<Canvas>();
 		canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 		// GESCHAETZT: Bezugsaufloesung. Die Positionen im UI passen zu 1920 x 1080.
@@ -1122,6 +1145,10 @@ public static partial class SzeneAufbauen
 			{
 				p.GetArrayElementAtIndex(i).objectReferenceValue = liste[i];
 			}
+		}
+		else if (wert is LayerMask)
+		{
+			p.intValue = ((LayerMask)wert).value;
 		}
 		else if (wert == null || wert is Object)
 		{

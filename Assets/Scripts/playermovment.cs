@@ -81,6 +81,15 @@ public class playermovment : NetworkBehaviour
 		{
 			return;
 		}
+		// Unter die Map gefallen (Himmelsinseln): neu erscheinen, ohne Tod.
+		KartenRegeln regeln = KartenRegeln.Aktuelle;
+		if (regeln != null && base.transform.position.y < regeln.absturzHoehe)
+		{
+			velocity = Vector3.zero;
+			freierFlug = false;
+			playermanager.spawn();
+			return;
+		}
 		UpdateMovement();
 		UpdatePrejump();
 		if (steuerbar)
@@ -88,6 +97,19 @@ public class playermovment : NetworkBehaviour
 			UpdateJump();
 		}
 		UpdateGravity();
+	}
+
+	// Nach einem Sprungfeld bis zur Landung ohne Luftsteuerung: Die wuerde den Schwung in
+	// gut einer Sekunde fast aufzehren, und die Flugbahn waere nicht vorhersagbar.
+	private bool freierFlug;
+
+	// Fuer Sprungfelder: setzt die Geschwindigkeit, bis zur Landung fliegt man frei.
+	public void schleudern(Vector3 geschwindigkeit)
+	{
+		velocity = geschwindigkeit;
+		freierFlug = true;
+		// Nicht im selben Bild wieder auf den Boden druecken.
+		controller.Move(Vector3.up * 0.1f);
 	}
 
 	private bool springenGedrueckt()
@@ -147,6 +169,14 @@ public class playermovment : NetworkBehaviour
 
 	private void UpdateMovement()
 	{
+		if (freierFlug)
+		{
+			if (!isGrounded || velocity.y > 0f)
+			{
+				return;
+			}
+			freierFlug = false;
+		}
 		Vector3 vector = Vector3.zero;
 		if (steuerbar)
 		{

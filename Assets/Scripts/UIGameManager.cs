@@ -62,6 +62,17 @@ public class UIGameManager : MonoBehaviour
 
 	public TMP_Text killText;
 
+	// Blaugruener Schleier unter Wasser (UnterwasserSicht).
+	public GameObject unterwasserBild;
+
+	public void zeigeUnterwasser(bool an)
+	{
+		if (unterwasserBild != null)
+		{
+			unterwasserBild.SetActive(an);
+		}
+	}
+
 	// Kurze Rueckmeldung in der Mitte (z. B. "Lobbycode kopiert").
 	public TMP_Text hinweisText;
 

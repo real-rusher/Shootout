@@ -29,16 +29,21 @@ public static partial class SzeneAufbauen
 
 	static void LayerVorschauEinrichten()
 	{
+		LayerEinrichten(LAYER_VORSCHAU, "Vorschau");
+	}
+
+	static void LayerEinrichten(int nummer, string name)
+	{
 		var tagManager = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset");
 		if (tagManager == null || tagManager.Length == 0)
 		{
 			return;
 		}
 		var so = new SerializedObject(tagManager[0]);
-		var layer = so.FindProperty("layers").GetArrayElementAtIndex(LAYER_VORSCHAU);
-		if (layer.stringValue != "Vorschau")
+		var layer = so.FindProperty("layers").GetArrayElementAtIndex(nummer);
+		if (layer.stringValue != name)
 		{
-			layer.stringValue = "Vorschau";
+			layer.stringValue = name;
 			so.ApplyModifiedPropertiesWithoutUndo();
 		}
 	}
@@ -217,40 +222,74 @@ public static partial class SzeneAufbauen
 	// ------------------------------------------------------------------
 	// Neues UI
 
-	static void UiErweitern(UiBau bau, Dictionary<string, object> uiDaten, Sprite dDayVorschau)
+	static void UiErweitern(UiBau bau, Dictionary<string, object> uiDaten, Dictionary<int, Sprite> vorschauen)
 	{
 		var voll = Path.Combine(Directory.GetParent(Application.dataPath).FullName, UI_ERWEITERUNG);
 		var daten = D(MiniJson.Lesen(File.ReadAllText(voll, Encoding.UTF8)));
 
-		// Map-Knoepfe enger, damit drei nebeneinander passen.
 		foreach (var a in L(daten["rects"]))
 		{
 			var aenderung = D(a);
 			RectSetzen(bau.Pfad((string)aenderung["pfad"]).GetComponent<RectTransform>(), D(aenderung["rect"]));
 		}
 
-		// D-Day-Knopf als Kopie des Info-Raum-Knopfs, in beiden Host-Fenstern.
+		// Map-Knoepfe in beiden Host-Fenstern: zwei Reihen zu drei. Neue Maps sind Kopien des
+		// Info-Raum-Knopfs mit eigenem Bild und eigener Nummer.
+		var kartenDaten = D(daten["kartenKnoepfe"]);
+		var groesse = V2(kartenDaten["groesse"]);
+		float leiste = F(kartenDaten["leiste"]);
+		float schrift = F(kartenDaten["schrift"]);
 		foreach (var fenster in new[] { "Host a LAN Game", "Host a GLOBAL Game" })
 		{
 			var basis = "Canvas/Start Screen/Enter Username/Lobby Screen/" + fenster + "/UI/";
-			// Die Knoepfe sind jetzt schmaler: Bild nicht verzerren, sondern beschneiden (Maske).
-			bau.Pfad(basis + "BedRoomBtn/Img").GetComponent<Image>().preserveAspect = true;
-			bau.Pfad(basis + "InfoRoomBtn/Img").GetComponent<Image>().preserveAspect = true;
 			var info = bau.Pfad(basis + "InfoRoomBtn");
-			var knopf = Object.Instantiate(info, info.transform.parent);
-			knopf.name = "DDayBtn";
-			RectSetzen(knopf.GetComponent<RectTransform>(), D(daten["dDayKnopf"]));
-			knopf.transform.Find("Img").GetComponent<Image>().sprite = dDayVorschau;
-			knopf.transform.Find("Text (TMP)").GetComponent<TMP_Text>().text = "D-Day";
-			bau.pfade[basis + "DDayBtn"] = knopf;
-			// Gleicher Aufruf wie bei den anderen Maps, nur mit Map 3. Die LAN-Methode bleibt dieselbe.
+			// Die LAN-Methode bleibt dieselbe wie im Original, nur mit anderer Map-Nummer.
 			var methode = fenster.Contains("LAN") ? "startHost" : "globalstartHost";
-			bau.ereignisse.Add(new Ereignis
+			foreach (var k in L(kartenDaten["liste"]))
 			{
-				pfad = basis + "DDayBtn",
-				ereignis = knopf.GetComponent<Button>().onClick,
-				aufruf = "Game Manager(MonoBehaviour)." + methode + "(3)"
-			});
+				var eintrag = D(k);
+				var name = (string)eintrag["knopf"];
+				GameObject knopf;
+				if (eintrag.ContainsKey("karte"))
+				{
+					int nummer = (int)F(eintrag["karte"]);
+					knopf = Object.Instantiate(info, info.transform.parent);
+					knopf.name = name;
+					knopf.transform.Find("Img").GetComponent<Image>().sprite = vorschauen[nummer];
+					bau.pfade[basis + name] = knopf;
+					bau.ereignisse.Add(new Ereignis
+					{
+						pfad = basis + name,
+						ereignis = knopf.GetComponent<Button>().onClick,
+						aufruf = "Game Manager(MonoBehaviour)." + methode + "(" + nummer + ")"
+					});
+				}
+				else
+				{
+					knopf = bau.Pfad(basis + name);
+				}
+				var rect = knopf.GetComponent<RectTransform>();
+				rect.anchoredPosition = V2(eintrag["pos"]);
+				rect.sizeDelta = groesse;
+				// Bild fuellt die Hoehe, das Seitenverhaeltnis bleibt, die Maske des Knopfs
+				// schneidet links und rechts ab (Breite absichtlich zu gross).
+				var bild = knopf.transform.Find("Img").GetComponent<RectTransform>();
+				bild.anchorMin = new Vector2(0.5f, 0f);
+				bild.anchorMax = new Vector2(0.5f, 1f);
+				bild.anchoredPosition = Vector2.zero;
+				bild.sizeDelta = new Vector2(groesse.x * 3f, 0f);
+				bild.GetComponent<Image>().preserveAspect = true;
+				// Namensleiste unten schmaler, sonst deckt sie das halbe Bild zu.
+				foreach (var teil in new[] { "Image", "Text (TMP)" })
+				{
+					var leisteRect = knopf.transform.Find(teil).GetComponent<RectTransform>();
+					leisteRect.anchoredPosition = new Vector2(0f, leiste * 0.5f);
+					leisteRect.sizeDelta = new Vector2(0f, leiste);
+				}
+				var text = knopf.transform.Find("Text (TMP)").GetComponent<TMP_Text>();
+				text.fontSize = schrift;
+				text.text = (string)eintrag["titel"];
+			}
 		}
 
 		foreach (var n in L(daten["neu"]))
@@ -450,6 +489,7 @@ public static partial class SzeneAufbauen
 		Setze(einstellungen, "lautstaerkeRegler", bau.Komponente<Slider>(v + "SoundSettings/LautstaerkeZeile/Slider"));
 		Setze(einstellungen, "invertierenSchalter", bau.Komponente<Toggle>(v + "ControllSettings/InvertierenZeile/Toggle"));
 		Setze(einstellungen, "drittePersonSchalter", bau.Komponente<Toggle>(v + "ControllSettings/DrittePersonZeile/Toggle"));
+		Setze(einstellungen, "grafikSchalter", bau.Komponente<Toggle>(v + "VideoSettings/GrafikZeile/Toggle"));
 		Setze(einstellungen, "fensterTitel", bau.Komponente<TMP_Text>(v + "VideoSettings/WindowMode/Title"));
 
 		var spielUi = canvas.GetComponent<UIGameManager>();
@@ -466,6 +506,10 @@ public static partial class SzeneAufbauen
 		Setze(spielUi, "hinweisText", bau.Komponente<TMP_Text>(g + "HinweisText"));
 		Setze(spielUi, "ladebildschirm", bau.Pfad("Canvas/Ladebildschirm"));
 		Setze(spielUi, "ladeKarteText", bau.Komponente<TMP_Text>("Canvas/Ladebildschirm/KarteTxt"));
+		// Schleier unter Wasser ganz nach hinten, damit Leben, Fadenkreuz und Menues darueber liegen.
+		var schleier = bau.Pfad("Canvas/Game Screen/Unterwasser");
+		schleier.transform.SetAsFirstSibling();
+		Setze(spielUi, "unterwasserBild", schleier);
 
 		var a = "Canvas/Start Screen/Aussehen/";
 		var editor = bau.Pfad("Canvas/Start Screen/Aussehen").GetComponent<KopfbildEditor>();

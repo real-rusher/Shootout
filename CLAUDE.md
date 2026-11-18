@@ -49,7 +49,8 @@ bekannte Fehler stehen in `README.md` und `docs/`. Lies das, bevor du Code aende
 * Zahlen zum Einstellen: Waffen in `Spiel/Waffen.cs`, Bots oben in `Spiel/BotSteuerung.cs`,
   Lobby-Standards in `Spiel/LobbyWahl.cs`.
 * Szene und Prefabs erzeugt `Assets/Editor/SzeneAufbauen*.cs` (Teile: Grundaufbau,
-  `.Erweiterung` fuer Bots, Kopfbild und neues UI, `.DDay` fuer die D-Day-Map). Neues UI steht
+  `.Erweiterung` fuer Bots, Kopfbild und neues UI, `.DDay` fuer die D-Day-Map, `.Karten` fuer
+  die Maps 4 bis 6, `.Grafik` fuer die Grafikstufe "Hoch"). Eigene Shader in `Assets/Shaders/`. Neues UI steht
   in `Assets/Editor/UiErweiterung.json` (gleiches Format wie `docs/ui_layout.json`).
 * "Lokal" heisst: der Mensch an diesem PC (`Playermanager.istLokal`). Bots gehoeren dem Host
   (`IsOwner`), sind aber nicht lokal. Neuer Code, der nur fuer den eigenen Spieler gilt,

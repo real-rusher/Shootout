@@ -29,6 +29,14 @@ public class Manager : NetworkBehaviour
 
 	public GameObject dDayMap;
 
+	// Weitere Maps ab Nummer 4 (Wuestenstadt, Tunnel, Himmelsinseln), Reihenfolge = Nummer.
+	public GameObject[] weitereKartenPrefabs = new GameObject[0];
+
+	private GameObject[] weitereKarten = new GameObject[0];
+
+	// Namen fuer den Ladebildschirm, Index = Map-Nummer.
+	private static readonly string[] KARTEN_NAMEN = { "", "Zimmer", "Info-Raum", "D-Day", "Wüstenstadt", "Tunnel", "Himmelsinseln" };
+
 	// Die Map, die gerade gespielt wird (nach getMap).
 	public GameObject aktiveKarte { get; private set; }
 
@@ -82,6 +90,21 @@ public class Manager : NetworkBehaviour
 		{
 			dDayMap = UnityEngine.Object.Instantiate(dDayMapPrefab);
 		}
+		if (weitereKarten.Length != weitereKartenPrefabs.Length)
+		{
+			weitereKarten = new GameObject[weitereKartenPrefabs.Length];
+		}
+		for (int i = 0; i < weitereKartenPrefabs.Length; i++)
+		{
+			if (weitereKarten[i] == null && weitereKartenPrefabs[i] != null)
+			{
+				weitereKarten[i] = UnityEngine.Object.Instantiate(weitereKartenPrefabs[i]);
+			}
+			if (weitereKarten[i] != null)
+			{
+				weitereKarten[i].SetActive(value: false);
+			}
+		}
 		oldMap.SetActive(value: true);
 		newMap.SetActive(value: false);
 		if (dDayMap != null)
@@ -128,8 +151,22 @@ public class Manager : NetworkBehaviour
 	public void getMap()
 	{
 		int wahl = connectionManager.chosenMap.Value;
-		GameObject gewaehlt = wahl == 1 ? oldMap : (wahl == 3 && dDayMap != null ? dDayMap : newMap);
-		foreach (GameObject karte in new[] { oldMap, newMap, dDayMap })
+		GameObject gewaehlt = newMap;
+		if (wahl == 1)
+		{
+			gewaehlt = oldMap;
+		}
+		else if (wahl == 3 && dDayMap != null)
+		{
+			gewaehlt = dDayMap;
+		}
+		else if (wahl >= 4 && wahl - 4 < weitereKarten.Length && weitereKarten[wahl - 4] != null)
+		{
+			gewaehlt = weitereKarten[wahl - 4];
+		}
+		var alle = new System.Collections.Generic.List<GameObject> { oldMap, newMap, dDayMap };
+		alle.AddRange(weitereKarten);
+		foreach (GameObject karte in alle)
 		{
 			if (karte != null && karte != gewaehlt)
 			{
@@ -138,7 +175,7 @@ public class Manager : NetworkBehaviour
 		}
 		gewaehlt.SetActive(value: true);
 		aktiveKarte = gewaehlt;
-		UIGameManager.Instance.ladenZeigen(wahl == 1 ? "Zimmer" : (wahl == 3 ? "D-Day" : "Info-Raum"));
+		UIGameManager.Instance.ladenZeigen(wahl > 0 && wahl < KARTEN_NAMEN.Length ? KARTEN_NAMEN[wahl] : "");
 		StartCoroutine(ladenAbschliessen());
 	}
 

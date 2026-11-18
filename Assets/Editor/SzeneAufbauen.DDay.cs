@@ -140,7 +140,9 @@ public static partial class SzeneAufbauen
 		meer.transform.SetParent(wurzel.transform, false);
 		meer.AddComponent<MeshFilter>().sharedMesh = AlsAsset(DDWasserNetz(), DDAY + "/Wasser.asset");
 		meer.AddComponent<MeshRenderer>().sharedMaterial = DDWasserMaterial();
-		meer.AddComponent<Wasser>();
+		var wasser = meer.AddComponent<Wasser>();
+		wasser.hochMaterial = WasserHochMaterial(DDAY);
+		wasser.unterseiteMaterial = WasserUnterseiteMaterial(DDAY);
 
 		var effekte = new GameObject("Effekte");
 		effekte.transform.SetParent(wurzel.transform, false);

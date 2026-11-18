@@ -35,6 +35,12 @@ public class playerlooking : NetworkBehaviour
 
 	private const float ZIEL_REICHWEITE = 600f;
 
+	// Fuer die Grafikstufe "Hoch": Ressourcen der Nachbearbeitung und Layer ihres Volumens
+	// (traegt das Editor-Skript ein), damit auch die Schulterkamera sie bekommt.
+	public UnityEngine.Rendering.PostProcessing.PostProcessResources nachbearbeitungRessourcen;
+
+	public LayerMask nachbearbeitungLayer;
+
 	// Original las hier immer den Zustand des eigenen Spielers, auch auf fremden Objekten.
 	public bool _isDead => playermanager.isDead.Value;
 
@@ -68,6 +74,10 @@ public class playerlooking : NetworkBehaviour
 			schulterKamera = schulter.AddComponent<Camera>();
 			schulterKamera.CopyFrom(kamera);
 			schulterKamera.enabled = false;
+			Grafik.KameraAusstatten(schulterKamera, nachbearbeitungRessourcen, nachbearbeitungLayer);
+			Grafik.Anwenden();
+			// Unterwassersicht am Objekt mit dem AudioListener, damit der Tondaempfer wirkt.
+			cameraTransform.gameObject.AddComponent<UnterwasserSicht>().blick = this;
 		}
 		else
 		{
@@ -126,6 +136,12 @@ public class playerlooking : NetworkBehaviour
 		}
 		schulterKamera.transform.position = drehpunkt + richtung / laenge * Mathf.Max(0f, frei - 0.05f);
 		schulterKamera.transform.rotation = cameraTransform.rotation;
+	}
+
+	// Position der Kamera, durch die man gerade schaut.
+	public Vector3 aktiveKameraPosition()
+	{
+		return drittePersonAktiv ? schulterKamera.transform.position : cameraTransform.position;
 	}
 
 	// Wohin ein Schuss von start aus gehen muss, um das Fadenkreuz zu treffen. In der Ich-Sicht
