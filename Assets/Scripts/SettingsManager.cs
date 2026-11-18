@@ -41,6 +41,11 @@ public class SettingsManager : MonoBehaviour
 
 	public Toggle invertierenSchalter;
 
+	public Toggle drittePersonSchalter;
+
+	// Titel der Zeile "Window Mode", im Editor mit Hinweis.
+	public TMP_Text fensterTitel;
+
 	public static bool fpsAnzeigen;
 
 	public static bool mausInvertiert;
@@ -48,6 +53,9 @@ public class SettingsManager : MonoBehaviour
 	public static bool fremdeKopfbilder = true;
 
 	public static float lautstaerke = 0.8f;
+
+	// Sicht ueber die rechte Schulter statt Ich-Perspektive.
+	public static bool drittePerson;
 
 	// Wird ausgeloest, wenn sich "Bilder anderer Spieler" aendert (Kopfbild hoert zu).
 	public static event System.Action KopfbildEinstellungGeaendert;
@@ -94,6 +102,23 @@ public class SettingsManager : MonoBehaviour
 			invertierenSchalter.SetIsOnWithoutNotify(mausInvertiert);
 			invertierenSchalter.onValueChanged.AddListener(wert => { mausInvertiert = wert; Speichern(); });
 		}
+		if (drittePersonSchalter != null)
+		{
+			drittePersonSchalter.SetIsOnWithoutNotify(drittePerson);
+			drittePersonSchalter.onValueChanged.AddListener(wert =>
+			{
+				drittePerson = wert;
+				Speichern();
+				// Das eigene Kopfbild ist nur ueber die Schulter zu sehen.
+				KopfbildEinstellungGeaendert?.Invoke();
+			});
+		}
+		// Fenster und Vollbild wirken nur im fertigen Spiel, im Editor bestimmt das Game-Fenster
+		// die Groesse. Sonst sieht es so aus, als waeren die Knoepfe kaputt.
+		if (fensterTitel != null && Application.isEditor)
+		{
+			fensterTitel.text += " <size=70%>(nur im fertigen Spiel)</size>";
+		}
 		if (lautstaerkeRegler != null)
 		{
 			lautstaerkeRegler.minValue = 0f;
@@ -123,6 +148,17 @@ public class SettingsManager : MonoBehaviour
 		if (changeUsernameField.isFocused)
 		{
 			checkUsernameInput();
+		}
+	}
+
+	// Escape schliesst die Einstellungen (vorher ging das nur mit "Exit"). In LateUpdate,
+	// damit dieselbe Taste nicht gleich noch das Pausemenue schliesst.
+	private void LateUpdate()
+	{
+		UnityEngine.InputSystem.Keyboard tastatur = UnityEngine.InputSystem.Keyboard.current;
+		if (settingsScreen.activeSelf && tastatur != null && tastatur.escapeKey.wasPressedThisFrame)
+		{
+			closeSettings();
 		}
 	}
 
@@ -262,6 +298,7 @@ public class SettingsManager : MonoBehaviour
 		mausInvertiert = PlayerPrefs.GetInt("einstellung.invertiert", 0) == 1;
 		fremdeKopfbilder = PlayerPrefs.GetInt("einstellung.kopfbilder", 1) == 1;
 		lautstaerke = PlayerPrefs.GetFloat("einstellung.lautstaerke", lautstaerke);
+		drittePerson = PlayerPrefs.GetInt("einstellung.drittePerson", 0) == 1;
 	}
 
 	private static void Speichern()
@@ -271,6 +308,7 @@ public class SettingsManager : MonoBehaviour
 		PlayerPrefs.SetInt("einstellung.invertiert", mausInvertiert ? 1 : 0);
 		PlayerPrefs.SetInt("einstellung.kopfbilder", fremdeKopfbilder ? 1 : 0);
 		PlayerPrefs.SetFloat("einstellung.lautstaerke", lautstaerke);
+		PlayerPrefs.SetInt("einstellung.drittePerson", drittePerson ? 1 : 0);
 		PlayerPrefs.Save();
 	}
 }

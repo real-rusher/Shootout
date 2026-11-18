@@ -209,7 +209,8 @@ public class playershooting : NetworkBehaviour
 	{
 		Waffen.Werte werte = Waffen.Hole(waffe);
 		float streuung = Mathf.Lerp(werte.streuungStehen, werte.streuungLaufen, Mathf.Clamp01(bewegung.laufAnteil));
-		Vector3 richtung = streuen(cam.forward, streuung);
+		// Ueber die Schulter zielt man auf den Punkt unter dem Fadenkreuz der Schulterkamera.
+		Vector3 richtung = streuen(blick.zielRichtung(cam.position), streuung);
 		Vector3 trefferpunkt = cam.position + richtung * MAX_REICHWEITE;
 		RaycastHit treffer;
 		if (ersterTreffer(cam.position, richtung, out treffer))

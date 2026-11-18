@@ -237,7 +237,12 @@ public class Manager : NetworkBehaviour
 
 	public void QuitApp()
 	{
+		// Application.Quit tut im Editor nichts, dort deshalb Play beenden.
+#if UNITY_EDITOR
+		UnityEditor.EditorApplication.isPlaying = false;
+#else
 		Application.Quit();
+#endif
 	}
 
 }

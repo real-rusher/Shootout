@@ -62,6 +62,9 @@ public class UIGameManager : MonoBehaviour
 
 	public TMP_Text killText;
 
+	// "Team wechseln" im Pausemenue, nur im Teammodus sichtbar.
+	public GameObject teamKnopf;
+
 	public GameObject ladebildschirm;
 
 	public TMP_Text ladeKarteText;
@@ -163,6 +166,10 @@ public class UIGameManager : MonoBehaviour
 		{
 			fadenkreuz.SetActive(!gezoomt);
 		}
+		if (teamKnopf != null)
+		{
+			teamKnopf.SetActive(Runde.Instance != null && Runde.Instance.teamModus.Value);
+		}
 		if (teamText != null)
 		{
 			Runde runde = Runde.Instance;
@@ -177,6 +184,36 @@ public class UIGameManager : MonoBehaviour
 					+ farbe2 + ">" + runde.punkteVerteidiger.Value + " " + Teams.Name(Teams.VERTEIDIGER) + "</color>\n<size=70%>Dein Team: <color=#"
 					+ farbeIch + ">" + Teams.Name(ich.team.Value) + "</color></size>";
 			}
+		}
+	}
+
+	// Klick auf "(press escape to continue)": wie Escape.
+	public void weiterSpielen()
+	{
+		if (Manager.Instance.gamestate == Manager.GameState.PausedGame && Playermanager.ownerPlayer != null && !_isDead)
+		{
+			Manager.Instance.continueGame();
+			gameUIOn();
+		}
+	}
+
+	// Klick auf "(press space to respawn)": wie die Leertaste.
+	public void respawnKlick()
+	{
+		if (Manager.Instance.gamestate == Manager.GameState.PausedGame && Playermanager.ownerPlayer != null && _isDead)
+		{
+			Manager.Instance.continueGame();
+			gameUIOn();
+			Playermanager.ownerPlayer.respawn();
+		}
+	}
+
+	public void teamWechseln()
+	{
+		if (Playermanager.ownerPlayer != null && !_isDead)
+		{
+			Playermanager.ownerPlayer.teamWechselnServerRpc();
+			weiterSpielen();
 		}
 	}
 

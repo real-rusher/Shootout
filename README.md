@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.2.2
+Aktuell: Version 0.2.3
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -40,7 +40,8 @@ Seit 0.2.0 dazugekommen (zum Ausprobieren, wie Bewegung und Spielgefuehl zu den 
 | Linksklick | Schiessen |
 | 1, 2, 3 oder Mausrad | Gewehr, SMG, Sniper |
 | Rechtsklick (Sniper) | Zoom Stufe 1, Stufe 2, aus |
-| Escape | Pause, Scoreboard |
+| Escape | Pause, Scoreboard, schliesst Einstellungen |
+| Einstellungen > Steuerung | Third Person ueber die rechte Schulter |
 | Leertaste nach dem Tod | Neu spawnen |
 
 Namen mit `!ad` schiessen mit jeder Waffe im Dauerfeuer (Dev-Funktion).
@@ -139,6 +140,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.2.3 | **Netz:** Team wechseln im Pausemenue (`teamWechselnServerRpc`, `aufNeueSeiteClientRpc`), Teamzuteilung bei Gleichstand zufaellig (vorher war der Host immer Alliierter). Third Person ueber die rechte Schulter (Einstellungen > Steuerung), Schuesse zielen dann auf das Fadenkreuz der Schulterkamera. Alle Knoepfe geprueft: Zurueck-Knoepfe in allen Lobby-Fenstern, "press escape to continue" und "press space to respawn" anklickbar, Escape schliesst die Einstellungen, Quit beendet im Editor Play, Fenster/Vollbild mit Hinweis "nur im fertigen Spiel". Szene neu aufbauen. |
 | 0.2.2 | Kopfbild nimmt jedes Format, das Windows oeffnen kann (WebP, GIF, BMP, TIFF, ICO, HEIC und AVIF mit Store-Erweiterung): Was Unity nicht liest, wandelt Windows ueber PowerShell und WIC in PNG um (`UI/Bildumwandlung.cs`). Uebertragen wird weiter nur PNG oder JPG. |
 | 0.2.1 | **Netz:** Kopfbild mit Lage (Hoehe, Groesse, Breite) in `bildBeginnen...Rpc`, Kamera-Drehung lokal und nur Neigung (Waffe anderer Spieler drehte sich seitlich nicht mit). Farben der Maps wie im Original (glTFast hatte sie aufgehellt), Ladebildschirm mit Shader-Vorbereitung, im Editor keine Hintergrund-Uebersetzung der Shader mehr (kein Blau). Kopfbild pro Spielinstallation (Klone teilen es nicht mehr), Lage einstellbar, Meldung nennt das echte Format (WebP als .png). Treffer- und Kill-Anzeige deutlicher mit Kill-Ton, rote Explosion beim Tod. Bots: gehen auf Gegner zu, nehmen auf D-Day die Schluchten, mit Einschuss-Waffen ungenauer und langsamer, Sniper seltener. Szene neu aufbauen. |
 | 0.2.0 | **Netz:** Drei Waffen, Leben und Schaden (Server prueft Treffer, Schuetze per Objekt-ID), Teams (`Runde`, NetworkVariables `team`, `leben`), Bots (eigenes Prefab, laufen auf dem Host), Kopfbild (wird in Stuecken uebertragen), D-Day-Map (Map 3). Menue ausgebaut (Einstellungen, Aussehen, Host-Optionen), HUD mit Leben, Waffe, Teampunkten, FPS, Zielfernrohr. Behoben: Bugs 6, 7, 11, 16, 18, 19, 20 aus `docs/REKONSTRUKTION.md`, fehlende Maps nach Verbindungsabbruch, alte Asset-Kopien nach erneutem Aufbau (unsichtbarer Laser). LAN-Verbindungscode unveraendert. Szene neu aufbauen. |

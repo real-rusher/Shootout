@@ -156,7 +156,35 @@ public class Playermanager : NetworkBehaviour
 	public void spawn()
 	{
 		// Im Teammodus im Bereich des eigenen Teams, sonst irgendwo.
-		int spawnTeam = Runde.Instance != null && Runde.Instance.teamModus.Value ? team.Value : Teams.KEINS;
+		spawnFuerTeam(Runde.Instance != null && Runde.Instance.teamModus.Value ? team.Value : Teams.KEINS);
+	}
+
+	// Pausemenue "Team wechseln": Der Server wechselt das Team und schickt den Spieler auf die
+	// neue Seite. Das neue Team geht im RPC mit, weil die NetworkVariable spaeter ankommen kann.
+	[ServerRpc]
+	public void teamWechselnServerRpc()
+	{
+		if (Runde.Instance == null || !Runde.Instance.teamModus.Value || isDead.Value)
+		{
+			return;
+		}
+		int neu = team.Value == Teams.ALLIIERTE ? Teams.VERTEIDIGER : Teams.ALLIIERTE;
+		team.Value = neu;
+		ClientRpcParams nurBesitzer = new ClientRpcParams { Send = new ClientRpcSendParams { TargetClientIds = new ulong[] { base.OwnerClientId } } };
+		aufNeueSeiteClientRpc(neu, nurBesitzer);
+	}
+
+	[ClientRpc]
+	private void aufNeueSeiteClientRpc(int neuesTeam, ClientRpcParams rpcParams = default)
+	{
+		if (base.IsOwner)
+		{
+			spawnFuerTeam(neuesTeam);
+		}
+	}
+
+	private void spawnFuerTeam(int spawnTeam)
+	{
 		Vector3 location = Spawnlocation.getLocation(spawnTeam);
 		// Blick zur Mitte der Map. Im Original stand hier LookRotation(-(0, y, 0)), also
 		// senkrecht nach unten, und die Blickrichtung nach dem Respawn war zufaellig.

@@ -81,7 +81,12 @@ public class Runde : NetworkBehaviour
 				verteidiger++;
 			}
 		}
-		return alliierte <= verteidiger ? Teams.ALLIIERTE : Teams.VERTEIDIGER;
+		// Bei Gleichstand zufaellig. Vorher bekam der Erste (also immer der Host) die Alliierten.
+		if (alliierte == verteidiger)
+		{
+			return Random.value < 0.5f ? Teams.ALLIIERTE : Teams.VERTEIDIGER;
+		}
+		return alliierte < verteidiger ? Teams.ALLIIERTE : Teams.VERTEIDIGER;
 	}
 
 	// Kein Eigenbeschuss im Teammodus.

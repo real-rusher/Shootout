@@ -261,6 +261,17 @@ public static partial class SzeneAufbauen
 			UiKnoten(knoten, bau.Pfad(eltern).transform, eltern, bau);
 		}
 
+		// Texte, die wie Knoepfe wirken ("press escape to continue"), lassen sich jetzt anklicken.
+		foreach (var k in L(daten["klickbar"]))
+		{
+			var eintrag = D(k);
+			var pfad = (string)eintrag["pfad"];
+			var ziel = bau.Pfad(pfad);
+			var knopf = ziel.AddComponent<Button>();
+			knopf.targetGraphic = ziel.GetComponent<Graphic>();
+			bau.ereignisse.Add(new Ereignis { pfad = pfad, ereignis = knopf.onClick, aufruf = (string)eintrag["aufruf"] });
+		}
+
 		// Ersatz fuer die Blink-Animationen des Originals.
 		foreach (var p in L(daten["blinken"]))
 		{
@@ -414,6 +425,8 @@ public static partial class SzeneAufbauen
 		Setze(einstellungen, "kopfbilderSchalter", bau.Komponente<Toggle>(v + "VideoSettings/KopfbilderZeile/Toggle"));
 		Setze(einstellungen, "lautstaerkeRegler", bau.Komponente<Slider>(v + "SoundSettings/LautstaerkeZeile/Slider"));
 		Setze(einstellungen, "invertierenSchalter", bau.Komponente<Toggle>(v + "ControllSettings/InvertierenZeile/Toggle"));
+		Setze(einstellungen, "drittePersonSchalter", bau.Komponente<Toggle>(v + "ControllSettings/DrittePersonZeile/Toggle"));
+		Setze(einstellungen, "fensterTitel", bau.Komponente<TMP_Text>(v + "VideoSettings/WindowMode/Title"));
 
 		var spielUi = canvas.GetComponent<UIGameManager>();
 		var g = "Canvas/Game Screen/GameUI/";
@@ -425,6 +438,7 @@ public static partial class SzeneAufbauen
 		Setze(spielUi, "fadenkreuz", bau.Pfad(g + "Crosshair"));
 		Setze(spielUi, "zielfernrohr", bau.Pfad(g + "Zielfernrohr"));
 		Setze(spielUi, "killText", bau.Komponente<TMP_Text>(g + "KillText"));
+		Setze(spielUi, "teamKnopf", bau.Pfad("Canvas/Game Screen/PauseUI/bar/TeamBtn"));
 		Setze(spielUi, "ladebildschirm", bau.Pfad("Canvas/Ladebildschirm"));
 		Setze(spielUi, "ladeKarteText", bau.Komponente<TMP_Text>("Canvas/Ladebildschirm/KarteTxt"));
 

@@ -209,9 +209,10 @@ public class Kopfbild : NetworkBehaviour
 
 	private void anzeigeAktualisieren()
 	{
-		// Das eigene Gesicht sieht man in der Ich-Perspektive nicht. Bilder anderer lassen
-		// sich in den Einstellungen abschalten.
-		anzeige.enabled = textur != null && netz != null && !playermanager.istLokal && SettingsManager.fremdeKopfbilder;
+		// Bilder anderer lassen sich in den Einstellungen abschalten.
+		// Das eigene Bild nur ueber die Schulter (Third Person) sichtbar.
+		bool erlaubt = playermanager.istLokal ? SettingsManager.drittePerson : SettingsManager.fremdeKopfbilder;
+		anzeige.enabled = textur != null && netz != null && erlaubt;
 	}
 }
 

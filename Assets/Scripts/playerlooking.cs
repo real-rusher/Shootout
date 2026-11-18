@@ -22,14 +22,31 @@ public class playerlooking : NetworkBehaviour
 
 	private Camera kamera;
 
+	// Zweite Kamera fuer die Sicht ueber die rechte Schulter (Einstellung "Third Person").
+	private Camera schulterKamera;
+
+	private playershooting schiessen;
+
+	// Lage der Schulterkamera hinter dem Kopf: rechts, etwas hoeher, nach hinten (zum Einstellen).
+	private static readonly Vector3 SCHULTER_VERSATZ = new Vector3(0.75f, 0.3f, -2.6f);
+
+	// Abstand der Kamera zu Waenden, damit sie nicht hineinschaut.
+	private const float SCHULTER_RADIUS = 0.2f;
+
+	private const float ZIEL_REICHWEITE = 600f;
+
 	// Original las hier immer den Zustand des eigenen Spielers, auch auf fremden Objekten.
 	public bool _isDead => playermanager.isDead.Value;
 
 	private void Awake()
 	{
 		playermanager = GetComponent<Playermanager>();
+		schiessen = GetComponent<playershooting>();
 		kamera = cameraTransform.GetComponent<Camera>();
 	}
+
+	// Third Person ist an, wenn eingestellt und nicht gerade mit dem Sniper gezoomt wird.
+	public bool drittePersonAktiv => schulterKamera != null && SettingsManager.drittePerson && (schiessen == null || schiessen.zoomStufe < 0);
 
 	private void Start()
 	{
@@ -45,6 +62,12 @@ public class playerlooking : NetworkBehaviour
 			switchCameraTo(cameraTransform.gameObject);
 			playermanager.gotShot += cameraStartZoom;
 			blickAusTransform();
+			GameObject schulter = new GameObject("Schulterkamera");
+			schulter.transform.SetParent(cameraTransform, false);
+			schulter.transform.localPosition = SCHULTER_VERSATZ;
+			schulterKamera = schulter.AddComponent<Camera>();
+			schulterKamera.CopyFrom(kamera);
+			schulterKamera.enabled = false;
 		}
 		else
 		{
@@ -69,8 +92,63 @@ public class playerlooking : NetworkBehaviour
 	{
 		if (playermanager.istLokal)
 		{
+			kameraModusAktualisieren();
 			updateLabels();
 		}
+	}
+
+	private void kameraModusAktualisieren()
+	{
+		if (schulterKamera == null)
+		{
+			return;
+		}
+		bool schulter = drittePersonAktiv;
+		kamera.enabled = !schulter;
+		schulterKamera.enabled = schulter;
+		if (!schulter)
+		{
+			return;
+		}
+		schulterKamera.fieldOfView = kamera.fieldOfView;
+		// Hinter Waenden naeher heran, sonst saehe man durch die Wand.
+		Vector3 drehpunkt = cameraTransform.position;
+		Vector3 wunsch = cameraTransform.TransformPoint(SCHULTER_VERSATZ);
+		Vector3 richtung = wunsch - drehpunkt;
+		float laenge = richtung.magnitude;
+		float frei = laenge;
+		foreach (RaycastHit treffer in Physics.SphereCastAll(drehpunkt, SCHULTER_RADIUS, richtung / laenge, laenge, Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+		{
+			if (treffer.collider.transform.root != base.transform.root && treffer.distance < frei)
+			{
+				frei = treffer.distance;
+			}
+		}
+		schulterKamera.transform.position = drehpunkt + richtung / laenge * Mathf.Max(0f, frei - 0.05f);
+		schulterKamera.transform.rotation = cameraTransform.rotation;
+	}
+
+	// Wohin ein Schuss von start aus gehen muss, um das Fadenkreuz zu treffen. In der Ich-Sicht
+	// einfach geradeaus, ueber die Schulter zum Punkt, auf den die Schulterkamera zeigt.
+	public Vector3 zielRichtung(Vector3 start)
+	{
+		if (!drittePersonAktiv)
+		{
+			return cameraTransform.forward;
+		}
+		Transform blickpunkt = schulterKamera.transform;
+		Vector3 ziel = blickpunkt.position + blickpunkt.forward * ZIEL_REICHWEITE;
+		RaycastHit[] treffer = Physics.RaycastAll(blickpunkt.position, blickpunkt.forward, ZIEL_REICHWEITE, LayerMask.GetMask("Default", "Enemy", "EnemyBody", "Ignore Raycast"), QueryTriggerInteraction.Ignore);
+		float naechster = float.MaxValue;
+		foreach (RaycastHit t in treffer)
+		{
+			if (t.collider.transform.root != base.transform.root && t.distance < naechster)
+			{
+				naechster = t.distance;
+				ziel = t.point;
+			}
+		}
+		return (ziel - start).normalized;
 	}
 
 	private void cameraStartZoom(Playermanager pm, string otherPlayer)

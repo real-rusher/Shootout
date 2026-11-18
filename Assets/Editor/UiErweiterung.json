@@ -1083,6 +1083,469 @@
           }
         ]
       }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/Lobby Screen/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/Lobby Screen/Join a LAN Game/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/Lobby Screen/Join a GLOBAL Game/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a LAN Game/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Start Screen/Enter Username/Lobby Screen/Host a GLOBAL Game/UI",
+      "knoten": {
+        "name": "ZurueckBtn",
+        "active": true,
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            0,
+            1
+          ],
+          "pos": [
+            170,
+            -90
+          ],
+          "size": [
+            260,
+            95
+          ]
+        },
+        "image": {
+          "color": "#ffffffff",
+          "sprite": "ext:3:124"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).revertBranch()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Zurück",
+              "size": 46,
+              "color": "#323232ff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/Game Screen/PauseUI/bar",
+      "knoten": {
+        "name": "TeamBtn",
+        "active": false,
+        "rect": {
+          "anchorMin": [
+            0,
+            0
+          ],
+          "anchorMax": [
+            0,
+            0
+          ],
+          "pos": [
+            700,
+            76
+          ],
+          "size": [
+            300,
+            90
+          ]
+        },
+        "image": {
+          "color": "#353535ff",
+          "sprite": "ext:3:118"
+        },
+        "Button": {
+          "onEvent": [
+            "Canvas(MonoBehaviour).teamWechseln()"
+          ]
+        },
+        "children": [
+          {
+            "name": "Text (TMP)",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "size": [
+                0,
+                0
+              ]
+            },
+            "text": {
+              "text": "Team wechseln",
+              "size": 34,
+              "color": "#ffffffff",
+              "align": 2,
+              "bold": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "eltern": "Canvas/SettingsScreen/SettingsScroller/Viewport/ControllSettings",
+      "knoten": {
+        "vorlage": "Canvas/SettingsScreen/SettingsScroller/Viewport/VideoSettings/DisplayFPS",
+        "name": "DrittePersonZeile",
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            1,
+            1
+          ],
+          "pos": [
+            0,
+            -400
+          ],
+          "size": [
+            0,
+            100
+          ]
+        },
+        "titel": "Third Person (über die Schulter)"
+      }
+    }
+  ],
+  "klickbar": [
+    {
+      "pfad": "Canvas/Game Screen/PauseUI/bar/ContinueTxt",
+      "aufruf": "Canvas(MonoBehaviour).weiterSpielen()"
+    },
+    {
+      "pfad": "Canvas/Game Screen/DeathUI/Bar/PressSpace",
+      "aufruf": "Canvas(MonoBehaviour).respawnKlick()"
     }
   ]
 }
