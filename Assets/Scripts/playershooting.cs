@@ -21,6 +21,12 @@ public class playershooting : NetworkBehaviour
 
 	public GameObject laser;
 
+	// Dev-Funktion: Wer diese Zeichen im Namen hat (Gross- und Kleinschreibung egal),
+	// schiesst im Dauerfeuer. Alle anderen haben die normale Abklingzeit (coolDown).
+	private const string DAUERFEUER_KENNUNG = "!ad";
+
+	private const float DAUERFEUER_ABKLINGZEIT = 0.01f;
+
 	public bool _isDead => GetComponent<Playermanager>().isDead.Value;
 
 	// Nur auf dem Server: Ist der Tod dieses Spielers schon gezaehlt? Bis er wieder lebt,
@@ -74,15 +80,21 @@ public class playershooting : NetworkBehaviour
 	{
 		if (Manager.Instance.gamestate == Manager.GameState.Game && !_isDead && base.IsOwner)
 		{
-			UIGameManager.Instance.coolDown(_timeSinceShot / coolDown);
-			// MOD: Hier stand vermutlich "_timeSinceShot >= coolDown" (coolDown = 0,7 s im Prefab).
-			// Mit 0.01f feuert der Laser praktisch dauerhaft (Vollautomatik).
-			if (fireAction.IsPressed() && _timeSinceShot >= 0.01f)
+			// Im Mod stand hier fuer alle 0.01f (Dauerfeuer). Jetzt nur noch fuer Namen mit
+			// DAUERFEUER_KENNUNG, sonst gilt coolDown aus dem Prefab (0,7 s).
+			float abklingzeit = hatDauerfeuer() ? DAUERFEUER_ABKLINGZEIT : coolDown;
+			UIGameManager.Instance.coolDown(_timeSinceShot / abklingzeit);
+			if (fireAction.IsPressed() && _timeSinceShot >= abklingzeit)
 			{
 				_timeSinceShot = 0f;
 				shoot();
 			}
 		}
+	}
+
+	private bool hatDauerfeuer()
+	{
+		return playermanager.playerNameString.IndexOf(DAUERFEUER_KENNUNG, System.StringComparison.OrdinalIgnoreCase) >= 0;
 	}
 
 	private void shoot()

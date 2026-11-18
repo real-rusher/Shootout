@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.7
+Aktuell: Version 0.1.8
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -119,6 +119,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.8 | Dauerfeuer nur noch fuer Spieler mit `!ad` im Namen (Gross- und Kleinschreibung egal, Dev-Funktion). Alle anderen schiessen mit der Abklingzeit aus dem Prefab (0,7 s), wie vor dem Mod. Der Abklingbalken richtet sich nach der jeweils geltenden Zeit. |
 | 0.1.7 | **Netz:** Laser der anderen Spieler wurden nicht oder falsch angezeigt (Treffer zaehlten trotzdem). `laserEffectServerRPC`/`laserEffectClientRPC` schicken jetzt den Trefferpunkt statt der Entfernung, jeder PC zeichnet vom Laserpointer des Schuetzen dorthin. Der Schuetze sieht seinen Laser sofort, ohne Umweg ueber den Server. |
 | 0.1.6 | **Netz:** LAN-Beitritt ging nicht. Netcode 1.14 lauscht bei leerer "Server Listen Address" nur auf 127.0.0.1, das Original (Netcode 1.0.x) auf der LAN-IP. Das Editor-Skript setzt jetzt 0.0.0.0 (alle Adressen des PCs, Port weiter 7777). LAN-Code unveraendert. Dazu: Canvas skaliert nach der Breite, Lobbycode ueberlappt nicht mehr mit "(press escape to continue)". |
 | 0.1.5 | Editor-Version 2021.3.45f2 statt 2021.3.4f1 (Unity meldet fuer 4f1 eine Sicherheitsluecke in gebauten Spielen). `ProjectVersion.txt` mit Revision, damit der Hub die Version erkennt. Spielcode unveraendert. |

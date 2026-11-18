@@ -100,7 +100,7 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 
 ## Bekannte Fehler und Schwaechen (Reihenfolge = Wichtigkeit)
 
-1. **Mod:** In `playershooting.checkForShoot` steht `_timeSinceShot >= 0.01f` statt vermutlich `>= coolDown`. Ergebnis: Dauerfeuer, der Abklingbalken ist praktisch nutzlos.
+1. **Seit 0.1.8 nur noch fuer Namen mit `!ad`.** **Mod:** In `playershooting.checkForShoot` steht `_timeSinceShot >= 0.01f` statt vermutlich `>= coolDown`. Ergebnis: Dauerfeuer, der Abklingbalken ist praktisch nutzlos.
 2. **Endlosschleife:** `ConnectionManager.waitForChosenMap` beginnt mit `while (chosenMap.Value == 0) { }` ohne `yield`. Ist der Wert beim Client noch 0, friert das Spiel ein. Muss `yield return null` in der Schleife bekommen.
 3. **Keine Server-Autoritaet:** Treffer, Kills und Deaths entscheidet jeder Client selbst. Trivial cheatbar. Fuer eine neue Version: Treffer auf dem Server pruefen, NetworkVariables nur vom Server schreiben lassen.
 4. **Spieler ueber Namen statt ueber NetworkObjectId** identifiziert. Namensaenderung waehrend des Spiels kann Treffer falsch zuordnen.
