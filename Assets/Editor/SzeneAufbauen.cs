@@ -467,6 +467,7 @@ public static partial class SzeneAufbauen
 	{
 		var bau = new UiBau();
 		var zeile = UiKnoten(D(JsonDatei(ZEILE_DATEN)), null, null, bau);
+		KlickflaechenSetzen(zeile);
 		return AlsPrefab(zeile, PREFABS + "/Row.prefab");
 	}
 
@@ -629,6 +630,8 @@ public static partial class SzeneAufbauen
 		{
 			EreignisVerdrahten(e, ziele);
 		}
+
+		KlickflaechenSetzen(canvasGo);
 
 		// Inaktive Teile erst ganz am Ende abschalten, damit beim Verdrahten alles erreichbar ist.
 		foreach (var go in bau.abschalten)

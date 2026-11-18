@@ -233,6 +233,8 @@ public class Manager : NetworkBehaviour
 	public void copyIPAdress()
 	{
 		GUIUtility.systemCopyBuffer = ownIP;
+		// Vorher passierte sichtbar nichts, der Knopf wirkte kaputt.
+		UIGameManager.Instance.zeigeHinweis("Lobbycode " + ownIP + " kopiert");
 	}
 
 	public void QuitApp()

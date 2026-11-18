@@ -1536,6 +1536,30 @@
         },
         "titel": "Third Person (über die Schulter)"
       }
+    },
+    {
+      "eltern": "Canvas/Game Screen/GameUI",
+      "knoten": {
+        "name": "HinweisText",
+        "active": false,
+        "rect": {
+          "pos": [
+            0,
+            -220
+          ],
+          "size": [
+            1200,
+            70
+          ]
+        },
+        "text": {
+          "text": "",
+          "size": 40,
+          "color": "#ffffffff",
+          "align": 2,
+          "bold": true
+        }
+      }
     }
   ],
   "klickbar": [
@@ -1546,6 +1570,10 @@
     {
       "pfad": "Canvas/Game Screen/DeathUI/Bar/PressSpace",
       "aufruf": "Canvas(MonoBehaviour).respawnKlick()"
+    },
+    {
+      "pfad": "Canvas/Game Screen/PauseUI/bar/Lobbycode",
+      "aufruf": "Game Manager(MonoBehaviour).copyIPAdress()"
     }
   ]
 }

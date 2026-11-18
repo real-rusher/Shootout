@@ -62,6 +62,11 @@ public class UIGameManager : MonoBehaviour
 
 	public TMP_Text killText;
 
+	// Kurze Rueckmeldung in der Mitte (z. B. "Lobbycode kopiert").
+	public TMP_Text hinweisText;
+
+	private float hinweisBis;
+
 	// "Team wechseln" im Pausemenue, nur im Teammodus sichtbar.
 	public GameObject teamKnopf;
 
@@ -117,6 +122,10 @@ public class UIGameManager : MonoBehaviour
 		// Hitmarker ueber eine Zeit statt pro Treffer eine Coroutine: bei der SMG kommen
 		// die Treffer schneller als die Anzeige dauert.
 		hitmarkerZeichnen();
+		if (hinweisText != null)
+		{
+			hinweisText.gameObject.SetActive(Time.unscaledTime < hinweisBis);
+		}
 
 		if (fpsText != null)
 		{
@@ -220,6 +229,16 @@ public class UIGameManager : MonoBehaviour
 	public void zeigeHitmarker()
 	{
 		zeigeHitmarker(false);
+	}
+
+	public void zeigeHinweis(string text)
+	{
+		if (hinweisText == null)
+		{
+			return;
+		}
+		hinweisText.text = text;
+		hinweisBis = Time.unscaledTime + 2f;
 	}
 
 	public void zeigeHitmarker(bool kill)

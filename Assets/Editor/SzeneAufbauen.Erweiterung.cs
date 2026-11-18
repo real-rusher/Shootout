@@ -410,6 +410,30 @@ public static partial class SzeneAufbauen
 		}
 	}
 
+	// Welche Grafiken Mausklicks auffangen. Unity setzt das fuer jede neue Grafik auf "an". Dann
+	// fangen auch unsichtbare Flaechen Klicks ab: Die Spielerliste lag im Pausemenue ueber den
+	// Knoepfen links unten, die deshalb nicht reagierten. Klicks fangen jetzt nur noch Teile von
+	// Bedienelementen und einfarbige, deckende Flaechen (Hintergrund von Fenstern, damit man nicht
+	// durch sie hindurch klickt). Bilder ohne Funktion und reine Texte lassen Klicks durch.
+	static void KlickflaechenSetzen(GameObject wurzel)
+	{
+		foreach (var grafik in wurzel.GetComponentsInChildren<Graphic>(true))
+		{
+			bool inBedienelement = false;
+			for (var t = grafik.transform; t != null; t = t.parent)
+			{
+				if (t.GetComponent<Selectable>() != null)
+				{
+					inBedienelement = true;
+					break;
+				}
+			}
+			var bild = grafik as Image;
+			bool deckenderHintergrund = bild != null && bild.sprite == null && bild.color.a >= 0.5f;
+			grafik.raycastTarget = inBedienelement || deckenderHintergrund;
+		}
+	}
+
 	// Verdrahtet die Felder der neuen und erweiterten Skripte.
 	static void NeueFelderSetzen(UiBau bau, Vorschau vorschau)
 	{
@@ -439,6 +463,7 @@ public static partial class SzeneAufbauen
 		Setze(spielUi, "zielfernrohr", bau.Pfad(g + "Zielfernrohr"));
 		Setze(spielUi, "killText", bau.Komponente<TMP_Text>(g + "KillText"));
 		Setze(spielUi, "teamKnopf", bau.Pfad("Canvas/Game Screen/PauseUI/bar/TeamBtn"));
+		Setze(spielUi, "hinweisText", bau.Komponente<TMP_Text>(g + "HinweisText"));
 		Setze(spielUi, "ladebildschirm", bau.Pfad("Canvas/Ladebildschirm"));
 		Setze(spielUi, "ladeKarteText", bau.Komponente<TMP_Text>("Canvas/Ladebildschirm/KarteTxt"));
 
