@@ -51,6 +51,10 @@ public class playerlooking : NetworkBehaviour
 		playermanager = GetComponent<Playermanager>();
 		schiessen = GetComponent<playershooting>();
 		kamera = cameraTransform.GetComponent<Camera>();
+		// Leuchtet nur auf Maps mit Taschenlampe (Tunnel), siehe KartenRegeln.
+		Taschenlampe lampe = base.gameObject.AddComponent<Taschenlampe>();
+		lampe.halter = cameraTransform;
+		lampe.figur = playermanager;
 	}
 
 	// Third Person ist an, wenn eingestellt und nicht gerade mit dem Sniper gezoomt wird.

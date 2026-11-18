@@ -8,6 +8,9 @@ public class KartenRegeln : MonoBehaviour
 	// Wer tiefer faellt (Himmelsinseln), erscheint neu an seinem Spawnpunkt.
 	public float absturzHoehe = -1000f;
 
+	// Jede Figur traegt eine Taschenlampe (Tunnel).
+	public bool taschenlampe;
+
 	private void OnEnable()
 	{
 		Aktuelle = this;

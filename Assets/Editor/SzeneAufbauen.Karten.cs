@@ -130,6 +130,19 @@ public static partial class SzeneAufbauen
 		return gruppe;
 	}
 
+	// Kollider genau nach dem sichtbaren Netz. Unitys Kapsel und Kugel passen bei ungleicher
+	// Skalierung nicht: Ein flacher Zylinder bekam eine grosse Kugel als Kollider, eine flache
+	// Kugel eine runde. Dann steht man in der Luft oder faellt durch Sichtbares.
+	static void KNetzKollider(GameObject go)
+	{
+		var alt = go.GetComponent<Collider>();
+		if (alt != null)
+		{
+			Object.DestroyImmediate(alt);
+		}
+		go.AddComponent<MeshCollider>().sharedMesh = go.GetComponent<MeshFilter>().sharedMesh;
+	}
+
 	static void KLampe(Transform eltern, Vector3 position, Color farbe, float staerke, float reichweite, Material birne, bool flackert)
 	{
 		var lampe = KGruppe(eltern, "Lampe");
@@ -209,6 +222,8 @@ public static partial class SzeneAufbauen
 		var kuppel = KFarbe("Kuppel", new Color(0.2f, 0.5f, 0.55f), 0.4f);
 
 		var wurzel = KWurzel("Wuestenstadt", new Color(0.86f, 0.78f, 0.64f), 0.004f, 1f, 1f);
+		// Falls man doch irgendwo durchfaellt: neu erscheinen statt endlos fallen.
+		wurzel.AddComponent<KartenRegeln>().absturzHoehe = -20f;
 		var boden = Klotz(wurzel.transform, "Boden", new Vector3(0f, -0.5f, 0f), new Vector3(156f, 1f, 156f), pflaster);
 		var gebaeude = KGruppe(wurzel.transform, "Gebaeude");
 		var deko = KGruppe(wurzel.transform, "Deko");
@@ -231,9 +246,13 @@ public static partial class SzeneAufbauen
 					DDSpawnZone(wurzel.transform, mitte + new Vector3(0f, 1.5f, 0f), new Vector3(14f, 0.5f, 14f), ix < 0 ? Teams.ALLIIERTE : Teams.VERTEIDIGER);
 					WsPalme(deko.transform, mitte + new Vector3(8f, 0f, 8f), zufall, palmStamm, palmBlatt);
 					WsPalme(deko.transform, mitte + new Vector3(-8f, 0f, -8f), zufall, palmStamm, palmBlatt);
+					// Kisten nur am Rand, nicht im Spawnbereich (+-7 m): Wer in einer Kiste erscheint,
+					// steckt fest oder faellt durch.
 					for (int k = 0; k < 4; k++)
 					{
-						KKiste(deko.transform, mitte + new Vector3(Zufall(zufall, -10f, 10f), 0f, Zufall(zufall, -10f, 10f)), Zufall(zufall, 1f, 1.6f), Zufall(zufall, 0f, 90f), holz);
+						float seite = k % 2 == 0 ? 1f : -1f;
+						var rand = k < 2 ? new Vector3(seite * Zufall(zufall, 9.5f, 12f), 0f, Zufall(zufall, -10f, 10f)) : new Vector3(Zufall(zufall, -6f, 6f), 0f, seite * Zufall(zufall, 9.5f, 12f));
+						KKiste(deko.transform, mitte + rand, Zufall(zufall, 1f, 1.6f), Zufall(zufall, 0f, 90f), holz);
 					}
 					continue;
 				}
@@ -273,6 +292,10 @@ public static partial class SzeneAufbauen
 			float gx = (zufall.Next(4) - 1.5f) * WS_ZELLE;
 			float z = Zufall(zufall, -70f, 70f);
 			var ort = zufall.Next(2) == 0 ? new Vector3(gx + Zufall(zufall, -3f, 3f), 0f, z) : new Vector3(z, 0f, gx + Zufall(zufall, -3f, 3f));
+			if (Mathf.Abs(Mathf.Abs(ort.x) - 2f * WS_ZELLE) < 9f && Mathf.Abs(ort.z) < 9f)
+			{
+				continue;
+			}
 			if (zufall.Next(3) == 0)
 			{
 				KFass(deko.transform, ort, holz);
@@ -317,8 +340,8 @@ public static partial class SzeneAufbauen
 			// Markise ueber einer Tuer
 			if (zufall.Next(2) == 0)
 			{
-				var markise = Klotz(haus.transform, "Markise", new Vector3(0f, 3.2f, t.w * 0.5f + 1f), new Vector3(4f, 0.1f, 2f), stoffe[zufall.Next(stoffe.Length)], new Vector3(-18f, 0f, 0f));
-				Object.DestroyImmediate(markise.GetComponent<Collider>());
+				// Mit Kollider: Man springt hoch genug, um darauf zu landen.
+				Klotz(haus.transform, "Markise", new Vector3(0f, 3.2f, t.w * 0.5f + 1f), new Vector3(4f, 0.1f, 2f), stoffe[zufall.Next(stoffe.Length)], new Vector3(-18f, 0f, 0f));
 				Klotz(haus.transform, "Tuer", new Vector3(0f, 1.2f, t.w * 0.5f + 0.03f), new Vector3(1.6f, 2.4f, 0.06f), holz);
 			}
 			// Treppe aufs Dach an der Schmalseite. Stufen niedriger als die Stufenhoehe der
@@ -357,6 +380,7 @@ public static partial class SzeneAufbauen
 		becken.transform.localPosition = mitte + new Vector3(0f, 0.5f, 0f);
 		becken.transform.localScale = new Vector3(6f, 0.5f, 6f);
 		becken.GetComponent<Renderer>().sharedMaterial = stein;
+		KNetzKollider(becken);
 		Klotz(eltern, "Brunnensaeule", mitte + new Vector3(0f, 1.8f, 0f), new Vector3(0.8f, 2.6f, 0.8f), stein);
 		// Marktstaende im Kreis
 		for (int i = 0; i < 6; i++)
@@ -372,8 +396,7 @@ public static partial class SzeneAufbauen
 				Klotz(stand.transform, "Pfosten", new Vector3(x, 1.4f, -0.8f), new Vector3(0.15f, 2.8f, 0.15f), holz);
 				Klotz(stand.transform, "Pfosten", new Vector3(x, 1.2f, 0.8f), new Vector3(0.15f, 2.4f, 0.15f), holz);
 			}
-			var dach = Klotz(stand.transform, "Stoffdach", new Vector3(0f, 2.65f, 0f), new Vector3(3.8f, 0.08f, 2f), stoffe[i % stoffe.Length], new Vector3(-12f, 0f, 0f));
-			Object.DestroyImmediate(dach.GetComponent<Collider>());
+			Klotz(stand.transform, "Stoffdach", new Vector3(0f, 2.65f, 0f), new Vector3(3.8f, 0.08f, 2f), stoffe[i % stoffe.Length], new Vector3(-12f, 0f, 0f));
 			KKiste(stand.transform, new Vector3(Zufall(zufall, -1f, 1f), 1f, 0f), 0.5f, Zufall(zufall, 0f, 45f), holz);
 		}
 		WsPalme(eltern, mitte + new Vector3(11f, 0f, 0f), zufall, stamm, blatt);
@@ -403,6 +426,7 @@ public static partial class SzeneAufbauen
 		halbkugel.transform.localPosition = mitte + new Vector3(0f, 4f, 2f);
 		halbkugel.transform.localScale = new Vector3(5.5f, 4f, 5.5f);
 		halbkugel.GetComponent<Renderer>().sharedMaterial = kuppel;
+		KNetzKollider(halbkugel);
 	}
 
 	static void WsPodest(Transform eltern, Vector3 mitte, Material stein, Material holz, System.Random zufall)
@@ -426,12 +450,14 @@ public static partial class SzeneAufbauen
 		turm.transform.localPosition = mitte + new Vector3(0f, 14f, 0f);
 		turm.transform.localScale = new Vector3(4f, 9f, 4f);
 		turm.GetComponent<Renderer>().sharedMaterial = stein;
+		KNetzKollider(turm);
 		var spitze = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 		spitze.name = "Turmkuppel";
 		spitze.transform.SetParent(eltern, false);
 		spitze.transform.localPosition = mitte + new Vector3(0f, 23.5f, 0f);
 		spitze.transform.localScale = new Vector3(4.6f, 4f, 4.6f);
 		spitze.GetComponent<Renderer>().sharedMaterial = kuppel;
+		KNetzKollider(spitze);
 	}
 
 	static void WsPalme(Transform eltern, Vector3 fuss, System.Random zufall, Material stamm, Material blatt)
@@ -494,6 +520,10 @@ public static partial class SzeneAufbauen
 		var birne = KLeuchten("Gluehbirne", new Color(1f, 0.85f, 0.55f), 3f);
 
 		var wurzel = KWurzel("Tunnel", new Color(0.04f, 0.04f, 0.05f), 0.012f, 0.15f, 0f);
+		// Taschenlampe an jeder Figur. Falls man doch irgendwo durchfaellt: neu erscheinen.
+		var regeln = wurzel.AddComponent<KartenRegeln>();
+		regeln.taschenlampe = true;
+		regeln.absturzHoehe = -20f;
 		var bau = KGruppe(wurzel.transform, "Gaenge");
 		var deko = KGruppe(wurzel.transform, "Deko");
 
@@ -628,9 +658,15 @@ public static partial class SzeneAufbauen
 					}
 					KKiste(deko.transform, mitte + new Vector3(0f, 0f, 0f), 1.6f, 20f, holz);
 				}
-				else if (zufall.Next(3) == 0)
+				else if (zufall.Next(3) == 0 && !TuSpawnKnoten(x, z))
 				{
 					KKiste(deko.transform, mitte + new Vector3(Zufall(zufall, -1.5f, 1.5f), 0f, Zufall(zufall, -1.5f, 1.5f)), Zufall(zufall, 1f, 1.4f), Zufall(zufall, 0f, 90f), holz);
+				}
+				// Eckpfosten: Wo zwei Seiten offen sind, blieb an der Ecke ein Spalt zwischen den Waenden.
+				float ecke = knoten * 0.5f + 0.25f;
+				foreach (var e in new[] { new Vector3(-1f, 0f, -1f), new Vector3(1f, 0f, -1f), new Vector3(-1f, 0f, 1f), new Vector3(1f, 0f, 1f) })
+				{
+					Klotz(bau.transform, "Eckpfosten", mitte + e * ecke + Vector3.up * hoehe * 0.5f, new Vector3(0.5f, hoehe, 0.5f), beton);
 				}
 			}
 		}
@@ -640,6 +676,13 @@ public static partial class SzeneAufbauen
 		DDSpawnZone(wurzel.transform, new Vector3(versatz - TU_ABSTAND, 1.5f, versatz), new Vector3(4f, 0.5f, 4f), Teams.VERTEIDIGER);
 		wurzel.layer = 2;
 		return AlsPrefab(wurzel, PREFABS + "/Map_Tunnel.prefab");
+	}
+
+	// Knoten mit Spawnbereich (siehe DDSpawnZone oben): dort keine Kisten.
+	static bool TuSpawnKnoten(int x, int z)
+	{
+		int letzte = TU_ZELLEN - 1;
+		return (z == 0 && (x == 0 || x == 1)) || (z == letzte && (x == letzte || x == letzte - 1));
 	}
 
 	static Vector3 abs(Vector3 v)
@@ -791,20 +834,22 @@ public static partial class SzeneAufbauen
 		deckel.transform.localScale = new Vector3(insel.radius * 2f, 0.5f, insel.radius * 2f);
 		deckel.GetComponent<Renderer>().sharedMaterial = gras;
 		// Die Kapsel des Zylinders ist oben rund, darauf stuende man schief. Deshalb ein flaches Netz.
-		Object.DestroyImmediate(deckel.GetComponent<Collider>());
-		deckel.AddComponent<MeshCollider>().sharedMesh = deckel.GetComponent<MeshFilter>().sharedMesh;
+		KNetzKollider(deckel);
 		// Felsen darunter, nach unten schmaler
 		float r = insel.radius;
 		for (int stufe = 0; stufe < 4; stufe++)
 		{
 			var kugel = GameObject.CreatePrimitive(PrimitiveType.Sphere);
 			kugel.name = "Fels";
-			Object.DestroyImmediate(kugel.GetComponent<Collider>());
 			kugel.transform.SetParent(go.transform, false);
 			float breite = r * 2f * (1f - stufe * 0.22f);
-			kugel.transform.localPosition = new Vector3(Zufall(zufall, -1f, 1f), -1.5f - stufe * r * 0.35f, Zufall(zufall, -1f, 1f));
-			kugel.transform.localScale = new Vector3(breite, r * 0.8f, breite);
+			float halbeHoehe = r * 0.4f;
+			// Oberseite knapp unter dem Gras. Vorher ragten die Felsen als graue Kuppeln ueber
+			// die Insel, ohne Kollider: Man fiel hindurch.
+			kugel.transform.localPosition = new Vector3(Zufall(zufall, -0.5f, 0.5f), -0.6f - halbeHoehe - stufe * r * 0.35f, Zufall(zufall, -0.5f, 0.5f));
+			kugel.transform.localScale = new Vector3(breite, halbeHoehe * 2f, breite);
 			kugel.GetComponent<Renderer>().sharedMaterial = fels;
+			KNetzKollider(kugel);
 		}
 	}
 
