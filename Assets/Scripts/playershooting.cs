@@ -98,20 +98,35 @@ public class playershooting : NetworkBehaviour
 			{
 				playerHit(hitInfo.collider.transform.parent.GetComponent<playershooting>());
 			}
-			laserEffectServerRPC(hitInfo.distance);
+			// Den eigenen Laser sofort zeigen. Die anderen bekommen den Trefferpunkt ueber das Netz.
+			zeigeLaser(hitInfo.point);
+			laserEffectServerRPC(hitInfo.point);
 		}
 	}
 
+	// Frueher wurde nur die Entfernung geschickt, und jeder PC rechnete den Strahl aus seiner
+	// Kopie der Kamera des Schuetzen nach. Die wird ueber das Netz nachgefuehrt und weicht ab,
+	// dann zeigte der Strahl woandershin. Jetzt geht der genaue Trefferpunkt mit.
 	[ServerRpc(RequireOwnership = false)]
-	public void laserEffectServerRPC(float camDistance)
+	public void laserEffectServerRPC(Vector3 trefferpunkt)
 	{
-		laserEffectClientRPC(camDistance);
+		laserEffectClientRPC(trefferpunkt);
 	}
 
 	[ClientRpc]
-	public void laserEffectClientRPC(float camDistance)
+	public void laserEffectClientRPC(Vector3 trefferpunkt)
 	{
-		Instantiate(laser).GetComponent<LaserEffect>().InitializeLaser(cam.position, cam.rotation, camDistance, playermanager.laserPointer.transform.position);
+		// Der Schuetze hat seinen Laser schon selbst gezeigt.
+		if (base.IsOwner)
+		{
+			return;
+		}
+		zeigeLaser(trefferpunkt);
+	}
+
+	private void zeigeLaser(Vector3 trefferpunkt)
+	{
+		Instantiate(laser).GetComponent<LaserEffect>().zeigeStrahl(playermanager.laserPointer.transform.position, trefferpunkt);
 	}
 
 	private void playerHit(playershooting hitPlayer)
