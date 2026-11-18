@@ -21,7 +21,18 @@ public class playershooting : NetworkBehaviour
 
 	public GameObject laser;
 
+	// Dev-Funktion: Wer diese Zeichen im Namen hat (Gross- und Kleinschreibung egal),
+	// schiesst im Dauerfeuer. Alle anderen haben die normale Abklingzeit (coolDown).
+	private const string DAUERFEUER_KENNUNG = "!ad";
+
+	private const float DAUERFEUER_ABKLINGZEIT = 0.01f;
+
 	public bool _isDead => GetComponent<Playermanager>().isDead.Value;
+
+	// Nur auf dem Server: Ist der Tod dieses Spielers schon gezaehlt? Bis er wieder lebt,
+	// zaehlen weitere Treffer nicht. Sonst bringt Dauerfeuer mehrere Kills, weil weitere
+	// Schuesse ankommen, bevor das Opfer selbst gemerkt hat, dass es tot ist.
+	private bool _todGezaehlt;
 
 	private void Start()
 	{
@@ -30,6 +41,33 @@ public class playershooting : NetworkBehaviour
 		playermanager = GetComponent<Playermanager>();
 		cam = GetComponent<playerlooking>().cameraTransform;
 		_timeSinceShot = coolDown;
+	}
+
+	public override void OnNetworkSpawn()
+	{
+		base.OnNetworkSpawn();
+		if (base.IsServer)
+		{
+			GetComponent<Playermanager>().isDead.OnValueChanged += todGeaendert;
+		}
+	}
+
+	public override void OnNetworkDespawn()
+	{
+		if (base.IsServer)
+		{
+			GetComponent<Playermanager>().isDead.OnValueChanged -= todGeaendert;
+		}
+		base.OnNetworkDespawn();
+	}
+
+	private void todGeaendert(bool vorher, bool jetzt)
+	{
+		// Wieder am Leben (Respawn): Der naechste Treffer zaehlt wieder.
+		if (!jetzt)
+		{
+			_todGezaehlt = false;
+		}
 	}
 
 	private void Update()
@@ -42,15 +80,21 @@ public class playershooting : NetworkBehaviour
 	{
 		if (Manager.Instance.gamestate == Manager.GameState.Game && !_isDead && base.IsOwner)
 		{
-			UIGameManager.Instance.coolDown(_timeSinceShot / coolDown);
-			// MOD: Hier stand vermutlich "_timeSinceShot >= coolDown" (coolDown = 0,7 s im Prefab).
-			// Mit 0.01f feuert der Laser praktisch dauerhaft (Vollautomatik).
-			if (fireAction.IsPressed() && _timeSinceShot >= 0.01f)
+			// Im Mod stand hier fuer alle 0.01f (Dauerfeuer). Jetzt nur noch fuer Namen mit
+			// DAUERFEUER_KENNUNG, sonst gilt coolDown aus dem Prefab (0,7 s).
+			float abklingzeit = hatDauerfeuer() ? DAUERFEUER_ABKLINGZEIT : coolDown;
+			UIGameManager.Instance.coolDown(_timeSinceShot / abklingzeit);
+			if (fireAction.IsPressed() && _timeSinceShot >= abklingzeit)
 			{
 				_timeSinceShot = 0f;
 				shoot();
 			}
 		}
+	}
+
+	private bool hatDauerfeuer()
+	{
+		return playermanager.playerNameString.IndexOf(DAUERFEUER_KENNUNG, System.StringComparison.OrdinalIgnoreCase) >= 0;
 	}
 
 	private void shoot()
@@ -66,20 +110,35 @@ public class playershooting : NetworkBehaviour
 			{
 				playerHit(hitInfo.collider.transform.parent.GetComponent<playershooting>());
 			}
-			laserEffectServerRPC(hitInfo.distance);
+			// Den eigenen Laser sofort zeigen. Die anderen bekommen den Trefferpunkt ueber das Netz.
+			zeigeLaser(hitInfo.point);
+			laserEffectServerRPC(hitInfo.point);
 		}
 	}
 
+	// Frueher wurde nur die Entfernung geschickt, und jeder PC rechnete den Strahl aus seiner
+	// Kopie der Kamera des Schuetzen nach. Die wird ueber das Netz nachgefuehrt und weicht ab,
+	// dann zeigte der Strahl woandershin. Jetzt geht der genaue Trefferpunkt mit.
 	[ServerRpc(RequireOwnership = false)]
-	public void laserEffectServerRPC(float camDistance)
+	public void laserEffectServerRPC(Vector3 trefferpunkt)
 	{
-		laserEffectClientRPC(camDistance);
+		laserEffectClientRPC(trefferpunkt);
 	}
 
 	[ClientRpc]
-	public void laserEffectClientRPC(float camDistance)
+	public void laserEffectClientRPC(Vector3 trefferpunkt)
 	{
-		Instantiate(laser).GetComponent<LaserEffect>().InitializeLaser(cam.position, cam.rotation, camDistance, playermanager.laserPointer.transform.position);
+		// Der Schuetze hat seinen Laser schon selbst gezeigt.
+		if (base.IsOwner)
+		{
+			return;
+		}
+		zeigeLaser(trefferpunkt);
+	}
+
+	private void zeigeLaser(Vector3 trefferpunkt)
+	{
+		Instantiate(laser).GetComponent<LaserEffect>().zeigeStrahl(playermanager.laserPointer.transform.position, trefferpunkt);
 	}
 
 	private void playerHit(playershooting hitPlayer)
@@ -88,15 +147,38 @@ public class playershooting : NetworkBehaviour
 		// verhindert in Wahrheit nur die Layer-Maske (eigener Spieler liegt auf Layer 2).
 		if (!(hitPlayer == playermanager))
 		{
-			playermanager.shotOtherPlayer(hitPlayer.name);
+			// Den Kill zaehlt der Schuetze erst, wenn der Server den Treffer annimmt
+			// (killBestaetigtClientRPC). Treffer auf schon tote Spieler zaehlen nicht.
 			hitPlayer.playerShotServerRPC(base.name, hitPlayer.name);
 		}
 	}
 
+	// Laeuft am getroffenen Spieler auf dem Server.
 	[ServerRpc(RequireOwnership = false)]
-	public void playerShotServerRPC(string shooter, string victim)
+	public void playerShotServerRPC(string shooter, string victim, ServerRpcParams rpcParams = default)
 	{
+		if (_todGezaehlt)
+		{
+			return;
+		}
+		_todGezaehlt = true;
 		receiveShotClientRPC(shooter, victim);
+		// Den Schuetzen ueber seine Client-ID finden, nicht ueber den Namen (der kann sich aendern).
+		NetworkClient schuetze;
+		if (base.NetworkManager.ConnectedClients.TryGetValue(rpcParams.Receive.SenderClientId, out schuetze) && schuetze.PlayerObject != null)
+		{
+			schuetze.PlayerObject.GetComponent<playershooting>().killBestaetigtClientRPC(victim);
+		}
+	}
+
+	// Laeuft am Schuetzen. Nur sein Besitzer darf seine Kills hochzaehlen.
+	[ClientRpc]
+	public void killBestaetigtClientRPC(string victim)
+	{
+		if (base.IsOwner)
+		{
+			playermanager.shotOtherPlayer(victim);
+		}
 	}
 
 	[ClientRpc]

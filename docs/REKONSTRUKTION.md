@@ -85,7 +85,7 @@ Alles haengt in einer Szene. Singletons ueber `static Instance`.
 
 1. **LAN-Host:** Eigene IPv4 wird ermittelt, Host startet auf Port 7777. Der „Lobbycode“ ist nur die **letzte Zahl der IP** (zum Beispiel `143`).
 2. **LAN-Join:** Der Client setzt die ersten drei Zahlen seiner eigenen IP vor den Code. Funktioniert also nur im selben /24-Netz.
-3. **Global:** Host holt seine oeffentliche IP von `api64.ipify.org` (kann IPv6 liefern), der Client gibt die volle IP ein. Braucht Portfreigabe, im Schulnetz praktisch nie nutzbar.
+3. **Global:** Im Original holte der Host seine oeffentliche IP von `api64.ipify.org`, der Client gab die volle IP ein (Portfreigabe noetig, funktionierte praktisch nie). Seit 0.1.3 ersetzt durch Unity Relay mit Join-Code (`ConnectionManager.OnlineHosten` / `OnlineBeitreten`).
 4. **Treffer:** Der Schuetze macht den Raycast lokal, erhoeht seine Kills selbst und schickt `playerShotServerRPC(shooter, victim)` am getroffenen Spieler. Der Server verteilt per `receiveShotClientRPC`, der Owner des Opfers erhoeht Deaths und stirbt. Spieler werden ueber **Namen als String** identifiziert.
 5. Remote-Spieler kommen auf Layer 8 (`Enemy`), ihr Koerper auf Layer 9 (`EnemyBody`). Der eigene Spieler liegt auf Layer 2 (`Ignore Raycast`), deshalb trifft man sich nicht selbst.
 
@@ -100,7 +100,7 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 
 ## Bekannte Fehler und Schwaechen (Reihenfolge = Wichtigkeit)
 
-1. **Mod:** In `playershooting.checkForShoot` steht `_timeSinceShot >= 0.01f` statt vermutlich `>= coolDown`. Ergebnis: Dauerfeuer, der Abklingbalken ist praktisch nutzlos.
+1. **Seit 0.1.8 nur noch fuer Namen mit `!ad`.** **Mod:** In `playershooting.checkForShoot` steht `_timeSinceShot >= 0.01f` statt vermutlich `>= coolDown`. Ergebnis: Dauerfeuer, der Abklingbalken ist praktisch nutzlos.
 2. **Endlosschleife:** `ConnectionManager.waitForChosenMap` beginnt mit `while (chosenMap.Value == 0) { }` ohne `yield`. Ist der Wert beim Client noch 0, friert das Spiel ein. Muss `yield return null` in der Schleife bekommen.
 3. **Keine Server-Autoritaet:** Treffer, Kills und Deaths entscheidet jeder Client selbst. Trivial cheatbar. Fuer eine neue Version: Treffer auf dem Server pruefen, NetworkVariables nur vom Server schreiben lassen.
 4. **Spieler ueber Namen statt ueber NetworkObjectId** identifiziert. Namensaenderung waehrend des Spiels kann Treffer falsch zuordnen.
@@ -115,8 +115,8 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 
 Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 
-13. **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
-14. **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
+13. **Behoben in 0.1.4.** **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
+14. **Behoben in 0.1.3 (Relay).** **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
 15. **Falscher Lobbycode moeglich.** `getLocalIPAdress` nimmt die erste IPv4-Adresse. Mit VirtualBox, Hyper-V oder VPN ist das der falsche Adapter.
 16. **Blickrichtung nach Respawn zufaellig.** `Playermanager.spawn` setzt `LookRotation(-(0, y, 0))`, also senkrecht. `playerlooking.lookTowardsCenter` liest daraus einen sinnlosen Winkel. Gemeint war vermutlich der Blick zur Mapmitte.
 17. **Spawnpunkte ungeprueft.** Zufaellig in der Box (auch in der Hoehe), ohne Pruefung auf andere Spieler in der Naehe.
@@ -127,12 +127,12 @@ Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 ## Unity-Projekt wieder aufsetzen
 
 Im Repo liegt schon das Geruest: `Packages/manifest.json` (alle Pakete, dazu
-ParrelSync), `ProjectSettings/ProjectVersion.txt` (2021.3.4f1), die Layer 8 =
+ParrelSync), `ProjectSettings/ProjectVersion.txt` (2021.3.45f2, siehe README), die Layer 8 =
 `Enemy` und 9 = `EnemyBody` in `ProjectSettings/TagManager.asset`, Skripte,
 Modelle, Sprites und Input Actions unter `Assets/`. Szene und Prefabs baut ein
 Editor-Skript aus den Daten in `docs/` (`Assets/Editor/SzeneAufbauen.cs`).
 
-1. Ordner im Unity Hub mit *Add project from disk* hinzufuegen und mit 2021.3.4f1 oeffnen.
+1. Ordner im Unity Hub mit *Add project from disk* hinzufuegen und mit 2021.3.45f2 oeffnen.
    Die Pakete laedt Unity beim ersten Oeffnen selbst. Fragt Unity, ob das neue Input
    System aktiviert werden soll: **Yes** (Unity startet neu).
 2. Menue **Shootout > Szene und Prefabs aufbauen**. Fehlen die TextMeshPro Essentials,
@@ -150,6 +150,8 @@ des Laserstrahls, Lage des Laserpointers an der Kamera, Groesse des Namensschild
 Bezugsaufloesung des Canvas (1920 x 1080). Nicht nachgebaut: die Blink-Animationen der
 Texte ("Press space ..."), die vier BoxCollider am Game Manager (im Code ungenutzt) und
 der Inhalt des Scrollbereichs in den Einstellungen.
+
+Abweichung vom Original, damit LAN mit Netcode 1.14 geht: `UnityTransport.ConnectionData.ServerListenAddress` = `0.0.0.0` (Netcode 1.0.x lauschte bei leerem Feld auf der LAN-IP, 1.14 nur auf 127.0.0.1).
 
 Ein zweiter Aufruf baut alles neu und ueberschreibt Aenderungen von Hand. Sobald die
 Szene im Repo ist, wird sie im Editor weiter bearbeitet und das Skript nicht mehr gebraucht.

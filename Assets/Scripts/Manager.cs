@@ -69,14 +69,25 @@ public class Manager : NetworkBehaviour
 		startGame();
 	}
 
+	// Online ueber Unity Relay. Den Lobbycode (Join-Code) setzt ConnectionManager per
+	// setzeLobbycode, sobald er da ist. UIManager zeigt "Connecting" schon selbst.
 	public void globalconnectAsClient(string longIP)
 	{
-		ownIP = connectionManager.GlobalconnectToHost(longIP, 7777);
+		connectionManager.OnlineBeitreten(longIP);
 	}
 
 	public void globalstartHost(int pMap)
 	{
-		ownIP = connectionManager.GlobalconnectAsHost(pMap, 7777);
+		// Anmeldung und Relay brauchen einen Moment, so lange "Connecting" zeigen.
+		// Wie beim Beitreten: erst das Map-Fenster schliessen, dann "Connecting" oeffnen.
+		UIManager.Instance.revertBranch();
+		UIManager.Instance.continueBranch("Connecting");
+		connectionManager.OnlineHosten(pMap);
+	}
+
+	public void setzeLobbycode(string code)
+	{
+		ownIP = code;
 	}
 
 	public void getMap()
