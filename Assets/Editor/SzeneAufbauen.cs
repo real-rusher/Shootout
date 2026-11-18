@@ -91,6 +91,9 @@ public static partial class SzeneAufbauen
 
 			Fortschritt("Sprites", 0.05f);
 			LayerVorschauEinrichten();
+			// Im Editor wurden Shader beim ersten Zeigen im Hintergrund uebersetzt, bis dahin
+			// war alles kurz blau. Ohne das wartet der Editor kurz, der Ladebildschirm deckt es ab.
+			EditorSettings.asyncShaderCompilation = false;
 			SpritesEinstellen();
 			ZielfernrohrErzeugen();
 
@@ -313,6 +316,14 @@ public static partial class SzeneAufbauen
 		kameraGo.AddComponent<AudioListener>();
 		var netzKamera = kameraGo.AddComponent<NetworkClientTransform>();
 		WerteSetzen(netzKamera, D(transformWerte[1]));
+		// Abweichung vom Original: Dort lief die Kamera im Weltraum mit Drehung X und Z. Netcode
+		// setzt dann die nicht uebertragene Y-Drehung fest, und die Waffe anderer Spieler blieb
+		// seitlich in einer Richtung stehen. Lokal und nur die Neigung (X) ist das, was die Kamera
+		// gegenueber der Figur wirklich tut, die Seitendrehung kommt von der Figur.
+		Setze(netzKamera, "InLocalSpace", true);
+		Setze(netzKamera, "SyncRotAngleX", true);
+		Setze(netzKamera, "SyncRotAngleY", false);
+		Setze(netzKamera, "SyncRotAngleZ", false);
 
 		// Laserpointer aus Player.glb. GESCHAETZT: Lage an der Kamera. Der Drehpunkt
 		// liegt an der Spitze, weil dort der Strahl beginnt (LaserEffect).
@@ -328,6 +339,7 @@ public static partial class SzeneAufbauen
 		{
 			Object.DestroyImmediate(c);
 		}
+		MaterialienErsetzen(modell, ERZEUGT + "/Spieler");
 
 		// Koerper: Unity-Kapsel (im Original MeshFilter + CapsuleCollider ohne eigenes Modell)
 		var koerper = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -358,6 +370,10 @@ public static partial class SzeneAufbauen
 		var kopfbild = wurzel.AddComponent<Kopfbild>();
 		Setze(kopfbild, "material", KopfbildMaterial());
 
+		// Rote Explosion beim Tod.
+		DDPartikelMaterialien();
+		Setze(verwaltung, "todesMaterial", ddFeuerMaterial);
+
 		// Eigener Spieler liegt auf "Ignore Raycast", fremde setzt Playermanager auf 8 und 9.
 		LayerSetzen(wurzel, 2);
 		return AlsPrefab(wurzel, PREFABS + "/player.prefab");
@@ -384,6 +400,7 @@ public static partial class SzeneAufbauen
 		var modell = Object.Instantiate(AssetDatabase.LoadAssetAtPath<GameObject>(glbPfad));
 		modell.name = "Modell";
 		modell.transform.SetParent(wurzel.transform, false);
+		MaterialienErsetzen(modell, ERZEUGT + "/" + prefabName);
 
 		// Im Original hatte jedes Teil einen MeshCollider.
 		foreach (var filter in modell.GetComponentsInChildren<MeshFilter>(true))

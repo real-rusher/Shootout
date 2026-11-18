@@ -60,7 +60,28 @@ public class UIGameManager : MonoBehaviour
 
 	public GameObject zielfernrohr;
 
+	public TMP_Text killText;
+
+	public GameObject ladebildschirm;
+
+	public TMP_Text ladeKarteText;
+
+	// Treffer: weiss, kurz. Kill: rot, groesser, laenger, dazu der Name in der Mitte.
+	private const float TREFFER_DAUER = 0.3f;
+
+	private const float KILL_DAUER = 0.7f;
+
+	private const float KILLTEXT_DAUER = 1.8f;
+
+	private static readonly Color KILL_FARBE = new Color(1f, 0.15f, 0.1f);
+
 	private float hitmarkerBis;
+
+	private float hitmarkerStart;
+
+	private bool hitmarkerKill;
+
+	private float killTextBis;
 
 	private float fpsGeglaettet = 60f;
 
@@ -92,7 +113,7 @@ public class UIGameManager : MonoBehaviour
 	{
 		// Hitmarker ueber eine Zeit statt pro Treffer eine Coroutine: bei der SMG kommen
 		// die Treffer schneller als die Anzeige dauert.
-		Hitmarker.SetActive(Time.time < hitmarkerBis);
+		hitmarkerZeichnen();
 
 		if (fpsText != null)
 		{
@@ -161,7 +182,71 @@ public class UIGameManager : MonoBehaviour
 
 	public void zeigeHitmarker()
 	{
-		hitmarkerBis = Time.time + 0.5f;
+		zeigeHitmarker(false);
+	}
+
+	public void zeigeHitmarker(bool kill)
+	{
+		// Ein Treffer ueberschreibt einen laufenden Kill-Marker nicht.
+		if (!kill && hitmarkerKill && Time.time < hitmarkerBis)
+		{
+			return;
+		}
+		hitmarkerKill = kill;
+		hitmarkerStart = Time.time;
+		hitmarkerBis = Time.time + (kill ? KILL_DAUER : TREFFER_DAUER);
+	}
+
+	private void hitmarkerZeichnen()
+	{
+		bool sichtbar = Time.time < hitmarkerBis;
+		Hitmarker.SetActive(sichtbar);
+		if (sichtbar)
+		{
+			// Kurz gross aufpoppen, dann auf Normalgroesse.
+			float anteil = Mathf.Clamp01((Time.time - hitmarkerStart) / 0.15f);
+			float groesse = hitmarkerKill ? Mathf.Lerp(2.6f, 1.8f, anteil) : Mathf.Lerp(1.6f, 1.15f, anteil);
+			Hitmarker.transform.localScale = Vector3.one * groesse;
+			Image bild = Hitmarker.GetComponent<Image>();
+			if (bild != null)
+			{
+				Color farbe = hitmarkerKill ? KILL_FARBE : Color.white;
+				farbe.a = Mathf.Clamp01((hitmarkerBis - Time.time) / 0.15f);
+				bild.color = farbe;
+			}
+		}
+		if (killText != null)
+		{
+			bool zeigen = Time.time < killTextBis;
+			killText.gameObject.SetActive(zeigen);
+			if (zeigen)
+			{
+				Color farbe = killText.color;
+				farbe.a = Mathf.Clamp01((killTextBis - Time.time) / 0.4f);
+				killText.color = farbe;
+			}
+		}
+	}
+
+	public void ladenZeigen(string karte)
+	{
+		if (ladebildschirm == null)
+		{
+			return;
+		}
+		ladebildschirm.SetActive(true);
+		if (ladeKarteText != null)
+		{
+			ladeKarteText.text = karte;
+		}
+	}
+
+	public void ladenVerbergen()
+	{
+		if (ladebildschirm != null)
+		{
+			ladebildschirm.SetActive(false);
+		}
 	}
 
 	private void checkEscape()
@@ -242,7 +327,12 @@ public class UIGameManager : MonoBehaviour
 	public void shotPlayer(Playermanager ownerPlayer, string affectedPlayer)
 	{
 		killsText.text = "Kills: " + ownerPlayer.kills.Value;
-		zeigeHitmarker();
+		zeigeHitmarker(true);
+		if (killText != null)
+		{
+			killText.text = "Erledigt: " + affectedPlayer;
+			killTextBis = Time.time + KILLTEXT_DAUER;
+		}
 	}
 
 	private IEnumerator animateHitmarker()

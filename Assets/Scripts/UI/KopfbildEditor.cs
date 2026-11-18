@@ -24,6 +24,17 @@ public class KopfbildEditor : MonoBehaviour
 
 	public MeshRenderer vorschauKopfbild;
 
+	// Lage am Kopf (KopfbildLage), wird sofort in der Vorschau gezeigt und gespeichert.
+	public Slider hoeheRegler;
+
+	public Slider groesseRegler;
+
+	public Slider breiteRegler;
+
+	private KopfbildLage lage;
+
+	private Mesh vorschauNetz;
+
 	// Groesse, auf die jedes Bild verkleinert wird (quadratisch). Haelt die Uebertragung klein.
 	private const int BILDGROESSE = 256;
 
@@ -37,19 +48,51 @@ public class KopfbildEditor : MonoBehaviour
 
 	private Texture2D vorschauTextur;
 
-	private void Awake()
-	{
-		// Gleiches Netz wie am Spieler, erst zur Laufzeit gesetzt (nicht in der Szene gespeichert).
-		if (vorschauKopfbild != null)
-		{
-			vorschauKopfbild.GetComponent<MeshFilter>().sharedMesh = KopfbildNetz.Holen();
-		}
-	}
-
 	private void Start()
 	{
 		waehlenKnopf.onClick.AddListener(bildWaehlen);
 		entfernenKnopf.onClick.AddListener(bildEntfernen);
+		reglerEinrichten(hoeheRegler, KopfbildLage.HOEHE_MIN, KopfbildLage.HOEHE_MAX, wert => lage.hoehe = wert);
+		reglerEinrichten(groesseRegler, KopfbildLage.GROESSE_MIN, KopfbildLage.GROESSE_MAX, wert => lage.groesse = wert);
+		reglerEinrichten(breiteRegler, KopfbildLage.BREITE_MIN, KopfbildLage.BREITE_MAX, wert => lage.breite = wert);
+	}
+
+	private void reglerEinrichten(Slider regler, float min, float max, System.Action<float> setzen)
+	{
+		if (regler == null)
+		{
+			return;
+		}
+		regler.minValue = min;
+		regler.maxValue = max;
+		regler.wholeNumbers = false;
+		regler.onValueChanged.AddListener(wert =>
+		{
+			setzen(wert);
+			KopfbildSpeicher.LageSpeichern(lage);
+			vorschauNetzAktualisieren();
+		});
+	}
+
+	private void reglerAnzeigen()
+	{
+		if (hoeheRegler != null) hoeheRegler.SetValueWithoutNotify(lage.hoehe);
+		if (groesseRegler != null) groesseRegler.SetValueWithoutNotify(lage.groesse);
+		if (breiteRegler != null) breiteRegler.SetValueWithoutNotify(lage.breite);
+	}
+
+	private void vorschauNetzAktualisieren()
+	{
+		if (vorschauKopfbild == null)
+		{
+			return;
+		}
+		if (vorschauNetz != null)
+		{
+			UnityEngine.Object.Destroy(vorschauNetz);
+		}
+		vorschauNetz = KopfbildNetz.Erzeugen(lage);
+		vorschauKopfbild.GetComponent<MeshFilter>().sharedMesh = vorschauNetz;
 	}
 
 	private void OnEnable()
@@ -68,6 +111,9 @@ public class KopfbildEditor : MonoBehaviour
 		{
 			vorschauBild.texture = ziel;
 		}
+		lage = KopfbildSpeicher.LageLaden();
+		reglerAnzeigen();
+		vorschauNetzAktualisieren();
 		vorschauLaden(KopfbildSpeicher.Laden());
 		status(Dateiauswahl.Verfuegbar ? "PNG oder JPG wählen. Andere Spieler sehen es auf deinem Kopf." : "Die Dateiauswahl gibt es nur unter Windows.");
 	}
@@ -110,11 +156,20 @@ public class KopfbildEditor : MonoBehaviour
 				status("Das Bild ist zu groß (höchstens 20 MB).");
 				return;
 			}
+			byte[] inhalt = File.ReadAllBytes(pfad);
+			// Viele Bilder aus dem Internet heissen .png, sind aber WebP oder AVIF. Die kann
+			// Unity nicht lesen, deshalb das echte Format nennen.
+			string format = echtesFormat(inhalt);
+			if (format != "PNG" && format != "JPG")
+			{
+				status("Die Datei ist eigentlich " + format + ", obwohl sie " + endung + " heißt. Bitte in Paint öffnen und als PNG oder JPG speichern.");
+				return;
+			}
 			Texture2D original = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-			if (!original.LoadImage(File.ReadAllBytes(pfad)))
+			if (!original.LoadImage(inhalt))
 			{
 				UnityEngine.Object.Destroy(original);
-				status("Die Datei ist kein lesbares Bild.");
+				status("Unity kann dieses " + format + " nicht lesen. Bitte in Paint öffnen und neu speichern.");
 				return;
 			}
 			byte[] daten = verkleinern(original);
@@ -132,6 +187,18 @@ public class KopfbildEditor : MonoBehaviour
 		{
 			status("Fehler: " + fehler.Message);
 		}
+	}
+
+	// Format nach den ersten Bytes der Datei, nicht nach der Endung.
+	private static string echtesFormat(byte[] d)
+	{
+		if (d.Length >= 8 && d[0] == 0x89 && d[1] == 0x50 && d[2] == 0x4E && d[3] == 0x47) return "PNG";
+		if (d.Length >= 3 && d[0] == 0xFF && d[1] == 0xD8 && d[2] == 0xFF) return "JPG";
+		if (d.Length >= 12 && d[0] == 'R' && d[1] == 'I' && d[2] == 'F' && d[3] == 'F' && d[8] == 'W' && d[9] == 'E' && d[10] == 'B' && d[11] == 'P') return "WebP";
+		if (d.Length >= 6 && d[0] == 'G' && d[1] == 'I' && d[2] == 'F') return "GIF";
+		if (d.Length >= 2 && d[0] == 'B' && d[1] == 'M') return "BMP";
+		if (d.Length >= 12 && d[4] == 'f' && d[5] == 't' && d[6] == 'y' && d[7] == 'p') return "AVIF oder HEIC";
+		return "ein unbekanntes Format";
 	}
 
 	private void bildEntfernen()

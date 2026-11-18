@@ -10,6 +10,10 @@ public static class Toene
 
 	private static AudioClip treffer;
 
+	private static AudioClip kill;
+
+	private static AudioClip explosion;
+
 	public static AudioClip Schuss(int waffe)
 	{
 		if (schuesse == null)
@@ -33,6 +37,36 @@ public static class Toene
 			treffer = Erzeugen("Treffer", 0.06f, 2200f, 1800f, 0.05f, 40f);
 		}
 		return treffer;
+	}
+
+	// Zwei helle Toene hintereinander, damit man einen Kill deutlich vom Treffer unterscheidet.
+	public static AudioClip Kill()
+	{
+		if (kill == null)
+		{
+			AudioClip erster = Erzeugen("KillA", 0.09f, 1300f, 1250f, 0.02f, 18f);
+			AudioClip zweiter = Erzeugen("KillB", 0.16f, 1950f, 1900f, 0.02f, 14f);
+			float[] a = new float[erster.samples];
+			float[] b = new float[zweiter.samples];
+			erster.GetData(a, 0);
+			zweiter.GetData(b, 0);
+			float[] beide = new float[a.Length + b.Length];
+			a.CopyTo(beide, 0);
+			b.CopyTo(beide, a.Length);
+			kill = AudioClip.Create("Kill", beide.Length, 1, RATE, false);
+			kill.SetData(beide, 0);
+		}
+		return kill;
+	}
+
+	// Dumpfer Knall fuer den Todeseffekt.
+	public static AudioClip Explosion()
+	{
+		if (explosion == null)
+		{
+			explosion = Erzeugen("Explosion", 0.7f, 120f, 40f, 0.75f, 6f);
+		}
+		return explosion;
 	}
 
 	private static AudioClip Erzeugen(string name, float dauer, float startFrequenz, float endFrequenz, float rauschAnteil, float abfall)

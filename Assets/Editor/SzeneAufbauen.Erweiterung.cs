@@ -88,6 +88,69 @@ public static partial class SzeneAufbauen
 		return AssetDatabase.LoadAssetAtPath<Sprite>(pfad);
 	}
 
+	// Die GLBs enthalten die Farben des Originals so, wie Unity sie gespeichert hatte. glTFast
+	// haelt sie fuer lineare Werte und rechnet sie in Gamma um (baseColorLinear.gamma), dadurch
+	// wurde alles heller und weisslicher. Deshalb eigene Standard-Materialien mit den
+	// urspruenglichen Werten (die Umrechnung zurueck mit .linear).
+	static void MaterialienErsetzen(GameObject modell, string ordner)
+	{
+		Ordner(ordner);
+		var ersetzt = new Dictionary<Material, Material>();
+		foreach (var anzeige in modell.GetComponentsInChildren<Renderer>(true))
+		{
+			var materialien = anzeige.sharedMaterials;
+			for (int i = 0; i < materialien.Length; i++)
+			{
+				var alt = materialien[i];
+				if (alt == null)
+				{
+					continue;
+				}
+				Material neu;
+				if (!ersetzt.TryGetValue(alt, out neu))
+				{
+					neu = StandardAusGltf(alt);
+					neu = AlsAsset(neu, ordner + "/" + DateiName(alt.name) + ".mat");
+					ersetzt[alt] = neu;
+				}
+				materialien[i] = neu;
+			}
+			anzeige.sharedMaterials = materialien;
+		}
+	}
+
+	static Material StandardAusGltf(Material gltf)
+	{
+		var neu = new Material(Shader.Find("Standard"));
+		neu.name = gltf.name;
+		Color farbe = gltf.HasProperty("baseColorFactor") ? (Color)gltf.GetVector("baseColorFactor") : gltf.color;
+		neu.color = gltf.HasProperty("baseColorFactor") ? farbe.linear : farbe;
+		float rauheit = gltf.HasProperty("roughnessFactor") ? gltf.GetFloat("roughnessFactor") : 0.9f;
+		neu.SetFloat("_Glossiness", 1f - rauheit);
+		neu.SetFloat("_Metallic", gltf.HasProperty("metallicFactor") ? gltf.GetFloat("metallicFactor") : 0f);
+		if (gltf.HasProperty("emissiveFactor"))
+		{
+			Color leuchten = gltf.GetColor("emissiveFactor").linear;
+			if (leuchten.maxColorComponent > 0.001f)
+			{
+				neu.EnableKeyword("_EMISSION");
+				neu.SetColor("_EmissionColor", leuchten);
+				neu.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+			}
+		}
+		return neu;
+	}
+
+	static string DateiName(string name)
+	{
+		var sb = new StringBuilder();
+		foreach (char zeichen in name)
+		{
+			sb.Append(char.IsLetterOrDigit(zeichen) && zeichen < 128 ? zeichen : '_');
+		}
+		return sb.Length > 0 ? sb.ToString() : "Material";
+	}
+
 	// Bot: das Spieler-Prefab mit BotSteuerung, ohne AudioListener.
 	static GameObject BotPrefab(GameObject spieler)
 	{
@@ -361,6 +424,9 @@ public static partial class SzeneAufbauen
 		Setze(spielUi, "fpsText", bau.Komponente<TMP_Text>(g + "FpsText"));
 		Setze(spielUi, "fadenkreuz", bau.Pfad(g + "Crosshair"));
 		Setze(spielUi, "zielfernrohr", bau.Pfad(g + "Zielfernrohr"));
+		Setze(spielUi, "killText", bau.Komponente<TMP_Text>(g + "KillText"));
+		Setze(spielUi, "ladebildschirm", bau.Pfad("Canvas/Ladebildschirm"));
+		Setze(spielUi, "ladeKarteText", bau.Komponente<TMP_Text>("Canvas/Ladebildschirm/KarteTxt"));
 
 		var a = "Canvas/Start Screen/Aussehen/";
 		var editor = bau.Pfad("Canvas/Start Screen/Aussehen").GetComponent<KopfbildEditor>();
@@ -371,6 +437,9 @@ public static partial class SzeneAufbauen
 		Setze(editor, "vorschauKamera", vorschau.kamera);
 		Setze(editor, "vorschauModell", vorschau.modell);
 		Setze(editor, "vorschauKopfbild", vorschau.kopfbild);
+		Setze(editor, "hoeheRegler", bau.Komponente<Slider>(a + "HoeheZeile/Slider"));
+		Setze(editor, "groesseRegler", bau.Komponente<Slider>(a + "GroesseZeile/Slider"));
+		Setze(editor, "breiteRegler", bau.Komponente<Slider>(a + "BreiteZeile/Slider"));
 
 		foreach (var fenster in new[] { "Host a LAN Game", "Host a GLOBAL Game" })
 		{

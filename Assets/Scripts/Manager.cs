@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -30,6 +31,10 @@ public class Manager : NetworkBehaviour
 
 	// Die Map, die gerade gespielt wird (nach getMap).
 	public GameObject aktiveKarte { get; private set; }
+
+	// So lange steht der Ladebildschirm mindestens (Sekunden). In der Zeit werden die
+	// Shader der Map vorbereitet, sonst blitzt beim ersten Bild alles blau oder ruckelt.
+	private const float LADE_MINDESTZEIT = 1.2f;
 
 	public PlayerInput playerInput;
 
@@ -133,6 +138,24 @@ public class Manager : NetworkBehaviour
 		}
 		gewaehlt.SetActive(value: true);
 		aktiveKarte = gewaehlt;
+		UIGameManager.Instance.ladenZeigen(wahl == 1 ? "Zimmer" : (wahl == 3 ? "D-Day" : "Info-Raum"));
+		StartCoroutine(ladenAbschliessen());
+	}
+
+	private IEnumerator ladenAbschliessen()
+	{
+		float bis = Time.unscaledTime + LADE_MINDESTZEIT;
+		// Ein Bild abwarten, dann alle geladenen Shader vorbereiten (auch fuer Dinge, die
+		// die Kamera noch nicht sieht).
+		yield return null;
+		Shader.WarmupAllShaders();
+		int bilder = 0;
+		while (Time.unscaledTime < bis || bilder < 5)
+		{
+			bilder++;
+			yield return null;
+		}
+		UIGameManager.Instance.ladenVerbergen();
 	}
 
 	private void returnMap()

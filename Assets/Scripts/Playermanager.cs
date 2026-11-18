@@ -29,6 +29,9 @@ public class Playermanager : NetworkBehaviour
 
 	public GameObject laserPointer;
 
+	// Partikelmaterial fuer die rote Explosion beim Tod (Todeseffekt).
+	public Material todesMaterial;
+
 	private CharacterController characterController;
 
 	public static Playermanager ownerPlayer;
@@ -212,6 +215,8 @@ public class Playermanager : NetworkBehaviour
 
 	public void gotHit(string shooter, string victim)
 	{
+		// Fuer alle sichtbar, bevor der Besitzer die Figur zum neuen Spawnpunkt setzt.
+		Todeseffekt.Zeigen(base.transform.position + Vector3.up * 0.3f, todesMaterial);
 		if (istBot && base.IsOwner)
 		{
 			StartCoroutine(botTot());

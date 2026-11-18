@@ -15,6 +15,9 @@ public static partial class SzeneAufbauen
 {
 	const string DDAY = ERZEUGT + "/DDay";
 
+	// Partikelmaterialien, auch fuer den Todeseffekt am Spieler.
+	const string EFFEKTE = ERZEUGT + "/Effekte";
+
 	const float DD_XMIN = -100f;
 
 	const float DD_XMAX = 100f;
@@ -260,6 +263,22 @@ public static partial class SzeneAufbauen
 		foreach (var vx in DD_VERTEIDIGER_X)
 		{
 			DDSpawnZone(spawns.transform, new Vector3(vx, DD_PLATEAU + 3f, DD_VERTEIDIGER_Z), new Vector3(22f, 0.5f, 10f), Teams.VERTEIDIGER);
+		}
+
+		// Wege fuer Bots: die drei Schluchten, Punkte von unten nach oben.
+		var wege = new GameObject("BotWege");
+		wege.transform.SetParent(wurzel.transform, false);
+		wege.AddComponent<BotWege>();
+		foreach (var s in DD_SCHLUCHTEN)
+		{
+			var schlucht = new GameObject("Schlucht " + s);
+			schlucht.transform.SetParent(wege.transform, false);
+			foreach (var z in new[] { -12f, 0f, 12f, 22f, 32f, 42f, 52f, 62f, 74f })
+			{
+				var punkt = new GameObject("Punkt");
+				punkt.transform.SetParent(schlucht.transform, false);
+				punkt.transform.localPosition = new Vector3(s, DDHoehe(s, z) + 1f, z);
+			}
 		}
 
 		// Unsichtbare Grenzen
@@ -836,16 +855,17 @@ public static partial class SzeneAufbauen
 		textur.Apply();
 		var png = textur.EncodeToPNG();
 		Object.DestroyImmediate(textur);
-		var partikel = PngAlsTextur(DDAY + "/Partikel.png", png, TextureWrapMode.Clamp);
+		Ordner(EFFEKTE);
+		var partikel = PngAlsTextur(EFFEKTE + "/Partikel.png", png, TextureWrapMode.Clamp);
 
 		var feuer = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
 		feuer.name = "Feuer";
 		feuer.mainTexture = partikel;
-		ddFeuerMaterial = AlsAsset(feuer, DDAY + "/Feuer.mat");
+		ddFeuerMaterial = AlsAsset(feuer, EFFEKTE + "/Feuer.mat");
 		var rauch = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended"));
 		rauch.name = "Rauch";
 		rauch.mainTexture = partikel;
-		ddRauchMaterial = AlsAsset(rauch, DDAY + "/Rauch.mat");
+		ddRauchMaterial = AlsAsset(rauch, EFFEKTE + "/Rauch.mat");
 	}
 
 	static ParticleSystem DDPartikel(Transform eltern, string name, Vector3 position, Material material)

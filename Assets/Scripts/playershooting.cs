@@ -351,7 +351,7 @@ public class playershooting : NetworkBehaviour
 			playermanager.shotOtherPlayer(victim);
 			if (playermanager.istLokal)
 			{
-				tonQuelle.PlayOneShot(Toene.Treffer());
+				tonQuelle.PlayOneShot(Toene.Kill());
 			}
 		}
 	}
