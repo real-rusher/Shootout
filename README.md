@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.2.5
+Aktuell: Version 0.2.6
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -140,6 +140,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.2.6 | Behoben: Ohne das Paket "Post Processing" brach das Uebersetzen ab (und der Aufbau lief mit altem Code, Fehler "dDayKnopf"). Das Paket wird jetzt nur ueber Reflexion angesprochen: Fehlt es, laeuft alles, nur "Krasse Grafik" ohne Nachbearbeitung, mit Hinweis in der Konsole. Szene neu aufbauen. |
 | 0.2.5 | **Netz:** Map-Nummern 4 bis 6 (Wuestenstadt, Tunnel, Himmelsinseln) im bestehenden `chosenMap`, Host und Client brauchen dieselbe Version. Drei neue Maps (`Editor/SzeneAufbauen.Karten.cs`, Shader `Shootout/Weltraster`): Wuestenstadt (eigener Grundriss mit Markt, Palasthof, Turm, Daechern), Tunnel (Gangnetz mit Halle, flackernden Lampen), Himmelsinseln (Bruecken, Sprungfelder, Absturz = neu erscheinen). Host-Fenster mit sechs Map-Knoepfen. Unter Wasser: Schleier, Nebel, gedaempfter Ton, Wasseroberflaeche von unten sichtbar. Einstellungen > Video "Krasse Grafik": Nachbearbeitung (Paket Post Processing: Bloom, Umgebungsverdeckung, ACES, Vignette, SMAA), weiche Schatten, eigener Wasser-Shader. Neues Paket, Unity laedt es beim Oeffnen. Szene neu aufbauen. |
 | 0.2.4 | Knoepfe im Pausemenue (Verlassen, Einstellungen, Kopieren) reagierten nicht: Die unsichtbare Flaeche der Spielerliste fing die Klicks ab. Jetzt fangen nur Bedienelemente und deckende Fensterhintergruende Klicks, geprueft per Simulation in 15 Bildschirmzustaenden. Kopieren des Lobbycodes zeigt "kopiert", der Lobbycode-Text kopiert beim Anklicken. Szene neu aufbauen. |
 | 0.2.3 | **Netz:** Team wechseln im Pausemenue (`teamWechselnServerRpc`, `aufNeueSeiteClientRpc`), Teamzuteilung bei Gleichstand zufaellig (vorher war der Host immer Alliierter). Third Person ueber die rechte Schulter (Einstellungen > Steuerung), Schuesse zielen dann auf das Fadenkreuz der Schulterkamera. Alle Knoepfe geprueft: Zurueck-Knoepfe in allen Lobby-Fenstern, "press escape to continue" und "press space to respawn" anklickbar, Escape schliesst die Einstellungen, Quit beendet im Editor Play, Fenster/Vollbild mit Hinweis "nur im fertigen Spiel". Szene neu aufbauen. |

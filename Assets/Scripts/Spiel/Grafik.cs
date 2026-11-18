@@ -1,6 +1,6 @@
 using System;
+using System.Reflection;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 
 // Grafikstufe "Hoch" (Einstellungen > Video): Nachbearbeitung (Bloom, Umgebungsverdeckung,
 // Farbkorrektur mit ACES, Vignette, Kantenglaettung), weiche Schatten aller Sonnen, hohe
@@ -67,12 +67,29 @@ public static class Grafik
 		Geaendert?.Invoke();
 	}
 
+	// Die Nachbearbeitung kommt aus dem Paket "Post Processing". Es wird nur ueber Reflexion
+	// angesprochen: Fehlt das Paket (Unity hat es nicht geladen), laeuft das Spiel trotzdem,
+	// nur ohne diese Effekte. Vorher brach dann das ganze Uebersetzen ab.
+	private const string PP = "UnityEngine.Rendering.PostProcessing.";
+
+	public static Type PaketTyp(string name)
+	{
+		return Type.GetType(PP + name + ", Unity.Postprocessing.Runtime");
+	}
+
+	private static readonly Type schichtTyp = PaketTyp("PostProcessLayer");
+
+	public static bool NachbearbeitungVorhanden => schichtTyp != null;
+
 	// Auf alle Kameras und Sonnen anwenden (auch auf spaeter erzeugte, deshalb oeffentlich).
 	public static void Anwenden()
 	{
-		foreach (PostProcessLayer schicht in UnityEngine.Object.FindObjectsOfType<PostProcessLayer>(true))
+		if (schichtTyp != null)
 		{
-			schicht.enabled = Hoch;
+			foreach (UnityEngine.Object schicht in UnityEngine.Object.FindObjectsOfType(schichtTyp, true))
+			{
+				((Behaviour)schicht).enabled = Hoch;
+			}
 		}
 		foreach (Light licht in UnityEngine.Object.FindObjectsOfType<Light>(true))
 		{
@@ -91,17 +108,32 @@ public static class Grafik
 	}
 
 	// Nachbearbeitung an eine zur Laufzeit erzeugte Kamera haengen (Schulterkamera).
-	public static void KameraAusstatten(Camera kamera, PostProcessResources ressourcen, LayerMask volumen)
+	public static void KameraAusstatten(Camera kamera, ScriptableObject ressourcen, LayerMask volumen)
 	{
-		if (ressourcen == null || kamera.GetComponent<PostProcessLayer>() != null)
+		if (schichtTyp == null || ressourcen == null || kamera.GetComponent(schichtTyp) != null)
 		{
 			return;
 		}
-		PostProcessLayer schicht = kamera.gameObject.AddComponent<PostProcessLayer>();
-		schicht.Init(ressourcen);
-		schicht.volumeLayer = volumen;
-		schicht.volumeTrigger = kamera.transform;
-		schicht.antialiasingMode = PostProcessLayer.Antialiasing.SubpixelMorphologicalAntialiasing;
-		schicht.enabled = Hoch;
+		SchichtAnlegen(kamera, ressourcen, volumen).enabled = Hoch;
+	}
+
+	// Legt die Schicht an (auch das Editor-Skript nutzt das). Ressourcen ist das
+	// PostProcessResources-Asset des Pakets.
+	public static Behaviour SchichtAnlegen(Camera kamera, ScriptableObject ressourcen, LayerMask volumen)
+	{
+		// Waehrend des Einrichtens aus, damit OnEnable nicht ohne Ressourcen laeuft.
+		GameObject go = kamera.gameObject;
+		bool aktiv = go.activeSelf;
+		go.SetActive(false);
+		Behaviour schicht = (Behaviour)go.AddComponent(schichtTyp);
+		schichtTyp.GetMethod("Init").Invoke(schicht, new object[] { ressourcen });
+		schichtTyp.GetField("volumeLayer").SetValue(schicht, volumen);
+		schichtTyp.GetField("volumeTrigger").SetValue(schicht, kamera.transform);
+		// SMAA: scharfe Kanten ohne das Verschmieren von TAA bei schnellen Drehungen.
+		FieldInfo glaetten = schichtTyp.GetField("antialiasingMode");
+		glaetten.SetValue(schicht, Enum.Parse(glaetten.FieldType, "SubpixelMorphologicalAntialiasing"));
+		schicht.enabled = false;
+		go.SetActive(aktiv);
+		return schicht;
 	}
 }

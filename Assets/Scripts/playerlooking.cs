@@ -37,7 +37,9 @@ public class playerlooking : NetworkBehaviour
 
 	// Fuer die Grafikstufe "Hoch": Ressourcen der Nachbearbeitung und Layer ihres Volumens
 	// (traegt das Editor-Skript ein), damit auch die Schulterkamera sie bekommt.
-	public UnityEngine.Rendering.PostProcessing.PostProcessResources nachbearbeitungRessourcen;
+	// Typ ScriptableObject statt PostProcessResources, damit der Code auch ohne das Paket
+	// uebersetzt (siehe Grafik).
+	public ScriptableObject nachbearbeitungRessourcen;
 
 	public LayerMask nachbearbeitungLayer;
 

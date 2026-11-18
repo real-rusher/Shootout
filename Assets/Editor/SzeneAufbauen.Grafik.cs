@@ -1,7 +1,6 @@
 using System;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.Rendering.PostProcessing;
 using Object = UnityEngine.Object;
 
 // Teil des Editor-Skripts: Grafikstufe "Hoch" (Einstellungen > Video). Ein Profil der
@@ -16,39 +15,59 @@ public static partial class SzeneAufbauen
 
 	const string PP_RESSOURCEN = "Packages/com.unity.postprocessing/PostProcessing/PostProcessResources.asset";
 
-	static PostProcessResources NachbearbeitungRessourcen()
+	// Das Paket wird nur ueber Reflexion angesprochen (siehe Grafik). Fehlt es, baut das Skript
+	// alles andere trotzdem, nur ohne Nachbearbeitung, und sagt es in der Konsole.
+	static ScriptableObject NachbearbeitungRessourcen()
 	{
-		var ressourcen = AssetDatabase.LoadAssetAtPath<PostProcessResources>(PP_RESSOURCEN);
-		if (ressourcen == null)
+		if (!Grafik.NachbearbeitungVorhanden)
 		{
-			throw new Exception("Paket \"Post Processing\" fehlt. Unity einmal neu starten, damit es aus Packages/manifest.json geladen wird.");
+			return null;
 		}
-		return ressourcen;
+		return AssetDatabase.LoadAssetAtPath<ScriptableObject>(PP_RESSOURCEN);
+	}
+
+	static bool nachbearbeitungGemeldet;
+
+	static bool NachbearbeitungMoeglich()
+	{
+		if (NachbearbeitungRessourcen() != null)
+		{
+			return true;
+		}
+		if (!nachbearbeitungGemeldet)
+		{
+			nachbearbeitungGemeldet = true;
+			Debug.LogWarning("Shootout: Paket \"Post Processing\" fehlt, \"Krasse Grafik\" bleibt ohne Nachbearbeitung. " +
+				"Window > Package Manager > Unity Registry > Post Processing > Install, dann neu aufbauen.");
+		}
+		return false;
 	}
 
 	static void KameraNachbearbeitung(Camera kamera)
 	{
-		var schicht = kamera.gameObject.AddComponent<PostProcessLayer>();
-		schicht.Init(NachbearbeitungRessourcen());
-		schicht.volumeLayer = 1 << LAYER_NACHBEARBEITUNG;
-		schicht.volumeTrigger = kamera.transform;
-		// SMAA: scharfe Kanten ohne das Verschmieren von TAA bei schnellen Drehungen.
-		schicht.antialiasingMode = PostProcessLayer.Antialiasing.SubpixelMorphologicalAntialiasing;
-		schicht.enabled = false;
+		if (NachbearbeitungMoeglich())
+		{
+			Grafik.SchichtAnlegen(kamera, NachbearbeitungRessourcen(), 1 << LAYER_NACHBEARBEITUNG);
+		}
 	}
 
 	static void NachbearbeitungVolumen()
 	{
+		if (!NachbearbeitungMoeglich())
+		{
+			return;
+		}
 		var go = new GameObject("Nachbearbeitung");
 		go.layer = LAYER_NACHBEARBEITUNG;
-		var volumen = go.AddComponent<PostProcessVolume>();
-		volumen.isGlobal = true;
-		volumen.priority = 0f;
-		volumen.sharedProfile = NachbearbeitungProfil();
+		var typ = Grafik.PaketTyp("PostProcessVolume");
+		var volumen = go.AddComponent(typ);
+		typ.GetField("isGlobal").SetValue(volumen, true);
+		typ.GetField("priority").SetValue(volumen, 0f);
+		typ.GetField("sharedProfile").SetValue(volumen, NachbearbeitungProfil());
 	}
 
 	// Die Werte sind zum Einstellen gedacht (im Editor: Assets/Erzeugt/Nachbearbeitung/Profil.asset).
-	static PostProcessProfile NachbearbeitungProfil()
+	static ScriptableObject NachbearbeitungProfil()
 	{
 		Ordner(NACHBEARBEITUNG);
 		var pfad = NACHBEARBEITUNG + "/Profil.asset";
@@ -58,50 +77,66 @@ public static partial class SzeneAufbauen
 		{
 			AssetDatabase.DeleteAsset(pfad);
 		}
-		var profil = ScriptableObject.CreateInstance<PostProcessProfile>();
+		var profil = ScriptableObject.CreateInstance(Grafik.PaketTyp("PostProcessProfile"));
 		AssetDatabase.CreateAsset(profil, pfad);
 
 		// Leuchten: Lampen, Feuer, Sprungfelder und Sonnenreflexe strahlen.
-		var bloom = Effekt<Bloom>(profil);
-		bloom.intensity.Override(2.2f);
-		bloom.threshold.Override(1.05f);
-		bloom.softKnee.Override(0.6f);
-		bloom.diffusion.Override(7f);
+		var bloom = Effekt(profil, "Bloom");
+		EffektWert(bloom, "intensity", 2.2f);
+		EffektWert(bloom, "threshold", 1.05f);
+		EffektWert(bloom, "softKnee", 0.6f);
+		EffektWert(bloom, "diffusion", 7f);
 
 		// Umgebungsverdeckung: Ecken, Fugen und Spalten werden dunkler, alles wirkt plastischer.
-		var verdeckung = Effekt<AmbientOcclusion>(profil);
-		verdeckung.mode.Override(AmbientOcclusionMode.MultiScaleVolumetricObscurance);
-		verdeckung.intensity.Override(0.75f);
-		verdeckung.thicknessModifier.Override(1.2f);
+		var verdeckung = Effekt(profil, "AmbientOcclusion");
+		EffektWert(verdeckung, "mode", "MultiScaleVolumetricObscurance");
+		EffektWert(verdeckung, "intensity", 0.75f);
+		EffektWert(verdeckung, "thicknessModifier", 1.2f);
 
 		// Filmischer Look: ACES, etwas mehr Kontrast und Saettigung, leicht warm.
-		var farbe = Effekt<ColorGrading>(profil);
-		farbe.gradingMode.Override(GradingMode.HighDefinitionRange);
-		farbe.tonemapper.Override(Tonemapper.ACES);
-		farbe.postExposure.Override(0.45f);
-		farbe.contrast.Override(12f);
-		farbe.saturation.Override(12f);
-		farbe.temperature.Override(4f);
+		var farbe = Effekt(profil, "ColorGrading");
+		EffektWert(farbe, "gradingMode", "HighDefinitionRange");
+		EffektWert(farbe, "tonemapper", "ACES");
+		EffektWert(farbe, "postExposure", 0.45f);
+		EffektWert(farbe, "contrast", 12f);
+		EffektWert(farbe, "saturation", 12f);
+		EffektWert(farbe, "temperature", 4f);
 
-		var vignette = Effekt<Vignette>(profil);
-		vignette.intensity.Override(0.3f);
-		vignette.smoothness.Override(0.45f);
+		var vignette = Effekt(profil, "Vignette");
+		EffektWert(vignette, "intensity", 0.3f);
+		EffektWert(vignette, "smoothness", 0.45f);
 
 		// Ganz leichte Farbsaeume am Rand, wie bei einer echten Linse.
-		var linse = Effekt<ChromaticAberration>(profil);
-		linse.intensity.Override(0.08f);
+		var linse = Effekt(profil, "ChromaticAberration");
+		EffektWert(linse, "intensity", 0.08f);
 
 		EditorUtility.SetDirty(profil);
 		AssetDatabase.SaveAssets();
 		return profil;
 	}
 
-	static T Effekt<T>(PostProcessProfile profil) where T : PostProcessEffectSettings
+	static ScriptableObject Effekt(ScriptableObject profil, string name)
 	{
 		// AddSettings legt den Effekt nur im Speicher an, als Unter-Asset bleibt er gespeichert.
-		var effekt = profil.AddSettings<T>();
+		var hinzufuegen = profil.GetType().GetMethod("AddSettings", new[] { typeof(Type) });
+		var effekt = (ScriptableObject)hinzufuegen.Invoke(profil, new object[] { Grafik.PaketTyp(name) });
 		AssetDatabase.AddObjectToAsset(effekt, profil);
 		return effekt;
+	}
+
+	// Setzt einen Wert eines Effekts und schaltet ihn ein (Override). Aufzaehlungen als Text.
+	static void EffektWert(ScriptableObject effekt, string feld, object wert)
+	{
+		var info = effekt.GetType().GetField(feld);
+		if (info == null)
+		{
+			throw new Exception(effekt.GetType().Name + " hat kein Feld " + feld);
+		}
+		var parameter = info.GetValue(effekt);
+		var ueberschreiben = parameter.GetType().GetMethod("Override");
+		var typ = ueberschreiben.GetParameters()[0].ParameterType;
+		var passend = typ.IsEnum ? Enum.Parse(typ, (string)wert) : Convert.ChangeType(wert, typ);
+		ueberschreiben.Invoke(parameter, new[] { passend });
 	}
 
 	// ------------------------------------------------------------------
