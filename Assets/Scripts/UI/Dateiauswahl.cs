@@ -23,8 +23,8 @@ public static class Dateiauswahl
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 		OpenFileName dialog = new OpenFileName();
 		dialog.structSize = Marshal.SizeOf(dialog);
-		// Nur Formate, die Texture2D.LoadImage lesen kann.
-		dialog.filter = "Bilder (*.png, *.jpg)\0*.png;*.jpg;*.jpeg\0\0";
+		// Alles, was Windows als Bild oeffnen kann. Was Unity nicht liest, wandelt Bildumwandlung um.
+		dialog.filter = "Bilder\0*.png;*.jpg;*.jpeg;*.jfif;*.bmp;*.dib;*.gif;*.tif;*.tiff;*.ico;*.webp;*.heic;*.heif;*.avif;*.jxr;*.wdp;*.dds\0Alle Dateien\0*.*\0\0";
 		dialog.filterIndex = 1;
 		dialog.file = new string('\0', 1024);
 		dialog.maxFile = dialog.file.Length;

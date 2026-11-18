@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.IO;
 using TMPro;
 using UnityEngine;
@@ -42,7 +43,10 @@ public class KopfbildEditor : MonoBehaviour
 	private const int PNG_GRENZE = 60 * 1024;
 
 	// Groesste Datei, die ueberhaupt gelesen wird.
-	private const long MAX_DATEI = 20L * 1024 * 1024;
+	private const long MAX_DATEI = 50L * 1024 * 1024;
+
+	// So lange darf Windows fuer die Umwandlung brauchen (Sekunden).
+	private const float UMWANDLUNG_ZEIT = 20f;
 
 	private RenderTexture ziel;
 
@@ -115,7 +119,7 @@ public class KopfbildEditor : MonoBehaviour
 		reglerAnzeigen();
 		vorschauNetzAktualisieren();
 		vorschauLaden(KopfbildSpeicher.Laden());
-		status(Dateiauswahl.Verfuegbar ? "PNG oder JPG wählen. Andere Spieler sehen es auf deinem Kopf." : "Die Dateiauswahl gibt es nur unter Windows.");
+		status(Dateiauswahl.Verfuegbar ? "Jedes Bildformat, das Windows öffnen kann. Andere Spieler sehen es auf deinem Kopf." : "Die Dateiauswahl gibt es nur unter Windows.");
 	}
 
 	private void OnDisable()
@@ -138,55 +142,97 @@ public class KopfbildEditor : MonoBehaviour
 
 	private void bildWaehlen()
 	{
+		if (umwandlungLaeuft)
+		{
+			return;
+		}
 		string pfad = Dateiauswahl.BildWaehlen("Bild für deinen Kopf wählen");
 		if (string.IsNullOrEmpty(pfad))
 		{
 			return;
 		}
+		StartCoroutine(bildLaden(pfad));
+	}
+
+	private bool umwandlungLaeuft;
+
+	// Erst direkt mit Unity versuchen (PNG, JPG). Alles andere wandelt Windows in PNG um.
+	private IEnumerator bildLaden(string pfad)
+	{
+		byte[] inhalt;
 		try
 		{
-			string endung = Path.GetExtension(pfad).ToLowerInvariant();
-			if (endung != ".png" && endung != ".jpg" && endung != ".jpeg")
-			{
-				status("Nur PNG- oder JPG-Bilder.");
-				return;
-			}
 			if (new FileInfo(pfad).Length > MAX_DATEI)
 			{
-				status("Das Bild ist zu groß (höchstens 20 MB).");
-				return;
+				status("Das Bild ist zu groß (höchstens " + (MAX_DATEI / (1024 * 1024)) + " MB).");
+				yield break;
 			}
-			byte[] inhalt = File.ReadAllBytes(pfad);
-			// Viele Bilder aus dem Internet heissen .png, sind aber WebP oder AVIF. Die kann
-			// Unity nicht lesen, deshalb das echte Format nennen.
-			string format = echtesFormat(inhalt);
-			if (format != "PNG" && format != "JPG")
-			{
-				status("Die Datei ist eigentlich " + format + ", obwohl sie " + endung + " heißt. Bitte in Paint öffnen und als PNG oder JPG speichern.");
-				return;
-			}
-			Texture2D original = new Texture2D(2, 2, TextureFormat.RGBA32, false);
-			if (!original.LoadImage(inhalt))
-			{
-				UnityEngine.Object.Destroy(original);
-				status("Unity kann dieses " + format + " nicht lesen. Bitte in Paint öffnen und neu speichern.");
-				return;
-			}
-			byte[] daten = verkleinern(original);
-			UnityEngine.Object.Destroy(original);
-			if (daten.Length > Kopfbild.MAX_GROESSE)
-			{
-				status("Das Bild ist nach dem Verkleinern noch zu groß.");
-				return;
-			}
-			KopfbildSpeicher.Speichern(daten);
-			vorschauLaden(daten);
-			status("Gespeichert. Gilt ab dem nächsten Spiel.");
+			inhalt = File.ReadAllBytes(pfad);
 		}
 		catch (Exception fehler)
 		{
-			status("Fehler: " + fehler.Message);
+			status("Datei nicht lesbar: " + fehler.Message);
+			yield break;
 		}
+
+		Texture2D original = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+		string format = echtesFormat(inhalt);
+		bool gelesen = (format == "PNG" || format == "JPG") && original.LoadImage(inhalt);
+		if (!gelesen)
+		{
+			if (!Bildumwandlung.Verfuegbar)
+			{
+				UnityEngine.Object.Destroy(original);
+				status("Dieses Format geht nur unter Windows. Bitte als PNG oder JPG speichern.");
+				yield break;
+			}
+			status("Bild wird umgewandelt …");
+			string ziel = Path.Combine(Application.temporaryCachePath, "kopfbild_umgewandelt.png");
+			if (File.Exists(ziel))
+			{
+				File.Delete(ziel);
+			}
+			umwandlungLaeuft = true;
+			System.Diagnostics.Process prozess = null;
+			try
+			{
+				prozess = Bildumwandlung.Starten(pfad, ziel);
+			}
+			catch (Exception fehler)
+			{
+				UnityEngine.Debug.LogWarning("Umwandlung nicht gestartet: " + fehler.Message);
+			}
+			float bis = Time.unscaledTime + UMWANDLUNG_ZEIT;
+			while (prozess != null && !prozess.HasExited && Time.unscaledTime < bis)
+			{
+				yield return null;
+			}
+			umwandlungLaeuft = false;
+			if (prozess != null && !prozess.HasExited)
+			{
+				prozess.Kill();
+			}
+			gelesen = File.Exists(ziel) && original.LoadImage(File.ReadAllBytes(ziel));
+			if (!gelesen)
+			{
+				UnityEngine.Object.Destroy(original);
+				status(format == "AVIF oder HEIC"
+					? "Windows kann AVIF oder HEIC nur mit der kostenlosen Erweiterung aus dem Microsoft Store öffnen (HEIF- bzw. AV1-Bilderweiterung)."
+					: "Windows kann diese Datei nicht als Bild öffnen (" + format + ").");
+				yield break;
+			}
+		}
+
+		byte[] daten = verkleinern(original);
+		UnityEngine.Object.Destroy(original);
+		if (daten.Length > Kopfbild.MAX_GROESSE)
+		{
+			status("Das Bild ist nach dem Verkleinern noch zu groß.");
+			yield break;
+		}
+		KopfbildSpeicher.Speichern(daten);
+		vorschauLaden(daten);
+		status("Gespeichert. Gilt ab dem nächsten Spiel.");
 	}
 
 	// Format nach den ersten Bytes der Datei, nicht nach der Endung.

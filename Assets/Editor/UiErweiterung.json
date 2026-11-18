@@ -228,7 +228,7 @@
               ]
             },
             "text": {
-              "text": "Wähle ein Bild (PNG oder JPG) von deinem PC. Es liegt auf der vorderen Hälfte deines Kopfes. Andere Spieler sehen es, wenn sie Bilder nicht abgeschaltet haben.",
+              "text": "Wähle ein Bild von deinem PC (PNG, JPG, WebP, GIF, BMP, TIFF, HEIC, AVIF …). Es liegt auf der vorderen Hälfte deines Kopfes. Andere Spieler sehen es, wenn sie Bilder nicht abgeschaltet haben.",
               "size": 30,
               "color": "#c3c3c3ff",
               "align": 1,

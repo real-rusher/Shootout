@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.2.1
+Aktuell: Version 0.2.2
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -23,7 +23,7 @@ Seit 0.2.0 dazugekommen (zum Ausprobieren, wie Bewegung und Spielgefuehl zu den 
 * **Waffen:** Gewehr (wie im Original), SMG (schnell, streut, im Laufen mehr), Sniper (langsam,
   immer genau, Zoom wie bei Counter-Strike). Werte in `Assets/Scripts/Spiel/Waffen.cs`.
   Dazu 100 Leben, den Schaden prueft der Server.
-* **Aussehen:** Bild vom PC (PNG, JPG) auf die vordere Kopfhaelfte legen, mit Vorschau.
+* **Aussehen:** Bild vom PC (jedes Format, das Windows oeffnen kann) auf die vordere Kopfhaelfte legen, mit Vorschau.
   Andere Spieler sehen es, abschaltbar unter Einstellungen > Video.
 * **Teams und Bots:** Beim Erstellen einer Lobby waehlbar. Alliierte gegen Verteidiger,
   Teampunkte oben. Bots fuellen die Runde auf die gewaehlte Spielerzahl auf.
@@ -139,6 +139,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.2.2 | Kopfbild nimmt jedes Format, das Windows oeffnen kann (WebP, GIF, BMP, TIFF, ICO, HEIC und AVIF mit Store-Erweiterung): Was Unity nicht liest, wandelt Windows ueber PowerShell und WIC in PNG um (`UI/Bildumwandlung.cs`). Uebertragen wird weiter nur PNG oder JPG. |
 | 0.2.1 | **Netz:** Kopfbild mit Lage (Hoehe, Groesse, Breite) in `bildBeginnen...Rpc`, Kamera-Drehung lokal und nur Neigung (Waffe anderer Spieler drehte sich seitlich nicht mit). Farben der Maps wie im Original (glTFast hatte sie aufgehellt), Ladebildschirm mit Shader-Vorbereitung, im Editor keine Hintergrund-Uebersetzung der Shader mehr (kein Blau). Kopfbild pro Spielinstallation (Klone teilen es nicht mehr), Lage einstellbar, Meldung nennt das echte Format (WebP als .png). Treffer- und Kill-Anzeige deutlicher mit Kill-Ton, rote Explosion beim Tod. Bots: gehen auf Gegner zu, nehmen auf D-Day die Schluchten, mit Einschuss-Waffen ungenauer und langsamer, Sniper seltener. Szene neu aufbauen. |
 | 0.2.0 | **Netz:** Drei Waffen, Leben und Schaden (Server prueft Treffer, Schuetze per Objekt-ID), Teams (`Runde`, NetworkVariables `team`, `leben`), Bots (eigenes Prefab, laufen auf dem Host), Kopfbild (wird in Stuecken uebertragen), D-Day-Map (Map 3). Menue ausgebaut (Einstellungen, Aussehen, Host-Optionen), HUD mit Leben, Waffe, Teampunkten, FPS, Zielfernrohr. Behoben: Bugs 6, 7, 11, 16, 18, 19, 20 aus `docs/REKONSTRUKTION.md`, fehlende Maps nach Verbindungsabbruch, alte Asset-Kopien nach erneutem Aufbau (unsichtbarer Laser). LAN-Verbindungscode unveraendert. Szene neu aufbauen. |
 | 0.1.8 | Dauerfeuer nur noch fuer Spieler mit `!ad` im Namen (Gross- und Kleinschreibung egal, Dev-Funktion). Alle anderen schiessen mit der Abklingzeit aus dem Prefab (0,7 s), wie vor dem Mod. Der Abklingbalken richtet sich nach der jeweils geltenden Zeit. |
