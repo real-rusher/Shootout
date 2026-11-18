@@ -86,7 +86,7 @@ Alles haengt in einer Szene. Singletons ueber `static Instance`.
 1. **LAN-Host:** Eigene IPv4 wird ermittelt, Host startet auf Port 7777. Der „Lobbycode“ ist nur die **letzte Zahl der IP** (zum Beispiel `143`).
 2. **LAN-Join:** Der Client setzt die ersten drei Zahlen seiner eigenen IP vor den Code. Funktioniert also nur im selben /24-Netz.
 3. **Global:** Im Original holte der Host seine oeffentliche IP von `api64.ipify.org`, der Client gab die volle IP ein (Portfreigabe noetig, funktionierte praktisch nie). Seit 0.1.3 ersetzt durch Unity Relay mit Join-Code (`ConnectionManager.OnlineHosten` / `OnlineBeitreten`).
-4. **Treffer:** Der Schuetze macht den Raycast lokal, erhoeht seine Kills selbst und schickt `playerShotServerRPC(shooter, victim)` am getroffenen Spieler. Der Server verteilt per `receiveShotClientRPC`, der Owner des Opfers erhoeht Deaths und stirbt. Spieler werden ueber **Namen als String** identifiziert.
+4. **Treffer:** Im Original machte der Schuetze den Raycast, erhoehte seine Kills selbst und schickte `playerShotServerRPC(shooter, victim)`, Spieler wurden ueber **Namen als String** identifiziert. Seit 0.1.4 und 0.2.0: Der Schuetze schickt seine Objekt-ID und die Waffe, der Server prueft (Team, schon tot, Leben), zieht Schaden ab und bestaetigt Treffer und Kill per RPC.
 5. Remote-Spieler kommen auf Layer 8 (`Enemy`), ihr Koerper auf Layer 9 (`EnemyBody`). Der eigene Spieler liegt auf Layer 2 (`Ignore Raycast`), deshalb trifft man sich nicht selbst.
 
 ## Was in `Assets/Scripts/` gegenueber dem Rohcode geaendert ist
@@ -105,12 +105,12 @@ Nur Aufraeumarbeit, Verhalten ist gleich:
 3. **Keine Server-Autoritaet:** Treffer, Kills und Deaths entscheidet jeder Client selbst. Trivial cheatbar. Fuer eine neue Version: Treffer auf dem Server pruefen, NetworkVariables nur vom Server schreiben lassen.
 4. **Spieler ueber Namen statt ueber NetworkObjectId** identifiziert. Namensaenderung waehrend des Spiels kann Treffer falsch zuordnen.
 5. **Singleton-Fehler:** In allen `Awake`-Methoden steht `Destroy(Instance)` statt `Destroy(gameObject)`. Es wird also das alte Objekt zerstoert (und auch nur die Komponente).
-6. `playermovment._isDead` und `playerlooking._isDead` lesen immer den Zustand des **eigenen** Spielers, auch auf fremden Spielerobjekten.
-7. `playershooting.playerHit` vergleicht `playershooting` mit `Playermanager`, das ist nie gleich. Funktioniert nur wegen der Layer.
+6. **Behoben in 0.2.0.** `playermovment._isDead` und `playerlooking._isDead` lesen immer den Zustand des **eigenen** Spielers, auch auf fremden Spielerobjekten.
+7. **Behoben in 0.2.0.** `playershooting.playerHit` vergleicht `playershooting` mit `Playermanager`, das ist nie gleich. Funktioniert nur wegen der Layer.
 8. `PlayersManager.getUniqueName` vergleicht mit `GameObject.name`, nicht mit dem Netzwerknamen.
 9. Event-Abos in `Playermanager.Awake` und `OnEnable` werden nie wieder entfernt.
 10. Timeouts passen nicht zusammen: `waitForConnection` gibt nach 5 s auf, `connectingAnim` nach 10 s.
-11. K/D im Scoreboard wird ungerundet als Float angezeigt.
+11. **Behoben in 0.2.0.** K/D im Scoreboard wird ungerundet als Float angezeigt.
 12. Show-FPS, Fenstermodus und Sound-Tab ohne Funktion, kein Audio.
 
 Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
@@ -118,11 +118,11 @@ Bei einer zweiten Durchsicht des Codes zusaetzlich gefunden:
 13. **Behoben in 0.1.4.** **Ein Tod zaehlt mehrfach.** Durch das Dauerfeuer (Punkt 1) trifft der Schuetze dasselbe Opfer mehrmals, bevor dessen `isDead` bei ihm ankommt. Niemand prueft, ob das Opfer schon tot ist. Kills und Deaths steigen mehrfach, `spawn()` und `ownerPlayerDead` laufen mehrfach.
 14. **Behoben in 0.1.3 (Relay).** **Global-Host scheitert vermutlich immer.** `GlobalconnectAsHost` bindet den Transport an die oeffentliche IP. Hinter einem Router liegt die auf keiner Netzwerkkarte. Liefert ipify nichts, wird `chosenMap` trotzdem gesetzt, obwohl kein Host laeuft.
 15. **Falscher Lobbycode moeglich.** `getLocalIPAdress` nimmt die erste IPv4-Adresse. Mit VirtualBox, Hyper-V oder VPN ist das der falsche Adapter.
-16. **Blickrichtung nach Respawn zufaellig.** `Playermanager.spawn` setzt `LookRotation(-(0, y, 0))`, also senkrecht. `playerlooking.lookTowardsCenter` liest daraus einen sinnlosen Winkel. Gemeint war vermutlich der Blick zur Mapmitte.
+16. **Behoben in 0.2.0.** **Blickrichtung nach Respawn zufaellig.** `Playermanager.spawn` setzt `LookRotation(-(0, y, 0))`, also senkrecht. `playerlooking.lookTowardsCenter` liest daraus einen sinnlosen Winkel. Gemeint war vermutlich der Blick zur Mapmitte.
 17. **Spawnpunkte ungeprueft.** Zufaellig in der Box (auch in der Hoehe), ohne Pruefung auf andere Spieler in der Naehe.
-18. **Fremde Spieler werden lokal bewegt.** `playermovment.Update` ruft `UpdateGravity` und damit `controller.Move` auch auf fremden Spielerobjekten auf, gegen die NetworkTransform-Synchronisation.
-19. **AudioListener an jeder Spielerkamera.** Faellt ohne Audio nicht auf. Sobald Sound dazukommt, bei fremden Spielern abschalten.
-20. **Kein Laser ins Leere.** Der Strahl wird nur gezeigt, wenn der Raycast etwas trifft.
+18. **Behoben in 0.2.0.** **Fremde Spieler werden lokal bewegt.** `playermovment.Update` ruft `UpdateGravity` und damit `controller.Move` auch auf fremden Spielerobjekten auf, gegen die NetworkTransform-Synchronisation.
+19. **Behoben in 0.2.0.** **AudioListener an jeder Spielerkamera.** Faellt ohne Audio nicht auf. Sobald Sound dazukommt, bei fremden Spielern abschalten.
+20. **Behoben in 0.2.0.** **Kein Laser ins Leere.** Der Strahl wird nur gezeigt, wenn der Raycast etwas trifft.
 
 ## Unity-Projekt wieder aufsetzen
 

@@ -44,6 +44,26 @@ public class UIGameManager : MonoBehaviour
 
 	public bool _isDead => Playermanager.ownerPlayer.isDead.Value;
 
+	// --- Neu: Anzeige fuer Leben, Waffe, Teams, FPS und Zielfernrohr ---
+
+	public TMP_Text lebenText;
+
+	public RectTransform lebenBalken;
+
+	public TMP_Text waffeText;
+
+	public TMP_Text teamText;
+
+	public TMP_Text fpsText;
+
+	public GameObject fadenkreuz;
+
+	public GameObject zielfernrohr;
+
+	private float hitmarkerBis;
+
+	private float fpsGeglaettet = 60f;
+
 	private void Awake()
 	{
 		if (Instance == null)
@@ -65,6 +85,83 @@ public class UIGameManager : MonoBehaviour
 	private void Update()
 	{
 		checkEscape();
+		anzeigeAktualisieren();
+	}
+
+	private void anzeigeAktualisieren()
+	{
+		// Hitmarker ueber eine Zeit statt pro Treffer eine Coroutine: bei der SMG kommen
+		// die Treffer schneller als die Anzeige dauert.
+		Hitmarker.SetActive(Time.time < hitmarkerBis);
+
+		if (fpsText != null)
+		{
+			fpsText.gameObject.SetActive(SettingsManager.fpsAnzeigen);
+			if (SettingsManager.fpsAnzeigen && Time.unscaledDeltaTime > 0f)
+			{
+				fpsGeglaettet = Mathf.Lerp(fpsGeglaettet, 1f / Time.unscaledDeltaTime, 0.05f);
+				fpsText.text = Mathf.RoundToInt(fpsGeglaettet) + " FPS";
+			}
+		}
+
+		Playermanager ich = Playermanager.ownerPlayer;
+		if (ich == null || Manager.Instance.gamestate == Manager.GameState.Lobby)
+		{
+			return;
+		}
+		int leben = Mathf.Max(0, ich.leben.Value);
+		if (lebenText != null)
+		{
+			lebenText.text = leben + " / " + Waffen.MAX_LEBEN;
+		}
+		if (lebenBalken != null)
+		{
+			lebenBalken.anchorMax = new Vector2((float)leben / Waffen.MAX_LEBEN, 1f);
+		}
+		playershooting schiessen = ich.GetComponent<playershooting>();
+		if (waffeText != null && schiessen != null)
+		{
+			string text = "";
+			for (int i = 0; i < Waffen.LISTE.Length; i++)
+			{
+				string eintrag = "[" + (i + 1) + "] " + Waffen.LISTE[i].name;
+				text += i == schiessen.waffe ? "<b><color=#FFFFFF>" + eintrag + "</color></b>   " : "<color=#9A9A9A>" + eintrag + "</color>   ";
+			}
+			if (Waffen.HatDauerfeuer(ich.playerNameString))
+			{
+				text += "<color=#FFB040>Dauerfeuer</color>";
+			}
+			waffeText.text = text;
+		}
+		bool gezoomt = schiessen != null && schiessen.zoomStufe >= 0 && !ich.isDead.Value;
+		if (zielfernrohr != null)
+		{
+			zielfernrohr.SetActive(gezoomt);
+		}
+		if (fadenkreuz != null)
+		{
+			fadenkreuz.SetActive(!gezoomt);
+		}
+		if (teamText != null)
+		{
+			Runde runde = Runde.Instance;
+			bool teams = runde != null && runde.teamModus.Value;
+			teamText.gameObject.SetActive(teams);
+			if (teams)
+			{
+				string farbe1 = ColorUtility.ToHtmlStringRGB(Teams.SchriftFarbe(Teams.ALLIIERTE));
+				string farbe2 = ColorUtility.ToHtmlStringRGB(Teams.SchriftFarbe(Teams.VERTEIDIGER));
+				string farbeIch = ColorUtility.ToHtmlStringRGB(Teams.SchriftFarbe(ich.team.Value));
+				teamText.text = "<color=#" + farbe1 + ">" + Teams.Name(Teams.ALLIIERTE) + " " + runde.punkteAlliierte.Value + "</color>  :  <color=#"
+					+ farbe2 + ">" + runde.punkteVerteidiger.Value + " " + Teams.Name(Teams.VERTEIDIGER) + "</color>\n<size=70%>Dein Team: <color=#"
+					+ farbeIch + ">" + Teams.Name(ich.team.Value) + "</color></size>";
+			}
+		}
+	}
+
+	public void zeigeHitmarker()
+	{
+		hitmarkerBis = Time.time + 0.5f;
 	}
 
 	private void checkEscape()
@@ -145,7 +242,7 @@ public class UIGameManager : MonoBehaviour
 	public void shotPlayer(Playermanager ownerPlayer, string affectedPlayer)
 	{
 		killsText.text = "Kills: " + ownerPlayer.kills.Value;
-		StartCoroutine(animateHitmarker());
+		zeigeHitmarker();
 	}
 
 	private IEnumerator animateHitmarker()

@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.8
+Aktuell: Version 0.2.0
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -18,12 +18,32 @@ erzeugt das Menue Shootout > Szene und Prefabs aufbauen** aus den Daten in `docs
 (Einzelheiten in `docs/REKONSTRUKTION.md`). Die erzeugten Dateien sind noch nicht im
 Repo, bis jemand das Menue einmal ausfuehrt und das Ergebnis committet.
 
-Naechste Schritte:
+Seit 0.2.0 dazugekommen (zum Ausprobieren, wie Bewegung und Spielgefuehl zu den Ideen passen):
 
-1. Menue ausfuehren, Ergebnis committen, Spiel mit zwei Instanzen (ParrelSync) zum Laufen bringen.
-2. Fehler beheben, die das Spiel kaputt machen: Endlosschleife, Abklingzeit, Mehrfachkills, Singletons.
-3. Treffer auf dem Server pruefen, Spieler ueber NetworkObjectId statt Namen erkennen.
-4. Neue Features (Sound, Runden, Teams, Maps).
+* **Waffen:** Gewehr (wie im Original), SMG (schnell, streut, im Laufen mehr), Sniper (langsam,
+  immer genau, Zoom wie bei Counter-Strike). Werte in `Assets/Scripts/Spiel/Waffen.cs`.
+  Dazu 100 Leben, den Schaden prueft der Server.
+* **Aussehen:** Bild vom PC (PNG, JPG) auf die vordere Kopfhaelfte legen, mit Vorschau.
+  Andere Spieler sehen es, abschaltbar unter Einstellungen > Video.
+* **Teams und Bots:** Beim Erstellen einer Lobby waehlbar. Alliierte gegen Verteidiger,
+  Teampunkte oben. Bots fuellen die Runde auf die gewaehlte Spielerzahl auf.
+* **D-Day-Map:** Strand mit Landungsbooten, Hang mit drei Schluchten als Wegen nach oben,
+  Bunker, Graeben, Feuer, Wasser, Pflanzen. Wird vom Editor-Skript erzeugt.
+* **Menue:** Einstellungs-Tabs, FPS-Anzeige, Fenster/Vollbild, Lautstaerke, Maus invertieren,
+  alles wird gespeichert. Einfache Toene fuer Schuesse und Treffer.
+
+### Steuerung
+
+| Taste | Wirkung |
+|---|---|
+| WASD, Maus, Leertaste | Laufen, Umsehen, Springen (wie im Original) |
+| Linksklick | Schiessen |
+| 1, 2, 3 oder Mausrad | Gewehr, SMG, Sniper |
+| Rechtsklick (Sniper) | Zoom Stufe 1, Stufe 2, aus |
+| Escape | Pause, Scoreboard |
+| Leertaste nach dem Tod | Neu spawnen |
+
+Namen mit `!ad` schiessen mit jeder Waffe im Dauerfeuer (Dev-Funktion).
 
 ## Aufbau
 
@@ -119,6 +139,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.2.0 | **Netz:** Drei Waffen, Leben und Schaden (Server prueft Treffer, Schuetze per Objekt-ID), Teams (`Runde`, NetworkVariables `team`, `leben`), Bots (eigenes Prefab, laufen auf dem Host), Kopfbild (wird in Stuecken uebertragen), D-Day-Map (Map 3). Menue ausgebaut (Einstellungen, Aussehen, Host-Optionen), HUD mit Leben, Waffe, Teampunkten, FPS, Zielfernrohr. Behoben: Bugs 6, 7, 11, 16, 18, 19, 20 aus `docs/REKONSTRUKTION.md`, fehlende Maps nach Verbindungsabbruch, alte Asset-Kopien nach erneutem Aufbau (unsichtbarer Laser). LAN-Verbindungscode unveraendert. Szene neu aufbauen. |
 | 0.1.8 | Dauerfeuer nur noch fuer Spieler mit `!ad` im Namen (Gross- und Kleinschreibung egal, Dev-Funktion). Alle anderen schiessen mit der Abklingzeit aus dem Prefab (0,7 s), wie vor dem Mod. Der Abklingbalken richtet sich nach der jeweils geltenden Zeit. |
 | 0.1.7 | **Netz:** Laser der anderen Spieler wurden nicht oder falsch angezeigt (Treffer zaehlten trotzdem). `laserEffectServerRPC`/`laserEffectClientRPC` schicken jetzt den Trefferpunkt statt der Entfernung, jeder PC zeichnet vom Laserpointer des Schuetzen dorthin. Der Schuetze sieht seinen Laser sofort, ohne Umweg ueber den Server. |
 | 0.1.6 | **Netz:** LAN-Beitritt ging nicht. Netcode 1.14 lauscht bei leerer "Server Listen Address" nur auf 127.0.0.1, das Original (Netcode 1.0.x) auf der LAN-IP. Das Editor-Skript setzt jetzt 0.0.0.0 (alle Adressen des PCs, Port weiter 7777). LAN-Code unveraendert. Dazu: Canvas skaliert nach der Breite, Lobbycode ueberlappt nicht mehr mit "(press escape to continue)". |

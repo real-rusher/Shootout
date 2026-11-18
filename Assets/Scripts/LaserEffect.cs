@@ -28,6 +28,23 @@ public class LaserEffect : MonoBehaviour
 		base.transform.localScale = new Vector3(effectWidth, effectWidth, 100f * num);
 	}
 
+	// Mit Farbe und Dicke je Waffe (Waffen.cs).
+	public void zeigeStrahl(Vector3 laserPointerPos, Vector3 trefferpunkt, Color farbe, float dicke)
+	{
+		zeigeStrahl(laserPointerPos, trefferpunkt);
+		Vector3 skala = base.transform.localScale;
+		base.transform.localScale = new Vector3(skala.x * dicke, skala.y * dicke, skala.z);
+		// PropertyBlock statt eigenem Material: kein Material pro Schuss, das man aufraeumen muesste.
+		Renderer anzeige = GetComponent<Renderer>();
+		if (anzeige != null)
+		{
+			MaterialPropertyBlock block = new MaterialPropertyBlock();
+			block.SetColor("_Color", farbe);
+			block.SetColor("_EmissionColor", farbe * 0.6f);
+			anzeige.SetPropertyBlock(block);
+		}
+	}
+
 	private IEnumerator destroySelf()
 	{
 		yield return new WaitForSeconds(effectTime);

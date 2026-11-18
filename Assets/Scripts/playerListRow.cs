@@ -38,7 +38,8 @@ public class playerListRow : MonoBehaviour
 	public void setPlayer(Playermanager pPlayer)
 	{
 		player = pPlayer;
-		ownerPlayer = player.IsOwner;
+		// Bots gehoeren dem Host, sind aber nicht "du".
+		ownerPlayer = player.istLokal;
 		hostPlayer = player.IsOwnedByServer;
 		rows.Add(this);
 		recalc();
@@ -110,10 +111,14 @@ public class playerListRow : MonoBehaviour
 		int value = player.kills.Value;
 		int value2 = player.deaths.Value;
 		float num = ((value2 == 0) ? ((float)value) : ((float)value / (float)value2));
-		nameTxt.text = (hostPlayer ? "(host) " : "") + player.name;
+		string zusatz = player.istBot ? "(Bot) " : (hostPlayer ? "(host) " : "");
+		nameTxt.text = zusatz + player.name;
+		// Im Teammodus der Name in Teamfarbe.
+		nameTxt.color = Teams.SchriftFarbe(player.team.Value);
 		killsTxt.text = value.ToString();
 		deathsTxt.text = value2.ToString();
-		kdTxt.text = num.ToString();
+		// Original zeigte die K/D ungerundet (z. B. 0.3333333).
+		kdTxt.text = num.ToString("0.00");
 	}
 
 	private void setIndex(int pIndex)

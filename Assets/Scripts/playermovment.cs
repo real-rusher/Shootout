@@ -41,7 +41,15 @@ public class playermovment : NetworkBehaviour
 
 	public bool isGrounded => controller.isGrounded;
 
-	public bool _isDead => Playermanager.ownerPlayer.isDead.Value;
+	// Original las hier immer den Zustand des eigenen Spielers, auch auf fremden Objekten.
+	public bool _isDead => playermanager.isDead.Value;
+
+	private Playermanager playermanager;
+
+	private BotSteuerung bot;
+
+	// Wie schnell sich die Figur gerade bewegt, 0 bis 1 (fuer die Streuung der Waffen).
+	public float laufAnteil => new Vector2(velocity.x, velocity.z).magnitude / Mathf.Max(0.01f, movementSpeed);
 
 	public event Action OnBeforeMove;
 
@@ -55,28 +63,43 @@ public class playermovment : NetworkBehaviour
 		controller = GetComponent<CharacterController>();
 	}
 
+	private void Awake()
+	{
+		playermanager = GetComponent<Playermanager>();
+		bot = GetComponent<BotSteuerung>();
+	}
+
+	// Steuerbar ist die Figur, wenn man im Spiel ist (nicht im Pausemenue). Bots immer.
+	private bool steuerbar => bot != null || Manager.Instance.gamestate == Manager.GameState.Game;
+
 	private void Update()
 	{
-		if (base.IsOwner && !_isDead)
+		// Nur der Besitzer bewegt die Figur (Bots gehoeren dem Host). Fremde Figuren setzt
+		// NetworkTransform. Im Original lief die Schwerkraft auch auf fremden Figuren und
+		// arbeitete gegen die Synchronisation.
+		if (!base.IsOwner || _isDead)
 		{
-			UpdateMovement();
-			UpdatePrejump();
-			if (Manager.Instance.gamestate == Manager.GameState.Game)
-			{
-				UpdateJump();
-			}
+			return;
 		}
-		if (!_isDead)
+		UpdateMovement();
+		UpdatePrejump();
+		if (steuerbar)
 		{
-			UpdateGravity();
+			UpdateJump();
 		}
+		UpdateGravity();
+	}
+
+	private bool springenGedrueckt()
+	{
+		return bot != null ? bot.springen : jumpAction.IsPressed();
 	}
 
 	private void UpdatePrejump()
 	{
 		if (!isGrounded)
 		{
-			if (jumpAction.IsPressed() && Manager.Instance.gamestate == Manager.GameState.Game)
+			if (springenGedrueckt() && steuerbar)
 			{
 				prejumpTimer = 0f;
 			}
@@ -85,7 +108,7 @@ public class playermovment : NetworkBehaviour
 				prejumpTimer += Time.deltaTime;
 			}
 		}
-		else if (prejumpTimer >= 0f && prejumpTimer <= prejumpTime && !jumpAction.IsPressed())
+		else if (prejumpTimer >= 0f && prejumpTimer <= prejumpTime && !springenGedrueckt())
 		{
 			velocity.y = jumpSpeed;
 			prejumpTimer = -1f;
@@ -94,7 +117,7 @@ public class playermovment : NetworkBehaviour
 
 	private void UpdateJump()
 	{
-		if (jumpAction.IsPressed() && isGrounded)
+		if (springenGedrueckt() && isGrounded)
 		{
 			velocity.y = jumpSpeed;
 		}
@@ -118,14 +141,14 @@ public class playermovment : NetworkBehaviour
 
 	private Vector3 GetMovementInput()
 	{
-		Vector2 vector = moveAction.ReadValue<Vector2>();
+		Vector2 vector = bot != null ? Vector2.ClampMagnitude(bot.bewegung, 1f) : moveAction.ReadValue<Vector2>();
 		return Vector3.ClampMagnitude(default(Vector3) + base.transform.forward * vector.y + base.transform.right * vector.x, 1f) * movementSpeed;
 	}
 
 	private void UpdateMovement()
 	{
 		Vector3 vector = Vector3.zero;
-		if (Manager.Instance.gamestate == Manager.GameState.Game)
+		if (steuerbar)
 		{
 			vector = GetMovementInput();
 		}

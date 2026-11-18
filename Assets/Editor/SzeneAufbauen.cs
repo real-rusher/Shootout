@@ -33,7 +33,7 @@ using Object = UnityEngine.Object;
 // Laserstrahls, Lage des Laserpointers, Namensschild).
 //
 // Ein zweiter Aufruf baut alles neu und ueberschreibt Szene und Prefabs.
-public static class SzeneAufbauen
+public static partial class SzeneAufbauen
 {
 	const string SZENE = "Assets/Scenes/SampleScene.unity";
 	const string PREFABS = "Assets/Prefabs";
@@ -90,7 +90,9 @@ public static class SzeneAufbauen
 			var szenenWerte = D(werte["szene"]);
 
 			Fortschritt("Sprites", 0.05f);
+			LayerVorschauEinrichten();
 			SpritesEinstellen();
+			ZielfernrohrErzeugen();
 
 			Fortschritt("Laser", 0.1f);
 			var laser = LaserPrefab(komponenten);
@@ -101,12 +103,18 @@ public static class SzeneAufbauen
 			Fortschritt("Spieler", 0.3f);
 			var spieler = SpielerPrefab(komponenten, laser);
 
+			Fortschritt("Bot", 0.35f);
+			var bot = BotPrefab(spieler);
+
 			Fortschritt("Maps", 0.45f);
 			var zimmer = MapPrefab(GLB_ZIMMER, "Shooter-Map", "Map_Zimmer", MapWerte(szenenWerte, "Map1_"), "Point Light Raum", szenenWerte);
 			var infoRaum = MapPrefab(GLB_INFORAUM, "MessyRoomparts", "Map_InfoRaum", MapWerte(szenenWerte, "Map2_"), "Point Light Info", szenenWerte);
 
+			Fortschritt("D-Day-Map", 0.5f);
+			var dDay = DDayKarte();
+
 			Fortschritt("Szene", 0.7f);
-			SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum);
+			SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum, bot, dDay);
 
 			EditorUtility.ClearProgressBar();
 			EditorUtility.DisplayDialog("Shootout",
@@ -215,6 +223,20 @@ public static class SzeneAufbauen
 		return AssetDatabase.LoadAssetAtPath<Sprite>(pfad);
 	}
 
+	// Sprite ueber Kennung aus dem Build (ext:3:...) oder direkt als "datei:Pfad" / "builtin:Pfad".
+	static Sprite SpriteAusKennung(string kennung)
+	{
+		if (kennung != null && kennung.StartsWith("datei:"))
+		{
+			return AssetDatabase.LoadAssetAtPath<Sprite>(kennung.Substring("datei:".Length));
+		}
+		if (kennung != null && kennung.StartsWith("builtin:"))
+		{
+			return AssetDatabase.GetBuiltinExtraResource<Sprite>(kennung.Substring("builtin:".Length));
+		}
+		return SpriteFuer(kennung);
+	}
+
 	// ------------------------------------------------------------------
 	// Laser
 
@@ -285,6 +307,9 @@ public static class SzeneAufbauen
 		// Nur die Kamera des eigenen Spielers wird eingeschaltet (playerlooking.switchCameraTo).
 		kamera.enabled = false;
 		kamera.nearClipPlane = 0.05f;
+		kamera.fieldOfView = Waffen.NORMALES_SICHTFELD;
+		// Die Vorschau des Kopfbild-Editors steht auf einem eigenen Layer, den sieht nur ihre Kamera.
+		kamera.cullingMask = ~(1 << LAYER_VORSCHAU);
 		kameraGo.AddComponent<AudioListener>();
 		var netzKamera = kameraGo.AddComponent<NetworkClientTransform>();
 		WerteSetzen(netzKamera, D(transformWerte[1]));
@@ -328,6 +353,10 @@ public static class SzeneAufbauen
 		Setze(verwaltung, "body", koerper);
 		Setze(verwaltung, "laserPointer", pointer);
 		Setze(schiessen, "laser", laser);
+
+		// Eigenes Bild auf der vorderen Kopfhaelfte (Kopfbild-Editor im Menue).
+		var kopfbild = wurzel.AddComponent<Kopfbild>();
+		Setze(kopfbild, "material", KopfbildMaterial());
 
 		// Eigener Spieler liegt auf "Ignore Raycast", fremde setzt Playermanager auf 8 und 9.
 		LayerSetzen(wurzel, 2);
@@ -427,7 +456,7 @@ public static class SzeneAufbauen
 	// ------------------------------------------------------------------
 	// Szene
 
-	static void SzeneBauen(Dictionary<string, object> szenenWerte, GameObject spieler, GameObject zeile, GameObject zimmer, GameObject infoRaum)
+	static void SzeneBauen(Dictionary<string, object> szenenWerte, GameObject spieler, GameObject zeile, GameObject zimmer, GameObject infoRaum, GameObject bot, GameObject dDay)
 	{
 		var szene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 		// Gleich speichern: Das NetworkObject in der Szene braucht die GUID der Szene fuer seine Kennung.
@@ -436,6 +465,9 @@ public static class SzeneAufbauen
 		RenderSettings.skybox = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
 		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
 		RenderSettings.fog = false;
+
+		// Vorschaubild der D-Day-Map fuer den Knopf im Host-Fenster.
+		var dDayVorschau = DDayVorschauRendern(dDay);
 
 		// Lichter. GESCHAETZT: Richtungen.
 		var lichter = new GameObject("Lights");
@@ -453,8 +485,10 @@ public static class SzeneAufbauen
 		kameraGo.tag = "MainCamera";
 		kameraGo.transform.position = new Vector3(15f, 15f, -15f);
 		kameraGo.transform.LookAt(new Vector3(-5f, 5f, 5f));
-		kameraGo.AddComponent<Camera>();
+		kameraGo.AddComponent<Camera>().cullingMask = ~(1 << LAYER_VORSCHAU);
 		kameraGo.AddComponent<AudioListener>();
+
+		var vorschau = KopfbildVorschauBauen();
 
 		var eventSystem = new GameObject("EventSystem");
 		eventSystem.AddComponent<EventSystem>();
@@ -482,10 +516,13 @@ public static class SzeneAufbauen
 		netz.NetworkConfig.ForceSamePrefabs = true;
 		netz.RunInBackground = true;
 		var liste = PrefabListe();
-		if (!liste.Contains(spieler))
+		foreach (var netzPrefab in new[] { spieler, bot })
 		{
-			liste.Add(new NetworkPrefab { Prefab = spieler });
-			EditorUtility.SetDirty(liste);
+			if (!liste.Contains(netzPrefab))
+			{
+				liste.Add(new NetworkPrefab { Prefab = netzPrefab });
+				EditorUtility.SetDirty(liste);
+			}
 		}
 		netz.NetworkConfig.Prefabs.NetworkPrefabsLists = new List<NetworkPrefabsList> { liste };
 		netzGo.AddComponent<Spielversion>();
@@ -499,12 +536,15 @@ public static class SzeneAufbauen
 		var verbindung = spielGo.AddComponent<ConnectionManager>();
 		spielGo.AddComponent<PlayersManager>();
 		spielGo.AddComponent<Spawnlocation>();
+		var runde = spielGo.AddComponent<Runde>();
+		Setze(runde, "botPrefab", bot);
 		Setze(eingabe, "m_Actions", AssetDatabase.LoadAssetAtPath<InputActionAsset>(EINGABE));
 		// Das Spiel startet im Menue, Manager schaltet spaeter auf "Player" um.
 		Setze(eingabe, "m_DefaultActionMap", "UI");
 		Setze(eingabe, "m_NotificationBehavior", (int)PlayerNotifications.InvokeCSharpEvents);
 		Setze(manager, "oldMapPrefab", zimmer);
 		Setze(manager, "newMapPrefab", infoRaum);
+		Setze(manager, "dDayMapPrefab", dDay);
 		Setze(manager, "playerInput", eingabe);
 		Setze(manager, "connectionManager", verbindung);
 		Setze(manager, "uiCam", kameraGo);
@@ -512,7 +552,10 @@ public static class SzeneAufbauen
 
 		// UI
 		var bau = new UiBau();
-		var canvasGo = UiKnoten(D(JsonDatei(UI_DATEN)), null, null, bau);
+		var uiDaten = D(JsonDatei(UI_DATEN));
+		var canvasGo = UiKnoten(uiDaten, null, null, bau);
+		// Neues UI (Einstellungen, HUD, Aussehen, Host-Optionen, D-Day-Knopf) aus UiErweiterung.json.
+		UiErweitern(bau, uiDaten, dDayVorschau);
 		var canvas = canvasGo.GetComponent<Canvas>();
 		canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 		// GESCHAETZT: Bezugsaufloesung. Die Positionen im UI passen zu 1920 x 1080.
@@ -561,6 +604,8 @@ public static class SzeneAufbauen
 		Setze(einstellungen, "changeUsernameField", bau.Komponente<TMP_InputField>("Canvas/SettingsScreen/Tabs/ChangeNameField"));
 		Setze(einstellungen, "changeUsernameBtn", bau.Komponente<Button>("Canvas/SettingsScreen/Tabs/ChangeNameBtn"));
 		Setze(einstellungen, "changeUsernameBtnTxt", bau.Komponente<TMP_Text>("Canvas/SettingsScreen/Tabs/ChangeNameBtn/Text (TMP)"));
+
+		NeueFelderSetzen(bau, vorschau);
 
 		var ziele = new Dictionary<string, GameObject> { { "Canvas", canvasGo }, { "Game Manager", spielGo } };
 		foreach (var e in bau.ereignisse)
@@ -689,7 +734,7 @@ public static class SzeneAufbauen
 			bild = go.AddComponent<Image>();
 			bild.color = Farbe((string)daten["color"]);
 			var kennung = daten["sprite"] as string;
-			bild.sprite = SpriteFuer(kennung);
+			bild.sprite = SpriteAusKennung(kennung);
 			string quelle;
 			if (kennung != null && SPRITES.TryGetValue(kennung, out quelle) && quelle.StartsWith("builtin:") && !quelle.EndsWith("Checkmark.psd"))
 			{
@@ -754,6 +799,11 @@ public static class SzeneAufbauen
 				case "connectingAnim":
 					Setze(go.AddComponent<connectingAnim>(), "connectingTxt", text);
 					break;
+				// Neu in UiErweiterung.json:
+				case "RawImage": go.AddComponent<RawImage>().color = Color.white; break;
+				case "Blinken": go.AddComponent<Blinken>(); break;
+				case "KopfbildEditor": go.AddComponent<KopfbildEditor>(); break;
+				case "HostOptionen": go.AddComponent<HostOptionen>(); break;
 				case "playerListRow":
 					var zeile = go.AddComponent<playerListRow>();
 					Setze(zeile, "rect", rt);
@@ -830,11 +880,12 @@ public static class SzeneAufbauen
 
 	static void RectSetzen(RectTransform rt, Dictionary<string, object> rect)
 	{
-		rt.anchorMin = V2(rect["anchorMin"]);
-		rt.anchorMax = V2(rect["anchorMax"]);
-		rt.pivot = V2(rect["pivot"]);
-		rt.sizeDelta = V2(rect["size"]);
-		rt.anchoredPosition = V2(rect["pos"]);
+		// Fehlende Angaben (nur in UiErweiterung.json moeglich) mit ueblichen Werten.
+		rt.anchorMin = rect.ContainsKey("anchorMin") ? V2(rect["anchorMin"]) : new Vector2(0.5f, 0.5f);
+		rt.anchorMax = rect.ContainsKey("anchorMax") ? V2(rect["anchorMax"]) : rt.anchorMin;
+		rt.pivot = rect.ContainsKey("pivot") ? V2(rect["pivot"]) : new Vector2(0.5f, 0.5f);
+		rt.sizeDelta = rect.ContainsKey("size") ? V2(rect["size"]) : new Vector2(100f, 100f);
+		rt.anchoredPosition = rect.ContainsKey("pos") ? V2(rect["pos"]) : Vector2.zero;
 	}
 
 	// Sucht ein Kind (in jeder Tiefe) mit genau diesem Namen.
@@ -967,6 +1018,17 @@ public static class SzeneAufbauen
 
 	static T AlsAsset<T>(T asset, string pfad) where T : Object
 	{
+		// Vorhandenes Asset ueberschreiben statt loeschen und neu anlegen. Sonst behielt der
+		// Editor, der das Skript ausgefuehrt hat, alte Kopien im Speicher (Laser unsichtbar).
+		var vorhanden = AssetDatabase.LoadAssetAtPath<T>(pfad);
+		if (vorhanden != null)
+		{
+			EditorUtility.CopySerialized(asset, vorhanden);
+			vorhanden.name = Path.GetFileNameWithoutExtension(pfad);
+			EditorUtility.SetDirty(vorhanden);
+			Object.DestroyImmediate(asset);
+			return vorhanden;
+		}
 		if (AssetDatabase.LoadAssetAtPath<Object>(pfad) != null)
 		{
 			AssetDatabase.DeleteAsset(pfad);

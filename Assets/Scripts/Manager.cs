@@ -23,6 +23,14 @@ public class Manager : NetworkBehaviour
 
 	public GameObject newMap;
 
+	// Neu: dritte Map (chosenMap 3).
+	public GameObject dDayMapPrefab;
+
+	public GameObject dDayMap;
+
+	// Die Map, die gerade gespielt wird (nach getMap).
+	public GameObject aktiveKarte { get; private set; }
+
 	public PlayerInput playerInput;
 
 	public ConnectionManager connectionManager;
@@ -51,10 +59,31 @@ public class Manager : NetworkBehaviour
 		{
 			UnityEngine.Object.Destroy(Instance);
 		}
-		oldMap = UnityEngine.Object.Instantiate(oldMapPrefab);
+		kartenErzeugen();
+	}
+
+	// Legt fehlende Maps an. Das Zimmer bleibt sichtbar, es ist der Hintergrund im Menue.
+	private void kartenErzeugen()
+	{
+		if (oldMap == null)
+		{
+			oldMap = UnityEngine.Object.Instantiate(oldMapPrefab);
+		}
+		if (newMap == null)
+		{
+			newMap = UnityEngine.Object.Instantiate(newMapPrefab);
+		}
+		if (dDayMap == null && dDayMapPrefab != null)
+		{
+			dDayMap = UnityEngine.Object.Instantiate(dDayMapPrefab);
+		}
 		oldMap.SetActive(value: true);
-		newMap = UnityEngine.Object.Instantiate(newMapPrefab);
 		newMap.SetActive(value: false);
+		if (dDayMap != null)
+		{
+			dDayMap.SetActive(value: false);
+		}
+		aktiveKarte = null;
 	}
 
 	public void connectAsClient(string shortIP)
@@ -90,36 +119,25 @@ public class Manager : NetworkBehaviour
 		ownIP = code;
 	}
 
+	// Aktiviert die gewaehlte Map und entfernt die anderen (wie im Original, spart Speicher).
 	public void getMap()
 	{
-		if (connectionManager.chosenMap.Value == 1)
+		int wahl = connectionManager.chosenMap.Value;
+		GameObject gewaehlt = wahl == 1 ? oldMap : (wahl == 3 && dDayMap != null ? dDayMap : newMap);
+		foreach (GameObject karte in new[] { oldMap, newMap, dDayMap })
 		{
-			Debug.Log("getMap1");
-			oldMap.SetActive(value: true);
-			UnityEngine.Object.Destroy(newMap);
+			if (karte != null && karte != gewaehlt)
+			{
+				UnityEngine.Object.Destroy(karte);
+			}
 		}
-		else
-		{
-			Debug.Log("getMap2");
-			newMap.SetActive(value: true);
-			UnityEngine.Object.Destroy(oldMap);
-		}
+		gewaehlt.SetActive(value: true);
+		aktiveKarte = gewaehlt;
 	}
 
 	private void returnMap()
 	{
-		if (oldMap != null)
-		{
-			oldMap.SetActive(value: true);
-			newMap = UnityEngine.Object.Instantiate(newMapPrefab);
-			newMap.SetActive(value: false);
-		}
-		else
-		{
-			newMap.SetActive(value: false);
-			oldMap = UnityEngine.Object.Instantiate(oldMapPrefab);
-			oldMap.SetActive(value: true);
-		}
+		kartenErzeugen();
 	}
 
 	public void startGame()
@@ -167,6 +185,9 @@ public class Manager : NetworkBehaviour
 		UIManager.Instance.connectionLost();
 		uiCam.SetActive(value: true);
 		connectionManager.stopNetwork();
+		// Fehlte im Original: Ohne neue Maps fehlte nach einem Verbindungsabbruch die
+		// geloeschte Map beim naechsten Spiel.
+		returnMap();
 	}
 
 	public void openSettings()

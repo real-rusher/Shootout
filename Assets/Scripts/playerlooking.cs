@@ -18,23 +18,48 @@ public class playerlooking : NetworkBehaviour
 
 	private Vector2 look;
 
-	public bool _isDead => Playermanager.ownerPlayer.isDead.Value;
+	private Playermanager playermanager;
+
+	private Camera kamera;
+
+	// Original las hier immer den Zustand des eigenen Spielers, auch auf fremden Objekten.
+	public bool _isDead => playermanager.isDead.Value;
+
+	private void Awake()
+	{
+		playermanager = GetComponent<Playermanager>();
+		kamera = cameraTransform.GetComponent<Camera>();
+	}
 
 	private void Start()
 	{
 		playerInput = Manager.Instance.playerInput;
 		lookAction = playerInput.actions["Look"];
-		if (base.IsOwner)
+	}
+
+	public override void OnNetworkSpawn()
+	{
+		base.OnNetworkSpawn();
+		if (playermanager.istLokal)
 		{
 			switchCameraTo(cameraTransform.gameObject);
-			Playermanager ownerPlayer = Playermanager.ownerPlayer;
-			ownerPlayer.gotShot += cameraStartZoom;
+			playermanager.gotShot += cameraStartZoom;
+			blickAusTransform();
+		}
+		else
+		{
+			// Nur der eigene Spieler hoert zu. Sonst gaebe es pro Spieler einen AudioListener.
+			AudioListener zuhoerer = cameraTransform.GetComponent<AudioListener>();
+			if (zuhoerer != null)
+			{
+				zuhoerer.enabled = false;
+			}
 		}
 	}
 
 	private void Update()
 	{
-		if (base.IsOwner && !_isDead)
+		if (playermanager.istLokal && !_isDead)
 		{
 			updateLook();
 		}
@@ -42,7 +67,7 @@ public class playerlooking : NetworkBehaviour
 
 	private void LateUpdate()
 	{
-		if (base.IsOwner)
+		if (playermanager.istLokal)
 		{
 			updateLabels();
 		}
@@ -50,6 +75,7 @@ public class playerlooking : NetworkBehaviour
 
 	private void cameraStartZoom(Playermanager pm, string otherPlayer)
 	{
+		setzeSichtfeld(Waffen.NORMALES_SICHTFELD);
 		StartCoroutine(cameraZoomAnim(pm, otherPlayer));
 	}
 
@@ -72,18 +98,40 @@ public class playerlooking : NetworkBehaviour
 
 	private void lookTowardsCenter()
 	{
-		look.x = base.transform.localRotation.eulerAngles.y;
+		blickAusTransform();
+	}
+
+	// Uebernimmt die Drehung der Spielfigur als Blickrichtung (nach dem Spawn).
+	public void blickAusTransform()
+	{
+		look.x = base.transform.eulerAngles.y;
 		look.y = 0f;
+		cameraTransform.localRotation = Quaternion.identity;
 	}
 
 	private void updateLook()
 	{
 		Vector2 vector = lookAction.ReadValue<Vector2>();
-		look.x += vector.x * SettingsManager.c_Sensi;
-		look.y += vector.y * SettingsManager.c_Sensi;
+		// Beim Zoomen langsamer drehen, damit das Zielen gleich anfuehlt.
+		float faktor = SettingsManager.c_Sensi * aktuellesSichtfeld() / Waffen.NORMALES_SICHTFELD;
+		look.x += vector.x * faktor;
+		look.y += vector.y * faktor * (SettingsManager.mausInvertiert ? -1f : 1f);
 		look.y = Mathf.Clamp(look.y, -89f, 89f);
 		base.transform.localRotation = Quaternion.Euler(0f, look.x, 0f);
 		cameraTransform.localRotation = Quaternion.Euler(0f - look.y, 0f, 0f);
+	}
+
+	public void setzeSichtfeld(float grad)
+	{
+		if (kamera != null)
+		{
+			kamera.fieldOfView = grad;
+		}
+	}
+
+	public float aktuellesSichtfeld()
+	{
+		return kamera != null ? kamera.fieldOfView : Waffen.NORMALES_SICHTFELD;
 	}
 
 	private void switchCameraTo(GameObject go)
@@ -95,9 +143,10 @@ public class playerlooking : NetworkBehaviour
 	{
 		for (int i = 0; i < PlayersManager.Instance.players.Count; i++)
 		{
-			if (PlayersManager.Instance.players[i].gameObject != base.gameObject)
+			Playermanager anderer = PlayersManager.Instance.players[i];
+			if (anderer != null && anderer.gameObject != base.gameObject && anderer.nameLabel != null)
 			{
-				PlayersManager.Instance.players[i].nameLabel.transform.LookAt(cameraTransform);
+				anderer.nameLabel.transform.LookAt(cameraTransform);
 			}
 		}
 	}

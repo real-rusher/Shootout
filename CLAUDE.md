@@ -41,6 +41,20 @@ bekannte Fehler stehen in `README.md` und `docs/`. Lies das, bevor du Code aende
 * Neue Skripte bekommen ihre `.meta`-Datei von Unity. Keine `.meta`-Dateien
   erfinden, keine vorhandenen loeschen (sonst verlieren Szenen ihre Verweise).
 
+## Wo was liegt
+
+* Spielcode des Originals in `Assets/Scripts/` (Namen bleiben), Neues in
+  `Assets/Scripts/Spiel/` (Waffen, Teams, Runde, Bots, Kopfbild, Map-Effekte) und
+  `Assets/Scripts/UI/`.
+* Zahlen zum Einstellen: Waffen in `Spiel/Waffen.cs`, Bots oben in `Spiel/BotSteuerung.cs`,
+  Lobby-Standards in `Spiel/LobbyWahl.cs`.
+* Szene und Prefabs erzeugt `Assets/Editor/SzeneAufbauen*.cs` (Teile: Grundaufbau,
+  `.Erweiterung` fuer Bots, Kopfbild und neues UI, `.DDay` fuer die D-Day-Map). Neues UI steht
+  in `Assets/Editor/UiErweiterung.json` (gleiches Format wie `docs/ui_layout.json`).
+* "Lokal" heisst: der Mensch an diesem PC (`Playermanager.istLokal`). Bots gehoeren dem Host
+  (`IsOwner`), sind aber nicht lokal. Neuer Code, der nur fuer den eigenen Spieler gilt,
+  fragt `istLokal`, nicht `IsOwner`.
+
 ## Version und Netz
 
 * Jede Aenderung bekommt eine neue Version: `Spielversion.VERSION` in

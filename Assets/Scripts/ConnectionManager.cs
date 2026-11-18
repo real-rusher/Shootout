@@ -40,19 +40,13 @@ public class ConnectionManager : NetworkBehaviour
 		}
 		yield return null;
 		Manager.Instance.getMap();
-		if (chosenMap.Value == 1)
-		{
-			Spawnlocation.convertCollToBox(Manager.Instance.oldMap);
-		}
-		else if (chosenMap.Value == 2)
-		{
-			Spawnlocation.convertCollToBox(Manager.Instance.newMap);
-		}
+		// Spawnbereiche der gewaehlten Map (1 Zimmer, 2 Info-Raum, 3 D-Day).
+		Spawnlocation.convertCollToBox(Manager.Instance.aktiveKarte);
 		while (Playermanager.ownerPlayer == null)
 		{
 			yield return null;
 		}
-		Playermanager.ownerPlayer.spawn();
+		Playermanager.ownerPlayer.ersterSpawn();
 	}
 
 	public string connectAsHost(int pMap, ushort port = 7777)
