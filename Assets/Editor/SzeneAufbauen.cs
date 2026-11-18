@@ -471,6 +471,10 @@ public static class SzeneAufbauen
 			netz.NetworkConfig = new NetworkConfig();
 		}
 		var transport = netzGo.AddComponent<UnityTransport>();
+		// Im Original (Netcode 1.0.x) lauschte der Host bei leerer Listen-Adresse auf seiner
+		// LAN-IP. Netcode 1.14 lauscht dann nur auf 127.0.0.1, andere PCs kaemen nicht durch.
+		// 0.0.0.0 heisst: auf allen Adressen des PCs, Port bleibt 7777 wie im LAN-Code.
+		transport.ConnectionData.ServerListenAddress = "0.0.0.0";
 		netz.NetworkConfig.NetworkTransport = transport;
 		netz.NetworkConfig.PlayerPrefab = spieler;
 		netz.NetworkConfig.TickRate = 60;
@@ -515,7 +519,15 @@ public static class SzeneAufbauen
 		var skalierer = canvasGo.GetComponent<CanvasScaler>();
 		skalierer.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
 		skalierer.referenceResolution = new Vector2(1920f, 1080f);
-		skalierer.matchWidthOrHeight = 0.5f;
+		// Nach der Breite skalieren: Viele Texte liegen in Balken, die ueber die ganze Breite
+		// gehen, und rechnen mit 1920 Einheiten Breite. Bei 0,5 wurden sie in schmalen
+		// Fenstern zu eng und liefen ineinander.
+		skalierer.matchWidthOrHeight = 0f;
+
+		// Im Original reicht der Lobbycode (rechtsbuendig) bis x = 1427, "(press escape to
+		// continue)" beginnt schon bei x = 1413: Die Texte ueberlappten. 40 Einheiten Abstand.
+		var lobbyText = bau.Pfad("Canvas/Game Screen/PauseUI/bar/Lobbycode").GetComponent<RectTransform>();
+		lobbyText.offsetMax += new Vector2(-54f, 0f);
 
 		var ui = canvasGo.GetComponent<UIManager>();
 		Setze(ui, "startingUI", bau.Pfad("Canvas/Start Screen"));

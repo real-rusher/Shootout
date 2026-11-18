@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.1.5
+Aktuell: Version 0.1.6
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -119,6 +119,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.1.6 | **Netz:** LAN-Beitritt ging nicht. Netcode 1.14 lauscht bei leerer "Server Listen Address" nur auf 127.0.0.1, das Original (Netcode 1.0.x) auf der LAN-IP. Das Editor-Skript setzt jetzt 0.0.0.0 (alle Adressen des PCs, Port weiter 7777). LAN-Code unveraendert. Dazu: Canvas skaliert nach der Breite, Lobbycode ueberlappt nicht mehr mit "(press escape to continue)". |
 | 0.1.5 | Editor-Version 2021.3.45f2 statt 2021.3.4f1 (Unity meldet fuer 4f1 eine Sicherheitsluecke in gebauten Spielen). `ProjectVersion.txt` mit Revision, damit der Hub die Version erkennt. Spielcode unveraendert. |
 | 0.1.4 | **Netz:** Ein Abschuss zaehlt nur noch einmal, auch bei Dauerfeuer. Der Server nimmt pro Leben nur den ersten Treffer an und schreibt erst dann dem Schuetzen den Kill gut (neues RPC `killBestaetigtClientRPC`, `playerShotServerRPC` bekommt `ServerRpcParams`). Der Hitmarker erscheint deshalb erst nach der Bestaetigung. Dauerfeuer selbst bleibt. |
 | 0.1.3 | **Netz:** Online-Runden ueber Unity Relay (Host Global / Join Global mit Join-Code), Pakete `com.unity.services.relay` 1.2.0 und `com.unity.services.authentication` 2.7.4. Die alte Global-Verbindung ueber die oeffentliche IP ist raus. LAN unveraendert, nach einer Online-Runde stellt `ConnectionManager` den Transport zurueck auf direktes UDP. Braucht einmal die Einrichtung unter "Online spielen". |

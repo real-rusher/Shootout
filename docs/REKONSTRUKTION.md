@@ -151,6 +151,8 @@ Bezugsaufloesung des Canvas (1920 x 1080). Nicht nachgebaut: die Blink-Animation
 Texte ("Press space ..."), die vier BoxCollider am Game Manager (im Code ungenutzt) und
 der Inhalt des Scrollbereichs in den Einstellungen.
 
+Abweichung vom Original, damit LAN mit Netcode 1.14 geht: `UnityTransport.ConnectionData.ServerListenAddress` = `0.0.0.0` (Netcode 1.0.x lauschte bei leerem Feld auf der LAN-IP, 1.14 nur auf 127.0.0.1).
+
 Ein zweiter Aufruf baut alles neu und ueberschreibt Aenderungen von Hand. Sobald die
 Szene im Repo ist, wird sie im Editor weiter bearbeitet und das Skript nicht mehr gebraucht.
 
