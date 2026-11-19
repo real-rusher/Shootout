@@ -64,6 +64,44 @@ public static partial class SzeneAufbauen
 		typ.GetField("isGlobal").SetValue(volumen, true);
 		typ.GetField("priority").SetValue(volumen, 0f);
 		typ.GetField("sharedProfile").SetValue(volumen, NachbearbeitungProfil());
+
+		// Stufe "Ultra": zweites Volumen mit Vorrang, nur dann aktiv (Bildschirm-Spiegelungen
+		// brauchen Deferred Rendering, das Grafik.cs in "Ultra" einschaltet).
+		var ultraGo = new GameObject("NachbearbeitungUltra");
+		ultraGo.layer = LAYER_NACHBEARBEITUNG;
+		var ultraVolumen = ultraGo.AddComponent(typ);
+		typ.GetField("isGlobal").SetValue(ultraVolumen, true);
+		typ.GetField("priority").SetValue(ultraVolumen, 1f);
+		typ.GetField("sharedProfile").SetValue(ultraVolumen, NachbearbeitungUltraProfil());
+		ultraGo.SetActive(false);
+		var halter = new GameObject("GrafikUltra");
+		UltraTausch(halter, new GameObject[0], new[] { ultraGo });
+	}
+
+	static ScriptableObject NachbearbeitungUltraProfil()
+	{
+		var pfad = NACHBEARBEITUNG + "/ProfilUltra.asset";
+		if (AssetDatabase.LoadAssetAtPath<Object>(pfad) != null)
+		{
+			AssetDatabase.DeleteAsset(pfad);
+		}
+		var profil = ScriptableObject.CreateInstance(Grafik.PaketTyp("PostProcessProfile"));
+		AssetDatabase.CreateAsset(profil, pfad);
+
+		// Spiegelungen auf Wasser, Metall und glatten Boeden.
+		var spiegel = Effekt(profil, "ScreenSpaceReflections");
+		EffektWert(spiegel, "preset", "High");
+		EffektWert(spiegel, "maximumMarchDistance", 150f);
+		EffektWert(spiegel, "distanceFade", 0.3f);
+
+		// Kraeftigere Verdeckung in Ecken und unter Blaettern.
+		var verdeckung = Effekt(profil, "AmbientOcclusion");
+		EffektWert(verdeckung, "intensity", 1.05f);
+		EffektWert(verdeckung, "thicknessModifier", 1.6f);
+
+		EditorUtility.SetDirty(profil);
+		AssetDatabase.SaveAssets();
+		return profil;
 	}
 
 	// Die Werte sind zum Einstellen gedacht (im Editor: Assets/Erzeugt/Nachbearbeitung/Profil.asset).

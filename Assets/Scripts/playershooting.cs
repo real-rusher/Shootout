@@ -32,6 +32,10 @@ public class playershooting : NetworkBehaviour
 	// Aktuelle Waffe (Waffen.GEWEHR, SMG, SNIPER). Nur beim Besitzer gueltig.
 	public int waffe { get; private set; }
 
+	// Waffe fuer das Modell (Stufe "Ultra"): beim Besitzer die gewaehlte, bei anderen die
+	// zuletzt abgefeuerte. Das Netz meldet die Waffe nur beim Schuss (laserEffectClientRPC).
+	public int gezeigteWaffe { get; private set; }
+
 	// Sniper-Zoomstufe: -1 = aus, sonst Index in Waffen.SNIPER_ZOOM_SICHTFELD.
 	public int zoomStufe { get; private set; } = -1;
 
@@ -154,6 +158,7 @@ public class playershooting : NetworkBehaviour
 	{
 		neueWaffe = Mathf.Clamp(neueWaffe, 0, Waffen.LISTE.Length - 1);
 		waffe = neueWaffe;
+		gezeigteWaffe = neueWaffe;
 		setzeZoom(-1);
 		// Laserpointer je nach Waffe laenger oder kuerzer (Drehpunkt ist die Spitze).
 		if (playermanager.laserPointer != null)
@@ -280,7 +285,21 @@ public class playershooting : NetworkBehaviour
 	private void zeigeLaser(Vector3 trefferpunkt, int laserWaffe)
 	{
 		Waffen.Werte werte = Waffen.Hole(laserWaffe);
-		Instantiate(laser).GetComponent<LaserEffect>().zeigeStrahl(playermanager.laserPointer.transform.position, trefferpunkt, werte.laserFarbe, werte.laserDicke);
+		gezeigteWaffe = laserWaffe;
+		Vector3 muendung = playermanager.laserPointer.transform.position;
+		Instantiate(laser).GetComponent<LaserEffect>().zeigeStrahl(muendung, trefferpunkt, werte.laserFarbe, werte.laserDicke);
+		// Stufe "Ultra": Muendungsfeuer und Spritzer, wo der Schuss die Wasseroberflaeche trifft.
+		if (Grafik.Ultra)
+		{
+			UltraEffekte.Muendungsfeuer(muendung, (trefferpunkt - muendung).normalized, werte.laserFarbe);
+			foreach (Wasser wasser in Wasser.Alle)
+			{
+				if (wasser.schnitt(muendung, trefferpunkt, out Vector3 spritzer))
+				{
+					UltraEffekte.Spritzer(spritzer, 0.5f);
+				}
+			}
+		}
 		tonQuelle.PlayOneShot(Toene.Schuss(laserWaffe));
 	}
 

@@ -5,9 +5,17 @@ using UnityEngine;
 // Grafikstufe "Hoch" (Einstellungen > Video): Nachbearbeitung (Bloom, Umgebungsverdeckung,
 // Farbkorrektur mit ACES, Vignette, Kantenglaettung), weiche Schatten aller Sonnen, hohe
 // Schattenqualitaet, besseres Wasser. "Normal" ist der Stand des Originals.
+// Stufe "Ultra" (schliesst "Hoch" ein): Baeume, Buesche und Palmen aus Blaettern, Grashalme,
+// Wasserspritzer, Feuer mit Funken, Waffenmodelle, Spiegelungen, feinere Texturen, Deferred
+// Rendering mit Bildschirm-Spiegelungen. Was nur dort zu sehen ist, schaltet UltraSchalter.
 public static class Grafik
 {
 	public static bool Hoch { get; private set; }
+
+	public static bool Ultra { get; private set; }
+
+	// Kamera des eigenen Spielers (setzt playerlooking), z. B. fuer die Sichtweite des Grases.
+	public static Transform Beobachter;
 
 	// Wird ausgeloest, wenn die Stufe wechselt (Wasser tauscht dann sein Material).
 	public static event Action Geaendert;
@@ -29,7 +37,22 @@ public static class Grafik
 
 	private static bool weichePartikel;
 
+	private static float lodFaktor;
+
+	private static bool spiegelungen;
+
 	public static void Setzen(bool hoch)
+	{
+		Stufe(hoch, Ultra && hoch);
+	}
+
+	// "Ultra" an schaltet auch "Hoch" an.
+	public static void SetzeUltra(bool ultra)
+	{
+		Stufe(Hoch || ultra, ultra);
+	}
+
+	private static void Stufe(bool hoch, bool ultra)
 	{
 		if (!gemerkt)
 		{
@@ -40,9 +63,12 @@ public static class Grafik
 			anisotrop = QualitySettings.anisotropicFiltering;
 			lichter = QualitySettings.pixelLightCount;
 			weichePartikel = QualitySettings.softParticles;
+			lodFaktor = QualitySettings.lodBias;
+			spiegelungen = QualitySettings.realtimeReflectionProbes;
 			gemerkt = true;
 		}
 		Hoch = hoch;
+		Ultra = ultra;
 		if (hoch)
 		{
 			QualitySettings.shadows = ShadowQuality.All;
@@ -63,6 +89,13 @@ public static class Grafik
 			QualitySettings.pixelLightCount = lichter;
 			QualitySettings.softParticles = weichePartikel;
 		}
+		QualitySettings.lodBias = ultra ? 2.5f : lodFaktor;
+		QualitySettings.realtimeReflectionProbes = ultra || spiegelungen;
+		if (ultra)
+		{
+			QualitySettings.shadowDistance = 250f;
+		}
+		Shader.SetGlobalFloat("_ShootoutUltra", ultra ? 1f : 0f);
 		Anwenden();
 		Geaendert?.Invoke();
 	}
@@ -89,6 +122,16 @@ public static class Grafik
 			foreach (UnityEngine.Object schicht in UnityEngine.Object.FindObjectsOfType(schichtTyp, true))
 			{
 				((Behaviour)schicht).enabled = Hoch;
+			}
+		}
+		// Deferred Rendering in "Ultra": noetig fuer die Bildschirm-Spiegelungen der
+		// Nachbearbeitung, und viele Lampen kosten kaum mehr. Kameras mit Zieltextur
+		// (Vorschau im Kopfbild-Editor) bleiben, wie sie sind.
+		foreach (Camera kamera in UnityEngine.Object.FindObjectsOfType<Camera>(true))
+		{
+			if (kamera.targetTexture == null)
+			{
+				kamera.renderingPath = Ultra ? RenderingPath.DeferredShading : RenderingPath.UsePlayerSettings;
 			}
 		}
 		foreach (Light licht in UnityEngine.Object.FindObjectsOfType<Light>(true))

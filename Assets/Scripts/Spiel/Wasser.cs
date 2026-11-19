@@ -125,6 +125,38 @@ public class Wasser : MonoBehaviour
 		return lokal.y < welle(lokal.x, lokal.z);
 	}
 
+	// Hoehe der Oberflaeche (Welt) ueber einem Punkt, falls der Punkt ueber oder unter dem Wasser liegt.
+	public bool oberflaeche(Vector3 weltPunkt, out float hoeheWelt)
+	{
+		Vector3 lokal = base.transform.InverseTransformPoint(weltPunkt);
+		hoeheWelt = 0f;
+		if (lokal.x < flaeche.min.x || lokal.x > flaeche.max.x || lokal.z < flaeche.min.z || lokal.z > flaeche.max.z)
+		{
+			return false;
+		}
+		hoeheWelt = base.transform.TransformPoint(new Vector3(lokal.x, welle(lokal.x, lokal.z), lokal.z)).y;
+		return true;
+	}
+
+	// Wo die Strecke von a nach b die Wasseroberflaeche schneidet (Schuss ins Wasser).
+	// Die Wellen zaehlen dabei nicht, sie sind nur eine Handbreit hoch.
+	public bool schnitt(Vector3 a, Vector3 b, out Vector3 punkt)
+	{
+		punkt = Vector3.zero;
+		float ebene = base.transform.position.y;
+		if ((a.y - ebene) * (b.y - ebene) >= 0f)
+		{
+			return false;
+		}
+		punkt = Vector3.Lerp(a, b, (a.y - ebene) / (a.y - b.y));
+		if (!oberflaeche(punkt, out float hoeheWelt))
+		{
+			return false;
+		}
+		punkt.y = hoeheWelt;
+		return true;
+	}
+
 	private void OnDestroy()
 	{
 		if (netz != null)

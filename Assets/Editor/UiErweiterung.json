@@ -1588,6 +1588,32 @@
       }
     },
     {
+      "eltern": "Canvas/SettingsScreen/SettingsScroller/Viewport/VideoSettings",
+      "knoten": {
+        "vorlage": "Canvas/SettingsScreen/SettingsScroller/Viewport/VideoSettings/DisplayFPS",
+        "name": "UltraZeile",
+        "rect": {
+          "anchorMin": [
+            0,
+            1
+          ],
+          "anchorMax": [
+            1,
+            1
+          ],
+          "pos": [
+            0,
+            -600
+          ],
+          "size": [
+            0,
+            100
+          ]
+        },
+        "titel": "Ultra-Grafik (Pflanzen, Feuer, Waffen, Spiegelungen)"
+      }
+    },
+    {
       "eltern": "Canvas/Game Screen",
       "knoten": {
         "name": "Unterwasser",

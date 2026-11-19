@@ -97,6 +97,8 @@ public static partial class SzeneAufbauen
 			EditorSettings.asyncShaderCompilation = false;
 			SpritesEinstellen();
 			ZielfernrohrErzeugen();
+			Fortschritt("Ultra-Grafik", 0.08f);
+			UltraVorbereiten();
 
 			Fortschritt("Laser", 0.1f);
 			var laser = LaserPrefab(komponenten);
@@ -352,6 +354,10 @@ public static partial class SzeneAufbauen
 			Object.DestroyImmediate(c);
 		}
 		MaterialienErsetzen(modell, ERZEUGT + "/Spieler");
+		// Stufe "Ultra": Waffenmodelle statt des Rohrs, Muendung an der Spitze des Laserpointers.
+		var waffenModell = wurzel.AddComponent<WaffenModell>();
+		waffenModell.modelle = UltraWaffen(kameraGo.transform, pointer.transform.localPosition);
+		waffenModell.pointerModell = modell;
 
 		// Koerper: Unity-Kapsel (im Original MeshFilter + CapsuleCollider ohne eigenes Modell)
 		var koerper = GameObject.CreatePrimitive(PrimitiveType.Capsule);
@@ -577,6 +583,11 @@ public static partial class SzeneAufbauen
 		spielGo.AddComponent<PlayersManager>();
 		spielGo.AddComponent<Spawnlocation>();
 		var runde = spielGo.AddComponent<Runde>();
+		var ultraEffekte = spielGo.AddComponent<UltraEffekte>();
+		ultraEffekte.tropfenMaterial = uTropfen;
+		ultraEffekte.ringMaterial = uRing;
+		ultraEffekte.blitzMaterial = uBlitz;
+		ultraEffekte.funkenMaterial = uFunke;
 		Setze(runde, "botPrefab", bot);
 		Setze(eingabe, "m_Actions", AssetDatabase.LoadAssetAtPath<InputActionAsset>(EINGABE));
 		// Das Spiel startet im Menue, Manager schaltet spaeter auf "Player" um.

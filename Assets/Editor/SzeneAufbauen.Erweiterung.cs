@@ -490,6 +490,7 @@ public static partial class SzeneAufbauen
 		Setze(einstellungen, "invertierenSchalter", bau.Komponente<Toggle>(v + "ControllSettings/InvertierenZeile/Toggle"));
 		Setze(einstellungen, "drittePersonSchalter", bau.Komponente<Toggle>(v + "ControllSettings/DrittePersonZeile/Toggle"));
 		Setze(einstellungen, "grafikSchalter", bau.Komponente<Toggle>(v + "VideoSettings/GrafikZeile/Toggle"));
+		Setze(einstellungen, "ultraSchalter", bau.Komponente<Toggle>(v + "VideoSettings/UltraZeile/Toggle"));
 		Setze(einstellungen, "fensterTitel", bau.Komponente<TMP_Text>(v + "VideoSettings/WindowMode/Title"));
 
 		var spielUi = canvas.GetComponent<UIGameManager>();

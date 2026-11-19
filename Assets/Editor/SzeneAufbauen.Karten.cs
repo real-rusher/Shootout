@@ -306,6 +306,7 @@ public static partial class SzeneAufbauen
 			}
 		}
 		wurzel.layer = 2;
+		UltraSpiegelung(wurzel, new Vector3(0f, 15f, 0f), new Vector3(160f, 50f, 160f));
 		return AlsPrefab(wurzel, PREFABS + "/Map_Wuestenstadt.prefab");
 	}
 
@@ -487,6 +488,7 @@ public static partial class SzeneAufbauen
 			wedel.transform.localRotation = Quaternion.Euler(0f, i * 360f / 7f, 0f) * Quaternion.Euler(25f, 0f, 0f) * Quaternion.Euler(0f, 0f, 0f);
 			wedel.transform.localPosition = krone + wedel.transform.localRotation * new Vector3(0f, 0f, 1.8f);
 		}
+		UltraPalme(palme, krone, Zufall(uZufall, 0f, 360f));
 	}
 
 	// ------------------------------------------------------------------
@@ -802,6 +804,8 @@ public static partial class SzeneAufbauen
 		DDSpawnZone(wurzel.transform, inseln[0].ort + Vector3.up * 2f, new Vector3(10f, 0.5f, 10f), Teams.ALLIIERTE);
 		DDSpawnZone(wurzel.transform, inseln[6].ort + Vector3.up * 2f, new Vector3(10f, 0.5f, 10f), Teams.VERTEIDIGER);
 		wurzel.layer = 2;
+		HiUltraGras(wurzel, inseln);
+		UltraSpiegelung(wurzel, new Vector3(0f, 15f, 0f), new Vector3(200f, 80f, 140f));
 		return AlsPrefab(wurzel, PREFABS + "/Map_Himmelsinseln.prefab");
 	}
 
@@ -958,13 +962,17 @@ public static partial class SzeneAufbauen
 				float winkel = Zufall(zufall, 0f, 360f) * Mathf.Deg2Rad;
 				float abstand = Zufall(zufall, insel.radius * 0.5f, insel.radius * 0.85f);
 				var ort = insel.ort + new Vector3(Mathf.Cos(winkel) * abstand, 0f, Mathf.Sin(winkel) * abstand);
+				var gruppe = KGruppe(eltern, "Busch");
+				gruppe.transform.localPosition = ort;
 				var kugel = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-				kugel.name = "Busch";
+				kugel.name = "Laub";
 				Object.DestroyImmediate(kugel.GetComponent<Collider>());
-				kugel.transform.SetParent(eltern, false);
-				kugel.transform.localPosition = ort + Vector3.up * 0.5f;
-				kugel.transform.localScale = new Vector3(2f, 1.4f, 2f) * Zufall(zufall, 0.7f, 1.2f);
+				kugel.transform.SetParent(gruppe.transform, false);
+				kugel.transform.localPosition = Vector3.up * 0.5f;
+				float groesse = Zufall(zufall, 0.7f, 1.2f);
+				kugel.transform.localScale = new Vector3(2f, 1.4f, 2f) * groesse;
 				kugel.GetComponent<Renderer>().sharedMaterial = busch;
+				UltraBusch(gruppe, uZufall, groesse);
 			}
 			if (insel.radius >= 11f)
 			{
@@ -983,8 +991,30 @@ public static partial class SzeneAufbauen
 				krone.transform.localPosition = new Vector3(0f, 5f, 0f);
 				krone.transform.localScale = Vector3.one * 4f;
 				krone.GetComponent<Renderer>().sharedMaterial = laub;
+				UltraBaum(baum, uZufall, 0.85f);
 			}
 		}
+	}
+
+	// Grashalme auf den Inseln (Stufe "Ultra"), dicht, bis knapp an den Rand.
+	static void HiUltraGras(GameObject wurzel, Insel[] inseln)
+	{
+		var orte = new List<Vector3>();
+		var normalen = new List<Vector3>();
+		var groessen = new List<float>();
+		foreach (var insel in inseln)
+		{
+			int anzahl = Mathf.RoundToInt(Mathf.PI * insel.radius * insel.radius * 1.8f);
+			for (int i = 0; i < anzahl; i++)
+			{
+				float winkel = Zufall(uZufall, 0f, Mathf.PI * 2f);
+				float abstand = Mathf.Sqrt((float)uZufall.NextDouble()) * (insel.radius - 0.8f);
+				orte.Add(insel.ort + new Vector3(Mathf.Cos(winkel) * abstand, -0.02f, Mathf.Sin(winkel) * abstand));
+				normalen.Add(Vector3.up);
+				groessen.Add(Zufall(uZufall, 0.75f, 1.25f));
+			}
+		}
+		UltraGras(wurzel, "GrasHimmelsinseln", orte, normalen, groessen);
 	}
 
 	// ------------------------------------------------------------------

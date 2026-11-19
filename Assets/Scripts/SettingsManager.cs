@@ -45,6 +45,8 @@ public class SettingsManager : MonoBehaviour
 
 	public Toggle grafikSchalter;
 
+	public Toggle ultraSchalter;
+
 	// Titel der Zeile "Window Mode", im Editor mit Hinweis.
 	public TMP_Text fensterTitel;
 
@@ -104,17 +106,29 @@ public class SettingsManager : MonoBehaviour
 			invertierenSchalter.SetIsOnWithoutNotify(mausInvertiert);
 			invertierenSchalter.onValueChanged.AddListener(wert => { mausInvertiert = wert; Speichern(); });
 		}
+		// Zwei Stufen: "Hoch" und "Ultra". Ultra schliesst Hoch ein, die Schalter folgen einander.
+		bool hoch = PlayerPrefs.GetInt("einstellung.grafikHoch", 0) == 1;
+		bool ultra = PlayerPrefs.GetInt("einstellung.grafikUltra", 0) == 1;
 		if (grafikSchalter != null)
 		{
-			grafikSchalter.SetIsOnWithoutNotify(PlayerPrefs.GetInt("einstellung.grafikHoch", 0) == 1);
+			grafikSchalter.SetIsOnWithoutNotify(hoch || ultra);
 			grafikSchalter.onValueChanged.AddListener(wert =>
 			{
-				PlayerPrefs.SetInt("einstellung.grafikHoch", wert ? 1 : 0);
-				PlayerPrefs.Save();
 				Grafik.Setzen(wert);
+				grafikSpeichern();
 			});
 		}
-		Grafik.Setzen(PlayerPrefs.GetInt("einstellung.grafikHoch", 0) == 1);
+		if (ultraSchalter != null)
+		{
+			ultraSchalter.SetIsOnWithoutNotify(ultra);
+			ultraSchalter.onValueChanged.AddListener(wert =>
+			{
+				Grafik.SetzeUltra(wert);
+				grafikSpeichern();
+			});
+		}
+		Grafik.Setzen(hoch || ultra);
+		Grafik.SetzeUltra(ultra);
 		if (drittePersonSchalter != null)
 		{
 			drittePersonSchalter.SetIsOnWithoutNotify(drittePerson);
@@ -300,6 +314,21 @@ public class SettingsManager : MonoBehaviour
 				Playermanager.ownerPlayer._playerName.Value = text;
 			}
 			checkUsernameInput();
+		}
+	}
+
+	private void grafikSpeichern()
+	{
+		PlayerPrefs.SetInt("einstellung.grafikHoch", Grafik.Hoch ? 1 : 0);
+		PlayerPrefs.SetInt("einstellung.grafikUltra", Grafik.Ultra ? 1 : 0);
+		PlayerPrefs.Save();
+		if (grafikSchalter != null)
+		{
+			grafikSchalter.SetIsOnWithoutNotify(Grafik.Hoch);
+		}
+		if (ultraSchalter != null)
+		{
+			ultraSchalter.SetIsOnWithoutNotify(Grafik.Ultra);
 		}
 	}
 

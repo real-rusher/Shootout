@@ -22,6 +22,9 @@ Shader "Shootout/Weltraster"
 		fixed4 _Color;
 		half _Skala;
 		half _Glanz;
+		// Global (Grafik.cs): 1 in der Stufe "Ultra". Dann eine zweite, feinere Lage derselben
+		// Textur fuer Details aus der Naehe.
+		float _ShootoutUltra;
 
 		struct Input
 		{
@@ -36,8 +39,11 @@ Shader "Shootout/Weltraster"
 			gewicht /= (gewicht.x + gewicht.y + gewicht.z);
 			float3 p = IN.worldPos * _Skala;
 			fixed4 farbe = tex2D(_MainTex, p.zy) * gewicht.x + tex2D(_MainTex, p.xz) * gewicht.y + tex2D(_MainTex, p.xy) * gewicht.z;
-			o.Albedo = farbe.rgb * _Color.rgb;
-			o.Smoothness = _Glanz;
+			float3 f = p * 5.3;
+			fixed3 fein = (tex2D(_MainTex, f.zy) * gewicht.x + tex2D(_MainTex, f.xz) * gewicht.y + tex2D(_MainTex, f.xy) * gewicht.z).rgb;
+			half detail = lerp(1.0, 0.6 + 0.8 * dot(fein, half3(0.333, 0.333, 0.333)), _ShootoutUltra);
+			o.Albedo = farbe.rgb * _Color.rgb * detail;
+			o.Smoothness = _Glanz * detail;
 			o.Metallic = 0.0;
 			o.Alpha = 1.0;
 		}

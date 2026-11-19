@@ -258,6 +258,17 @@ public static partial class SzeneAufbauen
 		pflanzen.transform.SetParent(wurzel.transform, false);
 		DDBueschUndBaeume(pflanzen.transform, zufall, busch, laub, rinde);
 		DDGras(pflanzen.transform, zufall);
+		// Stufe "Ultra": die alten Grasflaechen gegen einzelne Halme tauschen.
+		var altesGras = new List<GameObject>();
+		foreach (Transform kind in pflanzen.transform)
+		{
+			if (kind.name == "Gras")
+			{
+				altesGras.Add(kind.gameObject);
+			}
+		}
+		UltraTausch(pflanzen, altesGras.ToArray(), new GameObject[0]);
+		DDUltraGras(wurzel);
 
 		// Spawnbereiche
 		var spawns = new GameObject("Spawns Verteidiger");
@@ -293,6 +304,7 @@ public static partial class SzeneAufbauen
 
 		// Wurzel auf "Ignore Raycast" wie die anderen Maps, die Teile bleiben treffbar.
 		wurzel.layer = 2;
+		UltraSpiegelung(wurzel, new Vector3(0f, 15f, 20f), new Vector3(220f, 60f, 260f));
 		return AlsPrefab(wurzel, PREFABS + "/Map_DDay.prefab");
 	}
 
@@ -645,6 +657,7 @@ public static partial class SzeneAufbauen
 				kugel.transform.localScale = new Vector3(r * 2f, r * 1.5f, r * 2f);
 				kugel.GetComponent<Renderer>().sharedMaterial = busch;
 			}
+			UltraBusch(gruppe, uZufall, Zufall(uZufall, 1f, 1.35f));
 			anzahl++;
 		}
 		for (int versuch = 0, anzahl = 0; versuch < 600 && anzahl < 24; versuch++)
@@ -675,6 +688,7 @@ public static partial class SzeneAufbauen
 				krone.transform.localScale = Vector3.one * Zufall(zufall, 3.2f, 4.4f) * groesse;
 				krone.GetComponent<Renderer>().sharedMaterial = laub;
 			}
+			UltraBaum(baum, uZufall, groesse);
 			anzahl++;
 		}
 	}
@@ -968,6 +982,31 @@ public static partial class SzeneAufbauen
 		licht.intensity = 2.2f;
 		licht.range = 10f * groesse;
 		lichtGo.AddComponent<Flackern>();
+		UltraFeuer(halter, groesse);
+	}
+
+	// Grashalme fuer "Ultra", wo auch das einfache Gras waechst (gleiche Regeln wie DDGras).
+	static void DDUltraGras(GameObject wurzel)
+	{
+		var orte = new List<Vector3>();
+		var normalen = new List<Vector3>();
+		var groessen = new List<float>();
+		for (int versuch = 0; versuch < 140000 && orte.Count < 30000; versuch++)
+		{
+			float x = Zufall(uZufall, -98f, 98f);
+			float z = Zufall(uZufall, 14f, 109f);
+			float t = DDHangAnteil(x, z);
+			bool passt = t > 0.45f || (DDSchlucht(x) > 0.4f && t > 0.2f);
+			if (!passt || DDSteilheit(x, z) > 1f || imWeg(x, z))
+			{
+				continue;
+			}
+			orte.Add(new Vector3(x, DDHoehe(x, z) - 0.03f, z));
+			var normale = new Vector3(DDHoehe(x - 0.5f, z) - DDHoehe(x + 0.5f, z), 1f, DDHoehe(x, z - 0.5f) - DDHoehe(x, z + 0.5f));
+			normalen.Add(normale.normalized);
+			groessen.Add(Zufall(uZufall, 0.8f, 1.3f));
+		}
+		UltraGras(wurzel, "GrasDDay", orte, normalen, groessen);
 	}
 
 	// Weisse Gischt entlang der Wasserlinie.

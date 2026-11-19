@@ -55,6 +55,7 @@ public class playerlooking : NetworkBehaviour
 		Taschenlampe lampe = base.gameObject.AddComponent<Taschenlampe>();
 		lampe.halter = cameraTransform;
 		lampe.figur = playermanager;
+		base.gameObject.AddComponent<WasserSpuren>();
 	}
 
 	// Third Person ist an, wenn eingestellt und nicht gerade mit dem Sniper gezoomt wird.
@@ -72,6 +73,7 @@ public class playerlooking : NetworkBehaviour
 		if (playermanager.istLokal)
 		{
 			switchCameraTo(cameraTransform.gameObject);
+			Grafik.Beobachter = cameraTransform;
 			playermanager.gotShot += cameraStartZoom;
 			blickAusTransform();
 			GameObject schulter = new GameObject("Schulterkamera");
