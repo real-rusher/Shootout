@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.4.0
+Aktuell: Version 0.4.1
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -140,6 +140,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.4.1 | Behoben: Der Aufbau brach beim fernen Meer ab (Ordner Erzeugt/Landschaft fehlte noch). Ordner werden jetzt beim Speichern immer angelegt. Sonst wie 0.4.0. Szene neu aufbauen. |
 | 0.4.0 | Grosser Grafik-Umbau, kein neuer Netzcode. Schatten: Umgebungslicht fest (im fertigen Spiel waren Schatten schwarz), eigener Himmel fuer Spiegelungen, Schatten in jeder Stufe, Figuren werfen Schatten. Waffen: Gewehr und Sniper naeher und mittiger, Strahl aus der Muendung des Modells. Sniper: Rechtsklick Zoom an/aus, Mausrad vier Stufen. Info-Raum: Lichtstreifen an der Decke, Deckenlicht mit weichen Schatten. Relief fuer alle Mauern und Boeden (Shader `Shootout/Weltraster`), neue Texturen fuer Sandstein, Schalbeton, Estrich. Tunnel: Betonrippen, Sockel, Kabeltrassen, Pfuetzen, Roste. Wuestenstadt: Fenster mit Sims und Laeden, Holzbalken, Zinnen, Pflanzen, Waescheleinen, Laternen, Staub. Landschaft um die Maps (`Editor/SzeneAufbauen.Landschaft.cs`): Kueste, Huegel und Berge um D-Day, Meer bis zum Horizont, Duenen und Felsberge um die Wuestenstadt, Gipfel und Wolkenmeer bei den Himmelsinseln. D-Day (`Editor/SzeneAufbauen.DDayModelle.cs`): Landungsboote nach LCVP-Vorbild, Panzerwrack, Panzerigel aus Doppel-T-Traegern, Holzrampen mit Minen, Stacheldraht, einzelne Sandsaecke, begehbare Bunker mit Schiessscharten und Schutzwand. Ultra-Gras neu: dichter Teppich, Windwellen, Trampelpfade, die sich langsam erholen (Shader `Hidden/Shootout/Trampeln`). Szene neu aufbauen. |
 | 0.3.0 | Schatten: Nur die Hauptsonne wirft Schatten, in "Hoch" bekam auch das Aufhelllicht welche (Schatten aus der falschen Richtung, v. a. Wuestenstadt). Sonne am Himmel fest auf die Hauptsonne. Wasser: neuer Shader mit laufenden Wellen und Kraeuselung pro Pixel, helle Kaemme, feineres Netz (4 m) und hoehere Duenung, auch in der normalen Stufe. D-Day-Boden: Farbtextur 1024, Detailtextur mit Koernung, Steinchen und Relief. Ultra-Gras: ganze gruene Flaeche bedeckt (Raster 0,5 m), nah dicht, hinten duenner, Windboeen, weicht Spielern und Bots aus (`Spiel/GrasDruck.cs`). Kein neuer Netzcode. Szene neu aufbauen. |
 | 0.2.9 | Automatischer Windows-Build auf GitHub (`.github/workflows/spiel_bauen.yml`, `Editor/CiBau.cs`, `tools/tmp_entpacken.py`): fertige `Shootout_Windows.zip` unter Releases und auf dem Branch `fertiges-spiel`. Einrichten: `docs/SPIEL_BAUEN.md`. Spiel selbst unveraendert. |

@@ -1120,6 +1120,8 @@ public static partial class SzeneAufbauen
 
 	static T AlsAsset<T>(T asset, string pfad) where T : Object
 	{
+		// Ordner sicher anlegen: Auf dem Build-Server ist anfangs nichts da.
+		Ordner(Path.GetDirectoryName(pfad).Replace('\\', '/'));
 		// Vorhandenes Asset ueberschreiben statt loeschen und neu anlegen. Sonst behielt der
 		// Editor, der das Skript ausgefuehrt hat, alte Kopien im Speicher (Laser unsichtbar).
 		var vorhanden = AssetDatabase.LoadAssetAtPath<T>(pfad);
@@ -1154,6 +1156,8 @@ public static partial class SzeneAufbauen
 			return;
 		}
 		var eltern = Path.GetDirectoryName(pfad).Replace('\\', '/');
+		// Auch fehlende Oberordner anlegen
+		Ordner(eltern);
 		AssetDatabase.CreateFolder(eltern, Path.GetFileName(pfad));
 	}
 

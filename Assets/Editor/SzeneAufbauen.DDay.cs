@@ -481,6 +481,7 @@ public static partial class SzeneAufbauen
 
 	static Texture2D PngAlsTextur(string pfad, byte[] png, TextureWrapMode wrap)
 	{
+		Ordner(Path.GetDirectoryName(pfad).Replace('\\', '/'));
 		File.WriteAllBytes(Path.Combine(Directory.GetParent(Application.dataPath).FullName, pfad), png);
 		AssetDatabase.ImportAsset(pfad, ImportAssetOptions.ForceUpdate);
 		var importer = (TextureImporter)AssetImporter.GetAtPath(pfad);

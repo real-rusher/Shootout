@@ -323,7 +323,6 @@ public static partial class SzeneAufbauen
 		const float schartenOben = 1.85f;
 		Klotz(t, "FrontUnten", new Vector3(0f, schartenUnten * 0.5f, -hinten), new Vector3(BU_BREITE, schartenUnten, BU_WAND), beton);
 		Klotz(t, "FrontOben", new Vector3(0f, (schartenOben + BU_HOEHE) * 0.5f, -hinten), new Vector3(BU_BREITE, BU_HOEHE - schartenOben, BU_WAND), beton);
-		float innenBreite = BU_BREITE - 2f * BU_WAND;
 		// Pfeiler zwischen den Scharten: links, Mitte, rechts
 		foreach (var p in new[] { new Vector2(-4.4f, 1.6f), new Vector2(0f, 2.8f), new Vector2(4.4f, 1.6f) })
 		{
