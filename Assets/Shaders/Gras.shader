@@ -11,7 +11,7 @@ Shader "Shootout/Gras"
 		_Color ("Farbe", Color) = (1, 1, 1, 1)
 		_Wind ("Wind", Range(0, 2)) = 1
 		_Weite ("Sichtweite", Float) = 45
-		_Glanz ("Glanz", Range(0, 1)) = 0.25
+		_Glanz ("Glanz", Range(0, 1)) = 0.12
 	}
 	SubShader
 	{
@@ -105,8 +105,7 @@ Shader "Shootout/Gras"
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
 			fixed3 farbe = IN.color.rgb * _Color.rgb;
-			o.Albedo = farbe * (1.0 + 0.35 * IN.color.a);
-			o.Emission = farbe * 0.06 * IN.color.a;
+			o.Albedo = farbe * (1.0 + 0.12 * IN.color.a);
 			o.Smoothness = _Glanz;
 			o.Metallic = 0.0;
 			o.Alpha = 1.0;

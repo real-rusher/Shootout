@@ -9,12 +9,16 @@ public static class Teams
 
 	public const int VERTEIDIGER = 2;
 
+	// Auf D-Day heissen die Teams nach der Geschichte, sonst nach ihrer Farbe. Setzt
+	// Manager.getMap, auf Host und Client gleich (beide kennen die gewaehlte Map).
+	public static bool dDayNamen;
+
 	public static string Name(int team)
 	{
 		switch (team)
 		{
-			case ALLIIERTE: return "Alliierte";
-			case VERTEIDIGER: return "Verteidiger";
+			case ALLIIERTE: return dDayNamen ? "Alliierte" : "Grün";
+			case VERTEIDIGER: return dDayNamen ? "Verteidiger" : "Blau";
 			default: return "";
 		}
 	}

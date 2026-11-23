@@ -87,7 +87,9 @@ public static partial class SzeneAufbauen
 		foreach (var bx in DD_BUNKER_X)
 		{
 			// Halbe Ausdehnung 8 x 7,5 m: Bunker samt Schutzwand am Eingang (z bis +6,6)
-			float d = Mathf.Max(Mathf.Abs(x - bx) / 8f, Mathf.Abs(z - DD_BUNKER_Z - 1f) / 7.5f);
+			// Vorn nur knapp ueber den Bunker hinaus, damit man aus den Scharten den Hang hinunter sieht.
+			float dz = z - DD_BUNKER_Z;
+			float d = Mathf.Max(Mathf.Abs(x - bx) / 8f, dz < 0f ? -dz / 5.2f : dz / 7.6f);
 			h = Mathf.Lerp(h, DD_PLATEAU - 0.2f, 1f - Glatt(Mathf.InverseLerp(1f, 1.5f, d)));
 		}
 		return h;
@@ -178,7 +180,8 @@ public static partial class SzeneAufbauen
 		{
 			float z = i % 2 == 0 ? -40f : -35f;
 			float x = bootX[i] + Zufall(zufall, -4f, 4f);
-			float y = Mathf.Max(DDHoehe(x, z) - 0.3f, -0.6f);
+			// Die Boote schwimmen: Deck ueber dem hoechsten Wellenberg, sonst stand das Wasser im Boot.
+			float y = Mathf.Max(DDHoehe(x, z) - 0.3f, 0.12f);
 			DDLandungsboot(boote.transform, new Vector3(x, y, z), Zufall(zufall, -8f, 8f), i == 1 || i == 4, stahl, stahlDunkel);
 		}
 
@@ -555,9 +558,10 @@ public static partial class SzeneAufbauen
 		{
 			material = new Material(shader);
 			material.name = "Wasser";
-			material.SetColor("_Farbe", new Color(0.2f, 0.4f, 0.45f, 0.88f));
-			material.SetColor("_Tiefe", new Color(0.05f, 0.18f, 0.22f, 0.65f));
-			material.SetFloat("_Glanz", 0.8f);
+			// Dunkel und fast deckend: Von weitem soll es klar als Meer zu sehen sein.
+			material.SetColor("_Farbe", new Color(0.12f, 0.27f, 0.33f, 0.95f));
+			material.SetColor("_Tiefe", new Color(0.03f, 0.12f, 0.16f, 0.82f));
+			material.SetFloat("_Glanz", 0.72f);
 			return AlsAsset(material, DDAY + "/Wasser.mat");
 		}
 		material = new Material(Shader.Find("Standard"));

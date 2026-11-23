@@ -21,11 +21,11 @@ public class GrasFeld : MonoBehaviour
 	public Material trampelMaterial;
 
 	// Zum Einstellen: Sichtweite (m), bis hier voll dicht (m), Dichte ganz hinten (Anteil).
-	public float sichtweite = 45f;
+	public float sichtweite = 70f;
 
-	public float vollDicht = 14f;
+	public float vollDicht = 25f;
 
-	public float dichteHinten = 0.1f;
+	public float dichteHinten = 0.15f;
 
 	// Sekunden, bis niedergetretenes Gras wieder steht.
 	public float erholung = 5f;
@@ -102,7 +102,9 @@ public class GrasFeld : MonoBehaviour
 					break;
 				}
 				int zahl = Mathf.Min(rest, stapel.Length);
-				Graphics.DrawMeshInstanced(netz, 0, material, stapel, zahl, null, ShadowCastingMode.Off, true, base.gameObject.layer);
+				// Nahes Gras wirft Schatten (kostet, die Stufe "Ultra" darf das), fernes nicht.
+				ShadowCastingMode schatten = abstand < vollDicht ? ShadowCastingMode.On : ShadowCastingMode.Off;
+				Graphics.DrawMeshInstanced(netz, 0, material, stapel, zahl, null, schatten, true, base.gameObject.layer);
 				rest -= zahl;
 			}
 		}

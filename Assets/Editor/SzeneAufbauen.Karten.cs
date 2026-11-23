@@ -200,9 +200,11 @@ public static partial class SzeneAufbauen
 	static void InfoRaumLicht(GameObject wurzel, Light altesLicht)
 	{
 		// Decke und Waende werfen keinen Schatten, sonst laege der ganze Raum im Schatten der Decke.
+		// Alles, was den ganzen Raum umschliesst (Decke, Waende, Boden), erkannt an der Groesse.
 		foreach (var anzeige in wurzel.GetComponentsInChildren<Renderer>(true))
 		{
-			if (anzeige.name.StartsWith("Room_1"))
+			var g = anzeige.bounds.size;
+			if (anzeige.name.StartsWith("Room") || g.x > 60f || g.z > 60f || g.y > 30f)
 			{
 				anzeige.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			}
@@ -211,10 +213,11 @@ public static partial class SzeneAufbauen
 		var stimmung = wurzel.AddComponent<KartenAtmosphaere>();
 		stimmung.nebelFarbe = new Color(0.75f, 0.76f, 0.78f);
 		stimmung.nebelDichte = 0.0015f;
-		stimmung.umgebungsFaktor = 1.25f;
+		// Ein Klassenraum ist ueberall hell: viel Umgebungslicht, weiche, schwache Schatten.
+		stimmung.umgebungsFaktor = 1.9f;
 		stimmung.sonnenFaktor = 0f;
 
-		var leuchten = KLeuchten("Lichtstreifen", new Color(1f, 0.98f, 0.94f), 2.4f);
+		var leuchten = KLeuchten("Lichtstreifen", new Color(1f, 0.98f, 0.94f), 3f);
 		var rahmen = KFarbe("Lampenrahmen", new Color(0.75f, 0.76f, 0.78f), 0.5f);
 		var lampen = KGruppe(wurzel.transform, "Deckenlampen");
 		// Reihen quer zum Raum, Streifen 22 m lang (ein echter Streifen, im Massstab des Raums)
@@ -230,15 +233,15 @@ public static partial class SzeneAufbauen
 				gehaeuse.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			}
 			// Je Reihe zwei Lampen fuer den Helligkeitsverlauf (ohne Schatten, die kommen von oben).
-			foreach (var x in new[] { -50f, 20f })
+			foreach (var x in new[] { -65f, -25f, 15f, 45f })
 			{
 				var lampe = KGruppe(lampen.transform, "Raumlicht");
 				lampe.transform.localPosition = new Vector3(x, IR_DECKE - 6f, z);
 				var licht = lampe.AddComponent<Light>();
 				licht.type = LightType.Point;
 				licht.color = new Color(1f, 0.97f, 0.92f);
-				licht.intensity = 0.55f;
-				licht.range = 55f;
+				licht.intensity = 0.8f;
+				licht.range = 60f;
 				licht.shadows = LightShadows.None;
 			}
 		}
@@ -248,9 +251,9 @@ public static partial class SzeneAufbauen
 		var oben = decke.AddComponent<Light>();
 		oben.type = LightType.Directional;
 		oben.color = new Color(1f, 0.97f, 0.93f);
-		oben.intensity = 0.75f;
+		oben.intensity = 1.0f;
 		oben.shadows = LightShadows.Soft;
-		oben.shadowStrength = 0.75f;
+		oben.shadowStrength = 0.45f;
 	}
 
 	// ------------------------------------------------------------------
@@ -275,14 +278,14 @@ public static partial class SzeneAufbauen
 			float block = KWert(Mathf.FloorToInt(bx) % 4, (int)reihe, 8, 13);
 			float w = KWolke(u, v, 11);
 			float kante = Mathf.SmoothStep(0.015f, 0.05f, fuge);
-			var stein = new Color(0.86f, 0.74f, 0.55f) * (0.8f + 0.18f * block + 0.22f * w);
+			var stein = new Color(0.78f, 0.66f, 0.48f) * (0.8f + 0.18f * block + 0.22f * w);
 			var moertel = new Color(0.62f, 0.55f, 0.44f);
 			return Color.Lerp(moertel, stein, kante);
 		}, Color.white, 0.25f, 0.08f, 9f);
 		var putz = KRaster("Putz", (u, v) =>
 		{
 			float w = KWolke(u, v, 23);
-			return Color.Lerp(new Color(0.93f, 0.87f, 0.74f), new Color(0.8f, 0.7f, 0.55f), Mathf.Pow(w, 2.2f));
+			return Color.Lerp(new Color(0.82f, 0.76f, 0.64f), new Color(0.7f, 0.6f, 0.47f), Mathf.Pow(w, 2.2f));
 		}, Color.white, 0.2f, 0.05f);
 		var pflaster = KRaster("Pflaster", (u, v) =>
 		{
@@ -1013,6 +1016,7 @@ public static partial class SzeneAufbauen
 	static GameObject HimmelsinselnKarte()
 	{
 		var zufall = new System.Random(6161);
+		hiInselNummer = 0;
 		var fels = KRaster("Inselfels", (u, v) =>
 		{
 			float w = KWolke(u, v, 51);
@@ -1130,35 +1134,139 @@ public static partial class SzeneAufbauen
 		return AlsAsset(material, KARTEN + "/Wolke.mat");
 	}
 
+	static int hiInselNummer;
+
+	// Schwebende Insel: unregelmaessige Grasdecke (Umriss nie kleiner als der Radius, Bruecken und
+	// Spawns liegen innerhalb), Kante mit Erdlippe, darunter ein zerkluefteter Felszapfen mit
+	// Schichten und Vorspruengen, herabhaengende Wurzeln. Alles mit Kollider nach dem Netz.
 	static void HiInsel(Transform eltern, Insel insel, System.Random zufall, Material fels, Material gras)
 	{
 		var go = KGruppe(eltern, "Insel");
 		go.transform.localPosition = insel.ort;
-		// Grasdeckel, begehbar
-		var deckel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-		deckel.name = "Grasdeckel";
-		deckel.transform.SetParent(go.transform, false);
-		deckel.transform.localPosition = new Vector3(0f, -0.5f, 0f);
-		deckel.transform.localScale = new Vector3(insel.radius * 2f, 0.5f, insel.radius * 2f);
-		deckel.GetComponent<Renderer>().sharedMaterial = gras;
-		// Die Kapsel des Zylinders ist oben rund, darauf stuende man schief. Deshalb ein flaches Netz.
-		KNetzKollider(deckel);
-		// Felsen darunter, nach unten schmaler
+		const int seiten = 48;
+		const int ringe = 14;
 		float r = insel.radius;
-		for (int stufe = 0; stufe < 4; stufe++)
+		float saat = Zufall(zufall, 0f, 100f);
+		var umriss = new float[seiten];
+		for (int i = 0; i < seiten; i++)
 		{
-			var kugel = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-			kugel.name = "Fels";
-			kugel.transform.SetParent(go.transform, false);
-			float breite = r * 2f * (1f - stufe * 0.22f);
-			float halbeHoehe = r * 0.4f;
-			// Oberseite knapp unter dem Gras. Vorher ragten die Felsen als graue Kuppeln ueber
-			// die Insel, ohne Kollider: Man fiel hindurch.
-			kugel.transform.localPosition = new Vector3(Zufall(zufall, -0.5f, 0.5f), -0.6f - halbeHoehe - stufe * r * 0.35f, Zufall(zufall, -0.5f, 0.5f));
-			kugel.transform.localScale = new Vector3(breite, halbeHoehe * 2f, breite);
-			kugel.GetComponent<Renderer>().sharedMaterial = fels;
-			KNetzKollider(kugel);
+			float w = i * Mathf.PI * 2f / seiten;
+			umriss[i] = r * (1f + 0.09f * Mathf.PerlinNoise(Mathf.Cos(w) * 1.6f + saat, Mathf.Sin(w) * 1.6f + saat));
 		}
+
+		// Grasdecke: flach oben (begehbar), aussen eine Lippe nach unten
+		var deckPunkte = new List<Vector3> { Vector3.zero };
+		for (int i = 0; i < seiten; i++)
+		{
+			float w = i * Mathf.PI * 2f / seiten;
+			deckPunkte.Add(new Vector3(Mathf.Cos(w), 0f, Mathf.Sin(w)) * umriss[i]);
+		}
+		for (int i = 0; i < seiten; i++)
+		{
+			float w = i * Mathf.PI * 2f / seiten;
+			deckPunkte.Add(new Vector3(Mathf.Cos(w) * umriss[i] * 1.03f, -0.6f, Mathf.Sin(w) * umriss[i] * 1.03f));
+		}
+		var deckDreiecke = new List<int>();
+		for (int i = 0; i < seiten; i++)
+		{
+			int a = 1 + i;
+			int b = 1 + (i + 1) % seiten;
+			deckDreiecke.AddRange(new[] { 0, b, a });
+			int la = 1 + seiten + i;
+			int lb = 1 + seiten + (i + 1) % seiten;
+			deckDreiecke.AddRange(new[] { a, b, la, b, lb, la });
+		}
+		var deckUv = new List<Vector2>();
+		foreach (var p in deckPunkte)
+		{
+			deckUv.Add(new Vector2(p.x * 0.1f, p.z * 0.1f + p.y * 0.1f));
+		}
+		var deck = HiNetz(go.transform, "Grasdecke", deckPunkte, deckUv, deckDreiecke, gras);
+		deck.AddComponent<MeshCollider>().sharedMesh = deck.GetComponent<MeshFilter>().sharedMesh;
+
+		// Felszapfen: Ringe nach unten, Radius schrumpft, Rauschen und Schichtkanten
+		float tiefe = r * Zufall(zufall, 1.4f, 1.9f);
+		var punkte = new List<Vector3>();
+		var uv = new List<Vector2>();
+		for (int k = 0; k <= ringe; k++)
+		{
+			float t = (float)k / ringe;
+			float y = -0.5f - t * tiefe;
+			// Schichten: alle paar Meter ein Vorsprung, dazwischen eingezogen
+			float schicht = 1f + 0.07f * Mathf.Sin(t * Mathf.PI * 7f + saat);
+			for (int i = 0; i < seiten; i++)
+			{
+				float w = i * Mathf.PI * 2f / seiten;
+				float rauschen = Mathf.PerlinNoise(Mathf.Cos(w) * 2.2f + saat * 2f, t * 4f + Mathf.Sin(w) * 2.2f);
+				float radius = umriss[i] * 1.02f * (1f - Mathf.Pow(t, 1.25f) * 0.93f) * (0.82f + 0.36f * rauschen) * schicht;
+				if (k == 0)
+				{
+					radius = umriss[i] * 1.02f;
+				}
+				punkte.Add(new Vector3(Mathf.Cos(w) * radius, y + (rauschen - 0.5f) * 0.8f * t, Mathf.Sin(w) * radius));
+				uv.Add(new Vector2((float)i / seiten * 4f, t * 3f));
+			}
+		}
+		punkte.Add(new Vector3(Zufall(zufall, -1f, 1f), -0.5f - tiefe - r * 0.25f, Zufall(zufall, -1f, 1f)));
+		uv.Add(new Vector2(0.5f, 3.5f));
+		var dreiecke = new List<int>();
+		for (int k = 0; k < ringe; k++)
+		{
+			for (int i = 0; i < seiten; i++)
+			{
+				int a = k * seiten + i;
+				int b = k * seiten + (i + 1) % seiten;
+				int c = a + seiten;
+				int d = b + seiten;
+				dreiecke.AddRange(new[] { a, b, c, b, d, c });
+			}
+		}
+		int spitze = punkte.Count - 1;
+		for (int i = 0; i < seiten; i++)
+		{
+			dreiecke.AddRange(new[] { ringe * seiten + i, ringe * seiten + (i + 1) % seiten, spitze });
+		}
+		var felsen = HiNetz(go.transform, "Felszapfen", punkte, uv, dreiecke, fels);
+		felsen.AddComponent<MeshCollider>().sharedMesh = felsen.GetComponent<MeshFilter>().sharedMesh;
+
+		// Herabhaengende Wurzeln an der Kante
+		var wurzelNetz = new Netzbau(1);
+		int wurzeln = Mathf.RoundToInt(r * 1.2f);
+		for (int i = 0; i < wurzeln; i++)
+		{
+			int stelle = zufall.Next(seiten);
+			float w = stelle * Mathf.PI * 2f / seiten;
+			var start = new Vector3(Mathf.Cos(w), 0f, Mathf.Sin(w)) * umriss[stelle] * 1.0f + Vector3.down * 0.6f;
+			float laenge = Zufall(zufall, 1.5f, 5f);
+			var vorher = start;
+			for (int g = 1; g <= 4; g++)
+			{
+				var naechster = start + Vector3.down * laenge * g / 4f + new Vector3(Mathf.Cos(w), 0f, Mathf.Sin(w)) * (0.15f * g + Zufall(zufall, -0.15f, 0.15f));
+				wurzelNetz.Rohr(vorher, naechster, 0.06f * (1.2f - g * 0.2f), 0.06f * (1f - g * 0.2f), 5, 0, Color.white, Color.white, 0f, 1f, false);
+				vorher = naechster;
+			}
+		}
+		var wurzelGo = new GameObject("Wurzeln");
+		wurzelGo.transform.SetParent(go.transform, false);
+		wurzelGo.AddComponent<MeshFilter>().sharedMesh = AlsAsset(wurzelNetz.Fertig("Wurzeln"), KARTEN + "/InselWurzeln" + (hiInselNummer++) + ".asset");
+		wurzelGo.AddComponent<MeshRenderer>().sharedMaterial = uRinde;
+	}
+
+	static GameObject HiNetz(Transform eltern, string name, List<Vector3> punkte, List<Vector2> uv, List<int> dreiecke, Material material)
+	{
+		var netz = new Mesh();
+		netz.name = name;
+		netz.SetVertices(punkte);
+		netz.SetUVs(0, uv);
+		netz.SetTriangles(dreiecke, 0);
+		netz.RecalculateNormals();
+		netz.RecalculateTangents();
+		netz.RecalculateBounds();
+		var go = new GameObject(name);
+		go.transform.SetParent(eltern, false);
+		go.AddComponent<MeshFilter>().sharedMesh = AlsAsset(netz, KARTEN + "/Insel" + name + (hiInselNummer++) + ".asset");
+		go.AddComponent<MeshRenderer>().sharedMaterial = material;
+		return go;
 	}
 
 	static void HiBruecke(Transform eltern, Insel a, Insel b, Material holz, Material seil)

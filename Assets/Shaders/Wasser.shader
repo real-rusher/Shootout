@@ -7,9 +7,9 @@ Shader "Shootout/Wasser"
 {
 	Properties
 	{
-		_Farbe ("Farbe flach", Color) = (0.22, 0.45, 0.52, 0.9)
-		_Tiefe ("Farbe von oben", Color) = (0.03, 0.14, 0.18, 0.6)
-		_Glanz ("Glanz", Range(0, 1)) = 0.95
+		_Farbe ("Farbe flach", Color) = (0.14, 0.3, 0.37, 0.95)
+		_Tiefe ("Farbe von oben", Color) = (0.03, 0.12, 0.16, 0.8)
+		_Glanz ("Glanz", Range(0, 1)) = 0.85
 		_Fresnel ("Fresnel-Staerke", Range(0.5, 8)) = 3
 		_Wellen ("Wellenstaerke", Range(0, 3)) = 1
 		_Tempo ("Tempo", Range(0, 3)) = 1

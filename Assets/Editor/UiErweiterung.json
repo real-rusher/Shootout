@@ -961,6 +961,58 @@
             }
           },
           {
+            "name": "Oben",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0.5
+              ],
+              "anchorMax": [
+                1,
+                1
+              ],
+              "pos": [
+                0,
+                270
+              ],
+              "size": [
+                0,
+                -540
+              ]
+            },
+            "image": {
+              "color": "#000000ff",
+              "sprite": null
+            }
+          },
+          {
+            "name": "Unten",
+            "active": true,
+            "rect": {
+              "anchorMin": [
+                0,
+                0
+              ],
+              "anchorMax": [
+                1,
+                0.5
+              ],
+              "pos": [
+                0,
+                -270
+              ],
+              "size": [
+                0,
+                -540
+              ]
+            },
+            "image": {
+              "color": "#000000ff",
+              "sprite": null
+            }
+          },
+          {
             "name": "LinieWaagrecht",
             "active": true,
             "rect": {

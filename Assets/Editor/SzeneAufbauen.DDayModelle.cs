@@ -318,9 +318,11 @@ public static partial class SzeneAufbauen
 		Klotz(t, "Boden", new Vector3(0f, -0.05f, 0f), new Vector3(BU_BREITE, 0.12f, BU_TIEFE), beton);
 		Klotz(t, "WandLinks", new Vector3(-seite, BU_HOEHE * 0.5f, 0f), new Vector3(BU_WAND, BU_HOEHE, BU_TIEFE), beton);
 		Klotz(t, "WandRechts", new Vector3(seite, BU_HOEHE * 0.5f, 0f), new Vector3(BU_WAND, BU_HOEHE, BU_TIEFE), beton);
-		// Front mit zwei Scharten (je 2,4 m breit, 1,35 bis 1,85 m hoch)
-		const float schartenUnten = 1.35f;
-		const float schartenOben = 1.85f;
+		// Front mit zwei Scharten (je 2,2 m breit, 1,1 bis 2,3 m hoch)
+		// Die Augen der Figur liegen 1,88 m ueber dem Boden: Die Scharte muss darum herum liegen,
+		// und weit genug hinunter reichen, um den Strand unter dem Hang zu sehen (etwa 25 Grad).
+		const float schartenUnten = 1.1f;
+		const float schartenOben = 2.3f;
 		Klotz(t, "FrontUnten", new Vector3(0f, schartenUnten * 0.5f, -hinten), new Vector3(BU_BREITE, schartenUnten, BU_WAND), beton);
 		Klotz(t, "FrontOben", new Vector3(0f, (schartenOben + BU_HOEHE) * 0.5f, -hinten), new Vector3(BU_BREITE, BU_HOEHE - schartenOben, BU_WAND), beton);
 		// Pfeiler zwischen den Scharten: links, Mitte, rechts
@@ -344,14 +346,10 @@ public static partial class SzeneAufbauen
 		// Splitterschutzwand vor der Tuer: Man kommt seitlich hinein, nicht gerade durch.
 		Klotz(t, "Schutzwand", new Vector3(tuerX - 0.4f, 1.25f, hinten + 2.3f), new Vector3(3.6f, 2.5f, 0.8f), beton);
 		Klotz(t, "Schutzwand", new Vector3(tuerX + 1.75f, 1.25f, hinten + 1.4f), new Vector3(0.7f, 2.5f, 1.8f), beton);
-		// Schartenkanten abgeschraegt (Aussehen), innen MG-Tische und Munition
+		// Innen MG-Tische und Munition
 		var n = new Netzbau(3);
 		foreach (var x in new[] { -2.6f, 2.6f })
 		{
-			foreach (var s in new[] { -1f, 1f })
-			{
-				n.Quader(M(new Vector3(x + s * 1.3f, (schartenUnten + schartenOben) * 0.5f, -hinten - 0.45f), new Vector3(0.5f, schartenOben - schartenUnten, 0.4f), new Vector3(0f, s * 35f, 0f)), 0, Color.white);
-			}
 			n.Quader(M(new Vector3(x, 0.95f, -hinten + 1.1f), new Vector3(1.6f, 0.08f, 0.8f)), 1, Color.white);
 			foreach (var bx in new[] { -0.7f, 0.7f })
 			{

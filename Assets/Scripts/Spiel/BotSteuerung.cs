@@ -86,6 +86,13 @@ public class BotSteuerung : NetworkBehaviour
 
 	private float steckPruefung;
 
+	private float ausweichenBis;
+
+	private Vector2 ausweichRichtung;
+
+	// Wie oft hintereinander festgesteckt (wird bei Bewegung wieder 0).
+	private int steckZaehler;
+
 	private float gier;
 
 	private float nick;
@@ -138,6 +145,12 @@ public class BotSteuerung : NetworkBehaviour
 			jagen();
 		}
 		steckenPruefen();
+		// Beim Freikommen: eine Weile in die ausgeloste Richtung, egal wo das Ziel liegt.
+		// Vorher drehte sich der Bot sofort wieder zum Ziel und lief erneut gegen dasselbe Hindernis.
+		if (Time.time < ausweichenBis)
+		{
+			bewegung = ausweichRichtung;
+		}
 		base.transform.rotation = Quaternion.Euler(0f, gier, 0f);
 		blick.cameraTransform.localRotation = Quaternion.Euler(0f - nick, 0f, 0f);
 	}
@@ -328,21 +341,41 @@ public class BotSteuerung : NetworkBehaviour
 		wegRichtung = zielOrt.y > hier.y ? 1 : -1;
 	}
 
-	// Steckt der Bot fest, springt er, dreht sich und plant neu.
+	// Steckt der Bot fest: springen, eine Weile seitlich oder rueckwaerts ausweichen, neu planen.
+	// Steckt er mehrmals hintereinander, geht er erst zu einem zufaelligen Punkt in der Naehe.
 	private void steckenPruefen()
 	{
 		if (Time.time < steckPruefung)
 		{
 			return;
 		}
-		steckPruefung = Time.time + 1f;
+		steckPruefung = Time.time + 0.8f;
 		bool willLaufen = bewegung.sqrMagnitude > 0.1f;
-		if (willLaufen && flach(base.transform.position - letztePosition).magnitude < 1f)
+		if (willLaufen && Time.time >= ausweichenBis && flach(base.transform.position - letztePosition).magnitude < 0.8f)
 		{
-			springenBis = Time.time + 0.25f;
-			jagdBis = 0f;
+			steckZaehler++;
+			springenBis = Time.time + 0.3f;
 			weg = null;
-			gier += Random.Range(-90f, 90f);
+			// Seitlich, schraeg zurueck oder rueckwaerts
+			Vector2[] richtungen = { new Vector2(1f, 0f), new Vector2(-1f, 0f), new Vector2(0.7f, -0.7f), new Vector2(-0.7f, -0.7f), new Vector2(0f, -1f) };
+			ausweichRichtung = richtungen[Random.Range(0, richtungen.Length)];
+			ausweichenBis = Time.time + Random.Range(0.8f, 1.6f) + steckZaehler * 0.3f;
+			gier += Random.Range(-60f, 60f);
+			if (steckZaehler >= 3)
+			{
+				Vector2 umweg = Random.insideUnitCircle.normalized * Random.Range(8f, 16f);
+				jagdZiel = base.transform.position + new Vector3(umweg.x, 0f, umweg.y);
+				jagdBis = Time.time + 4f;
+				steckZaehler = 0;
+			}
+			else
+			{
+				jagdBis = 0f;
+			}
+		}
+		else if (!willLaufen || flach(base.transform.position - letztePosition).magnitude >= 0.8f)
+		{
+			steckZaehler = 0;
 		}
 		letztePosition = base.transform.position;
 	}

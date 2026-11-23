@@ -538,9 +538,10 @@ public static partial class SzeneAufbauen
 		// Umgebungslicht fest als Himmel, Horizont, Boden. "Skybox" braucht gebackene Lichtdaten,
 		// die es im fertigen Spiel nicht gibt: Dort waren Schatten deshalb komplett schwarz.
 		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
-		RenderSettings.ambientSkyColor = new Color(0.5f, 0.56f, 0.66f);
-		RenderSettings.ambientEquatorColor = new Color(0.42f, 0.42f, 0.4f);
-		RenderSettings.ambientGroundColor = new Color(0.25f, 0.23f, 0.2f);
+		// Nicht zu hell: Sonne plus Umgebung ueberstrahlten helle Flaechen zu reinem Weiss.
+		RenderSettings.ambientSkyColor = new Color(0.4f, 0.45f, 0.53f);
+		RenderSettings.ambientEquatorColor = new Color(0.33f, 0.33f, 0.32f);
+		RenderSettings.ambientGroundColor = new Color(0.2f, 0.18f, 0.16f);
 		// Ebenso die Spiegelung des Himmels (Metall, Wasser): ein selbst gemalter Himmelswuerfel.
 		RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
 		RenderSettings.customReflection = HimmelsWuerfel();
@@ -561,7 +562,10 @@ public static partial class SzeneAufbauen
 		var licht1 = new GameObject("Directional Light (1)");
 		licht1.transform.SetParent(lichter.transform, false);
 		licht1.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
-		LichtEinstellen(licht1.AddComponent<Light>(), LichtWerte(szenenWerte, "Directional Light (1)"));
+		var aufhellen = licht1.AddComponent<Light>();
+		LichtEinstellen(aufhellen, LichtWerte(szenenWerte, "Directional Light (1)"));
+		// Abweichung vom Original (0,66): Zusammen mit dem festen Umgebungslicht war das zu hell.
+		aufhellen.intensity = 0.3f;
 		var licht2 = new GameObject("Directional Light (2)");
 		licht2.transform.SetParent(lichter.transform, false);
 		licht2.transform.rotation = Quaternion.Euler(35f, 140f, 0f);
@@ -570,6 +574,8 @@ public static partial class SzeneAufbauen
 		// Die Sonne am Himmel ist die, die Schatten wirft. Ohne Angabe nimmt Unity das hellste
 		// Licht, das passte zwar meist, aber nicht sicher.
 		RenderSettings.sun = sonne;
+		// Abweichung vom Original (1,21), aus demselben Grund
+		sonne.intensity = 1.0f;
 
 		// Menue-Kamera (Manager.uiCam). GESCHAETZT: Blick ins Zimmer, das beim Start aktiv ist.
 		var kameraGo = new GameObject("Camera");

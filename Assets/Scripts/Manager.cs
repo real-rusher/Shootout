@@ -175,6 +175,7 @@ public class Manager : NetworkBehaviour
 		}
 		gewaehlt.SetActive(value: true);
 		aktiveKarte = gewaehlt;
+		Teams.dDayNamen = wahl == 3;
 		UIGameManager.Instance.ladenZeigen(wahl > 0 && wahl < KARTEN_NAMEN.Length ? KARTEN_NAMEN[wahl] : "");
 		StartCoroutine(ladenAbschliessen());
 	}

@@ -78,6 +78,8 @@ public static class Grafik
 			QualitySettings.pixelLightCount = Mathf.Max(lichter, 4);
 			QualitySettings.softParticles = weichePartikel;
 		}
+		// Feste Schattenkacheln: Sonst wandern und flackern Schattenkanten, wenn man sich bewegt.
+		QualitySettings.shadowProjection = ShadowProjection.StableFit;
 		QualitySettings.lodBias = ultra ? 2.5f : lodFaktor;
 		QualitySettings.realtimeReflectionProbes = ultra || spiegelungen;
 		if (ultra)

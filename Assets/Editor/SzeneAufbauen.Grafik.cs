@@ -120,8 +120,8 @@ public static partial class SzeneAufbauen
 
 		// Leuchten: Lampen, Feuer, Sprungfelder und Sonnenreflexe strahlen.
 		var bloom = Effekt(profil, "Bloom");
-		EffektWert(bloom, "intensity", 2.2f);
-		EffektWert(bloom, "threshold", 1.05f);
+		EffektWert(bloom, "intensity", 0.7f);
+		EffektWert(bloom, "threshold", 1.3f);
 		EffektWert(bloom, "softKnee", 0.6f);
 		EffektWert(bloom, "diffusion", 7f);
 
@@ -135,9 +135,9 @@ public static partial class SzeneAufbauen
 		var farbe = Effekt(profil, "ColorGrading");
 		EffektWert(farbe, "gradingMode", "HighDefinitionRange");
 		EffektWert(farbe, "tonemapper", "ACES");
-		EffektWert(farbe, "postExposure", 0.45f);
-		EffektWert(farbe, "contrast", 12f);
-		EffektWert(farbe, "saturation", 12f);
+		EffektWert(farbe, "postExposure", -0.1f);
+		EffektWert(farbe, "contrast", 8f);
+		EffektWert(farbe, "saturation", 6f);
 		EffektWert(farbe, "temperature", 4f);
 
 		var vignette = Effekt(profil, "Vignette");

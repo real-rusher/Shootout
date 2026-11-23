@@ -660,8 +660,8 @@ public static partial class SzeneAufbauen
 			var quer = Vector3.Cross(Vector3.up, richtung).normalized;
 			float biegung = Zufall(z, 0.08f, 0.3f);
 			float frisch = Zufall(z, 0f, 1f);
-			var spitze = Color.Lerp(new Color(0.42f, 0.68f, 0.2f), new Color(0.56f, 0.8f, 0.28f), frisch);
-			var mitte = Color.Lerp(new Color(0.16f, 0.36f, 0.08f), new Color(0.22f, 0.44f, 0.1f), frisch);
+			var spitze = Color.Lerp(new Color(0.33f, 0.55f, 0.15f), new Color(0.43f, 0.64f, 0.2f), frisch);
+			var mitte = Color.Lerp(new Color(0.13f, 0.3f, 0.07f), new Color(0.18f, 0.37f, 0.08f), frisch);
 			var wurzel = new Color(0.06f, 0.13f, 0.04f);
 			const int stuecke = 4;
 			int basis = n.Anzahl;

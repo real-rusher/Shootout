@@ -12,7 +12,7 @@ using UnityEngine;
 public class Spielversion : MonoBehaviour
 {
 	// Bei jeder Aenderung erhoehen und im README in der Versionstabelle eintragen.
-	public const string VERSION = "0.4.1";
+	public const string VERSION = "0.4.2";
 
 	private NetworkManager netzwerk;
 
