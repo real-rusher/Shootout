@@ -133,6 +133,7 @@ public static partial class SzeneAufbauen
 		Fortschritt("Sprites", 0.05f);
 		LayerVorschauEinrichten();
 		LayerEinrichten(LAYER_NACHBEARBEITUNG, "Nachbearbeitung");
+		NebelVariantenBehalten();
 		// Im Editor wurden Shader beim ersten Zeigen im Hintergrund uebersetzt, bis dahin
 		// war alles kurz blau. Ohne das wartet der Editor kurz, der Ladebildschirm deckt es ab.
 		EditorSettings.asyncShaderCompilation = false;
@@ -545,7 +546,11 @@ public static partial class SzeneAufbauen
 		// Ebenso die Spiegelung des Himmels (Metall, Wasser): ein selbst gemalter Himmelswuerfel.
 		RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
 		RenderSettings.customReflection = HimmelsWuerfel();
-		RenderSettings.fog = false;
+		// Nebel an, aber ohne Wirkung (Dichte 0): So behaelt Unity die Nebel-Shader auch dann,
+		// wenn die Einstellung in NebelVariantenBehalten nicht greift. Die Maps stellen ihn ein.
+		RenderSettings.fog = true;
+		RenderSettings.fogMode = FogMode.ExponentialSquared;
+		RenderSettings.fogDensity = 0f;
 
 		// Vorschaubilder der neuen Maps fuer die Knoepfe im Host-Fenster (Index = Map-Nummer).
 		var vorschauen = new Dictionary<int, Sprite>

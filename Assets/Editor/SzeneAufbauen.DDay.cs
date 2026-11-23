@@ -165,7 +165,7 @@ public static partial class SzeneAufbauen
 		var wasser = meer.AddComponent<Wasser>();
 		wasser.hochMaterial = WasserHochMaterial(DDAY);
 		wasser.unterseiteMaterial = WasserUnterseiteMaterial(DDAY);
-		FernesMeer(wurzel.transform, new Rect(-170f, -260f, 340f, 248f), 4000f, meer.GetComponent<MeshRenderer>().sharedMaterial, wasser.hochMaterial);
+		wasser.wellenBereich = DD_WELLEN;
 		DDLandschaft(wurzel);
 
 		var effekte = new GameObject("Effekte");
@@ -180,8 +180,9 @@ public static partial class SzeneAufbauen
 		{
 			float z = i % 2 == 0 ? -40f : -35f;
 			float x = bootX[i] + Zufall(zufall, -4f, 4f);
-			// Die Boote schwimmen: Deck ueber dem hoechsten Wellenberg, sonst stand das Wasser im Boot.
-			float y = Mathf.Max(DDHoehe(x, z) - 0.3f, 0.12f);
+			// Die Boote liegen auf dem Grund auf (Rumpfboden 0,45 m unter dem Bootsursprung, etwas
+			// eingesunken). Wasser im Boot blendet WasserAusschnitt aus.
+			float y = DDHoehe(x, z) + 0.35f;
 			DDLandungsboot(boote.transform, new Vector3(x, y, z), Zufall(zufall, -8f, 8f), i == 1 || i == 4, stahl, stahlDunkel);
 		}
 
@@ -496,22 +497,23 @@ public static partial class SzeneAufbauen
 		return AssetDatabase.LoadAssetAtPath<Texture2D>(pfad);
 	}
 
+	// Wellenbereich des nahen Wassers (dort heben sich die Punkte), lokal: x min, z min, x max, z max.
+	static readonly Vector4 DD_WELLEN = new Vector4(-170f, -260f, 170f, -12f);
+
 	static Mesh DDWasserNetz()
 	{
-		// 4 m: fein genug, dass die grossen Wellen (14 m) als Wellen zu sehen sind.
-		const float schritt = 4f;
-		const float xVon = -170f;
-		const float xBis = 170f;
-		const float zVon = -260f;
-		const float zBis = -12f;
-		int nx = Mathf.RoundToInt((xBis - xVon) / schritt) + 1;
-		int nz = Mathf.RoundToInt((zBis - zVon) / schritt) + 1;
+		// Ein Netz bis zum Horizont: im Wellenbereich alle 4 m (fein genug fuer 14-m-Wellen),
+		// draussen immer groeber. Vorher gab es dafuer ein zweites Netz, das nicht zu sehen war.
+		var xs = LAchse(DD_WELLEN.x, DD_WELLEN.z, 4000f, 4000f, 4f);
+		var zs = LAchse(DD_WELLEN.y, DD_WELLEN.w, 4000f, 60f, 4f);
+		int nx = xs.Count;
+		int nz = zs.Count;
 		var punkte = new Vector3[nx * nz];
 		for (int j = 0; j < nz; j++)
 		{
 			for (int i = 0; i < nx; i++)
 			{
-				punkte[j * nx + i] = new Vector3(xVon + i * schritt, 0f, zVon + j * schritt);
+				punkte[j * nx + i] = new Vector3(xs[i], 0f, zs[j]);
 			}
 		}
 		var dreiecke = new int[(nx - 1) * (nz - 1) * 6];
@@ -545,7 +547,10 @@ public static partial class SzeneAufbauen
 		}
 		netz.tangents = tangenten;
 		// Die Wellen bewegen die Punkte, die Grenzen deshalb etwas hoeher.
-		netz.bounds = new Bounds(new Vector3(0f, 0f, (zVon + zBis) * 0.5f), new Vector3(xBis - xVon, 2f, zBis - zVon));
+		netz.RecalculateBounds();
+		var grenzen = netz.bounds;
+		grenzen.size += Vector3.up * 2f;
+		netz.bounds = grenzen;
 		return netz;
 	}
 
@@ -610,6 +615,9 @@ public static partial class SzeneAufbauen
 			Object.DestroyImmediate(anzeige);
 		}
 		DDLandungsbootModell(boot, ddBootRumpf, stahl, ddBootInnen, stahlDunkel);
+		var trocken = boot.AddComponent<WasserAusschnitt>();
+		trocken.mitte = new Vector3(0f, 1.1f, -0.1f);
+		trocken.halbeGroesse = new Vector3(1.6f, 1.3f, 4.95f);
 		DDSpawnZone(boot.transform, new Vector3(0f, 1.4f, -0.8f), new Vector3(2.4f, 0.4f, 5.5f), Teams.ALLIIERTE);
 		if (brennt)
 		{

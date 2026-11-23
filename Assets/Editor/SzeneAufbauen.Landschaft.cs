@@ -158,60 +158,6 @@ public static partial class SzeneAufbauen
 		return summe;
 	}
 
-	// Meer bis zum Horizont um das nahe Wasser herum (drei Flaechen, ohne Wellenbewegung der
-	// Punkte; die Kraeuselung macht der Shader). Material wie das nahe Wasser, je nach Stufe.
-	static void FernesMeer(Transform eltern, Rect nah, float weite, Material normal, Material hoch)
-	{
-		var meer = new GameObject("FernesMeer");
-		meer.transform.SetParent(eltern, false);
-		var schalter = meer.AddComponent<FernesWasser>();
-		schalter.normalMaterial = normal;
-		schalter.hochMaterial = hoch;
-		var teile = new[]
-		{
-			new Rect(-weite, -weite, weite * 2f, nah.yMin + weite),
-			new Rect(-weite, nah.yMin, nah.xMin + weite, nah.height + 80f),
-			new Rect(nah.xMax, nah.yMin, weite - nah.xMax, nah.height + 80f),
-		};
-		for (int t = 0; t < teile.Length; t++)
-		{
-			var r = teile[t];
-			const int n = 24;
-			var punkte = new Vector3[(n + 1) * (n + 1)];
-			var tangenten = new Vector4[punkte.Length];
-			for (int j = 0; j <= n; j++)
-			{
-				for (int i = 0; i <= n; i++)
-				{
-					punkte[j * (n + 1) + i] = new Vector3(Mathf.Lerp(r.xMin, r.xMax, (float)i / n), 0f, Mathf.Lerp(r.yMin, r.yMax, (float)j / n));
-					tangenten[j * (n + 1) + i] = new Vector4(1f, 0f, 0f, -1f);
-				}
-			}
-			var dreiecke = new List<int>();
-			for (int j = 0; j < n; j++)
-			{
-				for (int i = 0; i < n; i++)
-				{
-					int a = j * (n + 1) + i;
-					dreiecke.AddRange(new[] { a, a + n + 1, a + 1, a + 1, a + n + 1, a + n + 2 });
-				}
-			}
-			var netz = new Mesh();
-			netz.name = "FernesMeer" + t;
-			netz.vertices = punkte;
-			netz.SetTriangles(dreiecke, 0);
-			netz.RecalculateNormals();
-			netz.tangents = tangenten;
-			netz.RecalculateBounds();
-			var go = new GameObject("Meer" + t);
-			go.transform.SetParent(meer.transform, false);
-			go.AddComponent<MeshFilter>().sharedMesh = AlsAsset(netz, LANDSCHAFT + "/FernesMeer" + t + ".asset");
-			var anzeige = go.AddComponent<MeshRenderer>();
-			anzeige.sharedMaterial = normal;
-			anzeige.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-		}
-	}
-
 	// ------------------------------------------------------------------
 	// D-Day: Kueste und Huegel
 

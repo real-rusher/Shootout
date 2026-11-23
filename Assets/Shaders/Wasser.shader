@@ -32,6 +32,12 @@ Shader "Shootout/Wasser"
 		half _Tempo;
 		half _Gischt;
 
+		// Bereiche ohne Wasser (WasserAusschnitt, z. B. Bootsinneres): A = Mitte x, z, halbe
+		// Breite, halbe Laenge; B = cos, sin der Drehung um die Hochachse.
+		float4 _ShootoutAusschnittA[8];
+		float4 _ShootoutAusschnittB[8];
+		float _ShootoutAusschnitte;
+
 		struct Input
 		{
 			float3 worldPos;
@@ -51,6 +57,16 @@ Shader "Shootout/Wasser"
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
 			float2 p = IN.worldPos.xz;
+			float innen = 0;
+			for (int a = 0; a < 8; a++)
+			{
+				float aktiv = step((float)a + 0.5, _ShootoutAusschnitte);
+				float2 d = p - _ShootoutAusschnittA[a].xy;
+				float2 b = _ShootoutAusschnittB[a].xy;
+				float2 lokal = float2(d.x * b.x - d.y * b.y, d.x * b.y + d.y * b.x);
+				innen = max(innen, aktiv * step(abs(lokal.x), _ShootoutAusschnittA[a].z) * step(abs(lokal.y), _ShootoutAusschnittA[a].w));
+			}
+			clip(0.5 - innen);
 			float t = _Time.y * _Tempo;
 			float3 summe = 0;
 			// Dunung

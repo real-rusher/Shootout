@@ -177,6 +177,36 @@ public static partial class SzeneAufbauen
 		ueberschreiben.Invoke(parameter, new[] { passend });
 	}
 
+	// Nebel im fertigen Spiel: Unity laesst beim Bauen die Nebel-Varianten der Shader weg, wenn
+	// die Szene selbst keinen Nebel hat. Die Maps schalten ihn aber erst zur Laufzeit ein
+	// (KartenAtmosphaere, Unterwassersicht), im Build gab es deshalb keinen Nebel. Alle drei
+	// Nebelarten behalten.
+	static void NebelVariantenBehalten()
+	{
+		var einstellungen = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/GraphicsSettings.asset");
+		if (einstellungen == null || einstellungen.Length == 0)
+		{
+			return;
+		}
+		var so = new SerializedObject(einstellungen[0]);
+		var art = so.FindProperty("m_FogStripping");
+		if (art == null)
+		{
+			return;
+		}
+		art.intValue = 1;
+		foreach (var feld in new[] { "m_FogKeepLinear", "m_FogKeepExp", "m_FogKeepExp2" })
+		{
+			var p = so.FindProperty(feld);
+			if (p != null)
+			{
+				p.boolValue = true;
+			}
+		}
+		so.ApplyModifiedPropertiesWithoutUndo();
+		AssetDatabase.SaveAssets();
+	}
+
 	// Himmel fuer Spiegelungen: oben blau, am Horizont hell, unten erdig. 64 x 64 pro Seite.
 	static Cubemap HimmelsWuerfel()
 	{

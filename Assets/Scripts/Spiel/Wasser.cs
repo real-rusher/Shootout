@@ -18,6 +18,13 @@ public class Wasser : MonoBehaviour
 
 	public Material unterseiteMaterial;
 
+	// Wo sich die Punkte heben (lokal: x min, z min, x max, z max). Draussen ist das Meer flach,
+	// nur der Shader kraeuselt es. Leer (0) heisst: die ganze Flaeche.
+	public Vector4 wellenBereich;
+
+	// Indizes der Punkte, die sich bewegen (die anderen bleiben, das spart Rechenzeit).
+	private int[] bewegte;
+
 	// Alle aktiven Wasserflaechen, fuer die Unterwassersicht.
 	public static readonly List<Wasser> Alle = new List<Wasser>();
 
@@ -54,6 +61,15 @@ public class Wasser : MonoBehaviour
 		Grafik.Geaendert -= materialWaehlen;
 	}
 
+	private bool imWellenBereich(float x, float z, float rand)
+	{
+		if (wellenBereich == Vector4.zero)
+		{
+			return true;
+		}
+		return x >= wellenBereich.x - rand && x <= wellenBereich.z + rand && z >= wellenBereich.y - rand && z <= wellenBereich.w + rand;
+	}
+
 	private void Start()
 	{
 		// Eigene Kopie, damit das gespeicherte Netz unveraendert bleibt.
@@ -61,8 +77,17 @@ public class Wasser : MonoBehaviour
 		netz = Instantiate(filter.sharedMesh);
 		filter.mesh = netz;
 		ruhe = netz.vertices;
-		punkte = new Vector3[ruhe.Length];
+		punkte = (Vector3[])ruhe.Clone();
 		flaeche = netz.bounds;
+		var liste = new List<int>();
+		for (int i = 0; i < ruhe.Length; i++)
+		{
+			if (imWellenBereich(ruhe[i].x, ruhe[i].z, 1f))
+			{
+				liste.Add(i);
+			}
+		}
+		bewegte = liste.ToArray();
 
 		// Unterseite: gleiche Punkte, Dreiecke umgedreht.
 		int[] dreiecke = netz.triangles;
@@ -94,7 +119,8 @@ public class Wasser : MonoBehaviour
 
 	private void Update()
 	{
-		for (int i = 0; i < ruhe.Length; i++)
+		WasserAusschnitt.ShaderSetzen();
+		foreach (int i in bewegte)
 		{
 			Vector3 p = ruhe[i];
 			p.y += welle(p.x, p.z);
@@ -111,14 +137,20 @@ public class Wasser : MonoBehaviour
 	{
 		float t = Time.time * tempo;
 		float k = 2f * Mathf.PI / wellenlaenge;
-		// Zum Rand hin flacher: Dort schliesst das ferne Meer an, das sich nicht hebt.
-		float rand = flaeche.size.x > 0f ? Mathf.Clamp01(Mathf.Min(Mathf.Min(x - flaeche.min.x, flaeche.max.x - x), Mathf.Min(z - flaeche.min.z, flaeche.max.z - z)) / 30f) : 1f;
+		// Zum Rand des Wellenbereichs hin flacher, draussen ist das Meer ruhig.
+		Vector4 b = wellenBereich == Vector4.zero ? new Vector4(flaeche.min.x, flaeche.min.z, flaeche.max.x, flaeche.max.z) : wellenBereich;
+		float rand = Mathf.Clamp01(Mathf.Min(Mathf.Min(x - b.x, b.z - x), Mathf.Min(z - b.y, b.w - z)) / 30f);
 		return rand * (Mathf.Sin(z * k + t) * hoehe + Mathf.Sin((x * 0.7f + z * 0.3f) * k * 1.7f + t * 1.3f) * hoehe * 0.4f);
 	}
 
 	// Liegt der Punkt unter dieser Wasseroberflaeche?
 	public bool unterWasser(Vector3 weltPunkt)
 	{
+		// Im Boot steht kein Wasser
+		if (WasserAusschnitt.Enthaelt(weltPunkt))
+		{
+			return false;
+		}
 		Vector3 lokal = base.transform.InverseTransformPoint(weltPunkt);
 		if (lokal.x < flaeche.min.x || lokal.x > flaeche.max.x || lokal.z < flaeche.min.z || lokal.z > flaeche.max.z)
 		{
@@ -132,6 +164,10 @@ public class Wasser : MonoBehaviour
 	{
 		Vector3 lokal = base.transform.InverseTransformPoint(weltPunkt);
 		hoeheWelt = 0f;
+		if (WasserAusschnitt.Enthaelt(weltPunkt))
+		{
+			return false;
+		}
 		if (lokal.x < flaeche.min.x || lokal.x > flaeche.max.x || lokal.z < flaeche.min.z || lokal.z > flaeche.max.z)
 		{
 			return false;
