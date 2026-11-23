@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class Wasser : MonoBehaviour
 {
-	public float hoehe = 0.25f;
+	public float hoehe = 0.35f;
 
 	public float wellenlaenge = 14f;
 

@@ -1004,7 +1004,7 @@ public static partial class SzeneAufbauen
 		var groessen = new List<float>();
 		foreach (var insel in inseln)
 		{
-			int anzahl = Mathf.RoundToInt(Mathf.PI * insel.radius * insel.radius * 1.8f);
+			int anzahl = Mathf.RoundToInt(Mathf.PI * insel.radius * insel.radius * 4.5f);
 			for (int i = 0; i < anzahl; i++)
 			{
 				float winkel = Zufall(uZufall, 0f, Mathf.PI * 2f);

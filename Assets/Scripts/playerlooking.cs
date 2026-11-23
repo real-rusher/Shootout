@@ -56,6 +56,8 @@ public class playerlooking : NetworkBehaviour
 		lampe.halter = cameraTransform;
 		lampe.figur = playermanager;
 		base.gameObject.AddComponent<WasserSpuren>();
+		// Gras (Stufe "Ultra") weicht der Figur aus.
+		base.gameObject.AddComponent<GrasDruck>();
 	}
 
 	// Third Person ist an, wenn eingestellt und nicht gerade mit dem Sniper gezoomt wird.

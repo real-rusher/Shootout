@@ -146,7 +146,9 @@ public static class Grafik
 				merker = licht.gameObject.AddComponent<SonnenSchatten>();
 				merker.normal = licht.shadows;
 			}
-			licht.shadows = Hoch ? LightShadows.Soft : merker.normal;
+			// Nur Sonnen, die schon Schatten werfen, bekommen weiche. Vorher bekam auch das
+			// Aufhelllicht Schatten: Die zeigten in eine Richtung, in der keine Sonne steht.
+			licht.shadows = Hoch && merker.normal != LightShadows.None ? LightShadows.Soft : merker.normal;
 		}
 	}
 

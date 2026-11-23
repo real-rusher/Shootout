@@ -131,6 +131,7 @@ public static partial class SzeneAufbauen
 		boden.AddComponent<MeshFilter>().sharedMesh = bodenNetz;
 		var bodenMaterial = DDMaterial("Boden", Color.white, 0.05f);
 		bodenMaterial.mainTexture = PngAlsTextur(DDAY + "/Boden.png", DDBodenTextur(), TextureWrapMode.Clamp);
+		BodenDetailsSetzen(bodenMaterial, new Vector2((DD_XMAX - DD_XMIN) / 2f, (DD_ZMAX - DD_ZMIN) / 2f));
 		EditorUtility.SetDirty(bodenMaterial);
 		boden.AddComponent<MeshRenderer>().sharedMaterial = bodenMaterial;
 		boden.AddComponent<MeshCollider>().sharedMesh = bodenNetz;
@@ -397,13 +398,16 @@ public static partial class SzeneAufbauen
 		netz.uv = uv;
 		netz.triangles = dreiecke;
 		netz.RecalculateNormals();
+		// Fuer die Detail-Normalen (Relief) braucht das Netz Tangenten.
+		netz.RecalculateTangents();
 		netz.RecalculateBounds();
 		return netz;
 	}
 
 	static byte[] DDBodenTextur()
 	{
-		const int groesse = 512;
+		// 1024: ein Bildpunkt etwa 20 cm. Feinere Details kommen aus der Detailtextur.
+		const int groesse = 1024;
 		var textur = new Texture2D(groesse, groesse, TextureFormat.RGB24, false);
 		var punkte = new Color[groesse * groesse];
 		var unterWasser = new Color(0.36f, 0.35f, 0.28f);
@@ -418,17 +422,15 @@ public static partial class SzeneAufbauen
 				float x = Mathf.Lerp(DD_XMIN, DD_XMAX, px / (groesse - 1f));
 				float z = Mathf.Lerp(DD_ZMIN, DD_ZMAX, py / (groesse - 1f));
 				float h = DDHoehe(x, z);
-				float t = DDHangAnteil(x, z);
-				float w = DDSchlucht(x);
-				float steil = DDSteilheit(x, z);
 				Color farbe = h < -1f ? unterWasser : (h < 0.5f ? Color.Lerp(nassSand, sand, Mathf.InverseLerp(-1f, 0.5f, h)) : sand);
-				float grasAnteil = Glatt(Mathf.InverseLerp(0.45f, 0.75f, t)) * (1f - Glatt(Mathf.InverseLerp(0.8f, 1.3f, steil)));
-				float erdeAnteil = Glatt(Mathf.InverseLerp(0.7f, 1.2f, steil)) * Glatt(Mathf.InverseLerp(0.15f, 0.4f, t));
-				// Ausgetretene Wege in den Schluchten
-				float weg = 0.75f * Glatt(Mathf.InverseLerp(0.55f, 0.85f, w)) * Glatt(Mathf.InverseLerp(0.03f, 0.15f, t)) * (1f - Glatt(Mathf.InverseLerp(0.9f, 1f, t)));
-				farbe = Color.Lerp(farbe, gras, grasAnteil);
-				farbe = Color.Lerp(farbe, erde, Mathf.Max(erdeAnteil, weg));
+				float grasAnteil = DDGrasFlaeche(x, z);
+				float erdeAnteil = DDErdeAnteil(x, z);
+				// Gras mal saftiger, mal trockener, in grossen Flecken
+				var grasHier = Color.Lerp(gras, new Color(0.46f, 0.47f, 0.25f), Mathf.PerlinNoise(x * 0.06f + 30f, z * 0.06f) * 0.8f);
+				farbe = Color.Lerp(farbe, grasHier, grasAnteil);
+				farbe = Color.Lerp(farbe, erde, erdeAnteil);
 				farbe *= 0.88f + 0.24f * Mathf.PerlinNoise(x * 0.35f, z * 0.35f);
+				farbe *= 0.94f + 0.12f * Mathf.PerlinNoise(x * 0.07f + 11f, z * 0.07f + 5f);
 				farbe.a = 1f;
 				punkte[py * groesse + px] = farbe;
 			}
@@ -438,6 +440,26 @@ public static partial class SzeneAufbauen
 		var png = textur.EncodeToPNG();
 		Object.DestroyImmediate(textur);
 		return png;
+	}
+
+	// Anteil Gras (0..1) an einer Stelle, wie auf der Bodentextur. Auch fuer die Grashalme.
+	static float DDGrasFlaeche(float x, float z)
+	{
+		float t = DDHangAnteil(x, z);
+		float steil = DDSteilheit(x, z);
+		float gras = Glatt(Mathf.InverseLerp(0.45f, 0.75f, t)) * (1f - Glatt(Mathf.InverseLerp(0.8f, 1.3f, steil)));
+		return gras * (1f - DDErdeAnteil(x, z));
+	}
+
+	// Offene Erde: steile Haenge und ausgetretene Wege in den Schluchten.
+	static float DDErdeAnteil(float x, float z)
+	{
+		float t = DDHangAnteil(x, z);
+		float steil = DDSteilheit(x, z);
+		float w = DDSchlucht(x);
+		float erde = Glatt(Mathf.InverseLerp(0.7f, 1.2f, steil)) * Glatt(Mathf.InverseLerp(0.15f, 0.4f, t));
+		float weg = 0.75f * Glatt(Mathf.InverseLerp(0.55f, 0.85f, w)) * Glatt(Mathf.InverseLerp(0.03f, 0.15f, t)) * (1f - Glatt(Mathf.InverseLerp(0.9f, 1f, t)));
+		return Mathf.Max(erde, weg);
 	}
 
 	static Texture2D PngAlsTextur(string pfad, byte[] png, TextureWrapMode wrap)
@@ -455,7 +477,8 @@ public static partial class SzeneAufbauen
 
 	static Mesh DDWasserNetz()
 	{
-		const float schritt = 8f;
+		// 4 m: fein genug, dass die grossen Wellen (14 m) als Wellen zu sehen sind.
+		const float schritt = 4f;
 		const float xVon = -170f;
 		const float xBis = 170f;
 		const float zVon = -260f;
@@ -493,6 +516,13 @@ public static partial class SzeneAufbauen
 		netz.vertices = punkte;
 		netz.triangles = dreiecke;
 		netz.RecalculateNormals();
+		// Tangenten fuer den Wasser-Shader (Kraeuselung pro Pixel): x nach rechts, z nach vorn.
+		var tangenten = new Vector4[punkte.Length];
+		for (int i = 0; i < tangenten.Length; i++)
+		{
+			tangenten[i] = new Vector4(1f, 0f, 0f, -1f);
+		}
+		netz.tangents = tangenten;
 		// Die Wellen bewegen die Punkte, die Grenzen deshalb etwas hoeher.
 		netz.bounds = new Bounds(new Vector3(0f, 0f, (zVon + zBis) * 0.5f), new Vector3(xBis - xVon, 2f, zBis - zVon));
 		return netz;
@@ -500,8 +530,19 @@ public static partial class SzeneAufbauen
 
 	static Material DDWasserMaterial()
 	{
-		// Standard-Shader im Modus "Fade": durchsichtig, man sieht den Meeresboden.
-		var material = new Material(Shader.Find("Standard"));
+		// Eigener Shader mit Wellen und Kraeuselung. Fehlt er, der alte Weg: Standard im Modus Fade.
+		var shader = Shader.Find("Shootout/Wasser");
+		Material material;
+		if (shader != null)
+		{
+			material = new Material(shader);
+			material.name = "Wasser";
+			material.SetColor("_Farbe", new Color(0.2f, 0.4f, 0.45f, 0.88f));
+			material.SetColor("_Tiefe", new Color(0.05f, 0.18f, 0.22f, 0.65f));
+			material.SetFloat("_Glanz", 0.8f);
+			return AlsAsset(material, DDAY + "/Wasser.mat");
+		}
+		material = new Material(Shader.Find("Standard"));
 		material.name = "Wasser";
 		material.color = new Color(0.12f, 0.32f, 0.38f, 0.72f);
 		material.SetFloat("_Glossiness", 0.85f);
@@ -985,28 +1026,47 @@ public static partial class SzeneAufbauen
 		UltraFeuer(halter, groesse);
 	}
 
-	// Grashalme fuer "Ultra", wo auch das einfache Gras waechst (gleiche Regeln wie DDGras).
+	// Grashalme fuer "Ultra": die ganze gruene Flaeche der Bodentextur, etwa 4 Bueschel pro m2.
+	// Raster mit Zufallsversatz statt reinem Zufall, damit es keine kahlen Stellen gibt.
 	static void DDUltraGras(GameObject wurzel)
 	{
 		var orte = new List<Vector3>();
 		var normalen = new List<Vector3>();
 		var groessen = new List<float>();
-		for (int versuch = 0; versuch < 140000 && orte.Count < 30000; versuch++)
+		const float raster = 0.5f;
+		for (float z = -20f; z < DD_ZMAX - 1f; z += raster)
 		{
-			float x = Zufall(uZufall, -98f, 98f);
-			float z = Zufall(uZufall, 14f, 109f);
-			float t = DDHangAnteil(x, z);
-			bool passt = t > 0.45f || (DDSchlucht(x) > 0.4f && t > 0.2f);
-			if (!passt || DDSteilheit(x, z) > 1f || imWeg(x, z))
+			for (float x = DD_XMIN + 1f; x < DD_XMAX - 1f; x += raster)
 			{
-				continue;
+				float px = x + Zufall(uZufall, 0f, raster);
+				float pz = z + Zufall(uZufall, 0f, raster);
+				float anteil = Mathf.Clamp01(DDGrasFlaeche(px, pz) * 1.2f);
+				if ((float)uZufall.NextDouble() >= anteil || DDGrasFrei(px, pz))
+				{
+					continue;
+				}
+				orte.Add(new Vector3(px, DDHoehe(px, pz) - 0.03f, pz));
+				var normale = new Vector3(DDHoehe(px - 0.5f, pz) - DDHoehe(px + 0.5f, pz), 1f, DDHoehe(px, pz - 0.5f) - DDHoehe(px, pz + 0.5f));
+				normalen.Add(normale.normalized);
+				// Am Rand der Wiese kleiner, mittendrin hoeher
+				groessen.Add(Zufall(uZufall, 0.75f, 1.15f) * Mathf.Lerp(0.7f, 1.15f, anteil));
 			}
-			orte.Add(new Vector3(x, DDHoehe(x, z) - 0.03f, z));
-			var normale = new Vector3(DDHoehe(x - 0.5f, z) - DDHoehe(x + 0.5f, z), 1f, DDHoehe(x, z - 0.5f) - DDHoehe(x, z + 0.5f));
-			normalen.Add(normale.normalized);
-			groessen.Add(Zufall(uZufall, 0.8f, 1.3f));
 		}
 		UltraGras(wurzel, "GrasDDay", orte, normalen, groessen);
+	}
+
+	// Kein Gras in Bunkern und auf den Spawnplaetzen der Verteidiger (das Gras ragte durch den Boden).
+	static bool DDGrasFrei(float x, float z)
+	{
+		foreach (var bx in DD_BUNKER_X)
+		{
+			if (Mathf.Abs(x - bx) < 6f && Mathf.Abs(z - DD_BUNKER_Z) < 5f) return true;
+		}
+		foreach (var vx in DD_VERTEIDIGER_X)
+		{
+			if (Mathf.Abs(x - vx) < 11f && Mathf.Abs(z - DD_VERTEIDIGER_Z) < 5f) return true;
+		}
+		return false;
 	}
 
 	// Weisse Gischt entlang der Wasserlinie.

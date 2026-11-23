@@ -35,6 +35,8 @@ public static partial class SzeneAufbauen
 	{
 		Ordner(ULTRA);
 		uZufall = new System.Random(7777);
+		uBodenDetail = null;
+		uBodenRelief = null;
 		uLaub = ULaubMaterial("Laub", ULaubTextur("Laub", 21, 75, 0.09f, 0.14f, new Color(0.11f, 0.24f, 0.07f), new Color(0.36f, 0.52f, 0.15f)), 0.6f);
 		uBusch = ULaubMaterial("Buschlaub", ULaubTextur("Buschlaub", 33, 120, 0.06f, 0.095f, new Color(0.1f, 0.2f, 0.06f), new Color(0.3f, 0.45f, 0.14f)), 0.35f);
 		uWedel = ULaubMaterial("Palmwedel", UWedelTextur(), 0.8f);
@@ -927,6 +929,102 @@ public static partial class SzeneAufbauen
 		float strahlen = Mathf.Pow(Mathf.Abs(Mathf.Cos(winkel * 3f)), 24f) * Mathf.Clamp01(1f - r);
 		float a = Mathf.Clamp01(kern + strahlen * 0.8f);
 		return new Color(1f, 1f, 1f, a);
+	}
+
+	// ------------------------------------------------------------------
+	// Boden-Details: kachelnde Textur mit Koernung, Steinchen und Relief (Detail-Karten des
+	// Standard-Shaders, liegen ueber der groben Farbtextur der Map). Alle Grafikstufen.
+
+	static Texture2D uBodenDetail;
+	static Texture2D uBodenRelief;
+
+	static void BodenDetailsSetzen(Material material, Vector2 kacheln)
+	{
+		if (uBodenDetail == null || uBodenRelief == null)
+		{
+			uBodenDetail = UTextur("BodenDetail", 512, 512, (u, v) =>
+			{
+				// Mittelwert um 0,5: Der Standard-Shader rechnet Details mal 2, die Grundfarbe bleibt.
+				float h = UBodenHoehe(u, v);
+				float korn = KWert(Mathf.FloorToInt(u * 512f), Mathf.FloorToInt(v * 512f), 512, 91);
+				float wert = 0.5f + (h - 0.45f) * 0.35f + (korn - 0.5f) * 0.07f;
+				return new Color(wert, wert, wert * 0.98f);
+			}, false, TextureWrapMode.Repeat, 0f);
+			uBodenRelief = UNormalTextur("BodenRelief", 512, UBodenHoehe, 8f);
+		}
+		material.EnableKeyword("_NORMALMAP");
+		material.EnableKeyword("_DETAIL_MULX2");
+		material.SetTexture("_DetailAlbedoMap", uBodenDetail);
+		material.SetTexture("_DetailNormalMap", uBodenRelief);
+		material.SetFloat("_DetailNormalMapScale", 0.9f);
+		material.SetTextureScale("_DetailAlbedoMap", kacheln);
+		EditorUtility.SetDirty(material);
+	}
+
+	// Hoehe des Bodens im Kleinen (0..1, nahtlos): Wellen im Sand, Klumpen, Steinchen.
+	static float UBodenHoehe(float u, float v)
+	{
+		float grob = KWolke(u, v, 81);
+		float fein = KWolke(Mathf.Repeat(u * 3f, 1f), Mathf.Repeat(v * 3f, 1f), 83);
+		float korn = KWolke(Mathf.Repeat(u * 8f, 1f), Mathf.Repeat(v * 8f, 1f), 84);
+		// Steinchen: 12 x 12 Zellen, in gut einem Viertel ein unregelmaessiges Steinchen.
+		const int zellen = 12;
+		float stein = 0f;
+		int zx = Mathf.FloorToInt(u * zellen);
+		int zy = Mathf.FloorToInt(v * zellen);
+		float verzerrung = 1f + 0.6f * (KWolke(Mathf.Repeat(u * 4f, 1f), Mathf.Repeat(v * 4f, 1f), 89) - 0.5f);
+		for (int dy = -1; dy <= 1; dy++)
+		{
+			for (int dx = -1; dx <= 1; dx++)
+			{
+				int cx = zx + dx;
+				int cy = zy + dy;
+				if (KWert(cx, cy, zellen, 85) < 0.72f)
+				{
+					continue;
+				}
+				float mx = (cx + 0.2f + 0.6f * KWert(cx, cy, zellen, 86)) / zellen;
+				float my = (cy + 0.2f + 0.6f * KWert(cx, cy, zellen, 87)) / zellen;
+				float r = 0.008f + 0.02f * KWert(cx, cy, zellen, 88);
+				float d = new Vector2((u - mx) * 1.3f, v - my).magnitude / r * verzerrung;
+				stein = Mathf.Max(stein, Mathf.Sqrt(Mathf.Clamp01(1f - d * d)) * (0.5f + 0.5f * KWert(cx, cy, zellen, 90)));
+			}
+		}
+		return Mathf.Clamp01(grob * 0.45f + fein * 0.3f + korn * 0.25f + stein * 0.35f);
+	}
+
+	delegate float UHoehe(float u, float v);
+
+	// Normalenkarte aus einer nahtlosen Hoehe (Mittelwert der Nachbarn).
+	static Texture2D UNormalTextur(string name, int groesse, UHoehe hoehe, float staerke)
+	{
+		var werte = new float[groesse * groesse];
+		for (int y = 0; y < groesse; y++)
+		{
+			for (int x = 0; x < groesse; x++)
+			{
+				werte[y * groesse + x] = hoehe((x + 0.5f) / groesse, (y + 0.5f) / groesse);
+			}
+		}
+		var punkte = new Color[groesse * groesse];
+		for (int y = 0; y < groesse; y++)
+		{
+			for (int x = 0; x < groesse; x++)
+			{
+				float l = werte[y * groesse + (x + groesse - 1) % groesse];
+				float r = werte[y * groesse + (x + 1) % groesse];
+				float u = werte[((y + groesse - 1) % groesse) * groesse + x];
+				float o = werte[((y + 1) % groesse) * groesse + x];
+				var n = new Vector3((l - r) * staerke, (u - o) * staerke, 1f).normalized;
+				punkte[y * groesse + x] = new Color(n.x * 0.5f + 0.5f, n.y * 0.5f + 0.5f, n.z * 0.5f + 0.5f);
+			}
+		}
+		var textur = UTexturAusPunkten(name, groesse, groesse, punkte, false, TextureWrapMode.Repeat, 0f);
+		var pfad = AssetDatabase.GetAssetPath(textur);
+		var importer = (TextureImporter)AssetImporter.GetAtPath(pfad);
+		importer.textureType = TextureImporterType.NormalMap;
+		importer.SaveAndReimport();
+		return AssetDatabase.LoadAssetAtPath<Texture2D>(pfad);
 	}
 
 	// ------------------------------------------------------------------

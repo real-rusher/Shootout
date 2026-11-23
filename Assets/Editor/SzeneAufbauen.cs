@@ -549,7 +549,11 @@ public static partial class SzeneAufbauen
 		var licht2 = new GameObject("Directional Light (2)");
 		licht2.transform.SetParent(lichter.transform, false);
 		licht2.transform.rotation = Quaternion.Euler(35f, 140f, 0f);
-		LichtEinstellen(licht2.AddComponent<Light>(), LichtWerte(szenenWerte, "Directional Light (2)"));
+		var sonne = licht2.AddComponent<Light>();
+		LichtEinstellen(sonne, LichtWerte(szenenWerte, "Directional Light (2)"));
+		// Die Sonne am Himmel ist die, die Schatten wirft. Ohne Angabe nimmt Unity das hellste
+		// Licht, das passte zwar meist, aber nicht sicher.
+		RenderSettings.sun = sonne;
 
 		// Menue-Kamera (Manager.uiCam). GESCHAETZT: Blick ins Zimmer, das beim Start aktiv ist.
 		var kameraGo = new GameObject("Camera");
