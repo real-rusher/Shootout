@@ -27,6 +27,12 @@ public class KartenAtmosphaere : MonoBehaviour
 
 	private float vorherUmgebung;
 
+	private Color vorherHimmel;
+
+	private Color vorherHorizont;
+
+	private Color vorherBoden;
+
 	private Light[] sonnen;
 
 	private float[] sonnenStaerke;
@@ -44,6 +50,13 @@ public class KartenAtmosphaere : MonoBehaviour
 		RenderSettings.fogColor = nebelFarbe;
 		RenderSettings.fogDensity = nebelDichte;
 		RenderSettings.ambientIntensity = vorherUmgebung * umgebungsFaktor;
+		// Bei festem Umgebungslicht (Himmel, Horizont, Boden) zaehlen die Farben, nicht die Staerke.
+		vorherHimmel = RenderSettings.ambientSkyColor;
+		vorherHorizont = RenderSettings.ambientEquatorColor;
+		vorherBoden = RenderSettings.ambientGroundColor;
+		RenderSettings.ambientSkyColor = vorherHimmel * umgebungsFaktor;
+		RenderSettings.ambientEquatorColor = vorherHorizont * umgebungsFaktor;
+		RenderSettings.ambientGroundColor = vorherBoden * umgebungsFaktor;
 		if (sonnenFaktor != 1f)
 		{
 			sonnen = Object.FindObjectsOfType<Light>();
@@ -71,6 +84,9 @@ public class KartenAtmosphaere : MonoBehaviour
 		RenderSettings.fogDensity = vorherDichte;
 		RenderSettings.fogMode = vorherModus;
 		RenderSettings.ambientIntensity = vorherUmgebung;
+		RenderSettings.ambientSkyColor = vorherHimmel;
+		RenderSettings.ambientEquatorColor = vorherHorizont;
+		RenderSettings.ambientGroundColor = vorherBoden;
 		if (sonnen != null)
 		{
 			for (int i = 0; i < sonnen.Length; i++)

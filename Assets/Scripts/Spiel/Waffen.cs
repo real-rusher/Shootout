@@ -15,8 +15,8 @@ public static class Waffen
 	// Sichtfeld ohne Zoom (Grad).
 	public const float NORMALES_SICHTFELD = 60f;
 
-	// Sniper-Zoom wie bei Counter-Strike: Rechtsklick schaltet Stufe 1, Stufe 2, aus.
-	public static readonly float[] SNIPER_ZOOM_SICHTFELD = { 30f, 12f };
+	// Sniper-Zoom: Rechtsklick an (erste Stufe) und aus, dazwischen Mausrad durch die Stufen.
+	public static readonly float[] SNIPER_ZOOM_SICHTFELD = { 30f, 20f, 12f, 7f };
 
 	// Dev-Funktion: Wer diese Zeichen im Namen hat (Gross- und Kleinschreibung egal),
 	// schiesst mit jeder Waffe im Dauerfeuer.

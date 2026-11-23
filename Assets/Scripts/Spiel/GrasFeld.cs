@@ -4,49 +4,64 @@ using UnityEngine.Rendering;
 
 // Grashalme der Stufe "Ultra". Die Standorte legt das Editor-Skript als Punkte eines Netzes ab
 // (Position, Bodennormale, Groesse in uv.x), gezeichnet wird mit DrawMeshInstanced in Feldern
-// von ZELLE Metern. Nah voll dicht, nach hinten immer duenner (die Felder sind gemischt, die
-// ersten n Bueschel liegen also gleichmaessig verteilt). Ohne Kollider, rein zum Ansehen.
-// Gibt ausserdem die Figuren an den Shader weiter: Wo jemand laeuft, biegt sich das Gras weg.
+// von ZELLE Metern. Nah voll dicht mit dem feinen Bueschel, weiter weg duenner und mit dem
+// groben (weniger Halme). Die Felder sind gemischt, die ersten n liegen also gleichmaessig.
+// Dazu die Trampelkarte: eine Draufsicht der Wiese, in die jedes Bild die Figuren eingedrueckt
+// werden und die sich langsam erholt. Der Gras-Shader biegt die Halme danach.
 public class GrasFeld : MonoBehaviour
 {
 	public Mesh punkte;
 
 	public Mesh bueschel;
 
+	public Mesh bueschelFern;
+
 	public Material material;
 
-	// Zum Einstellen: Sichtweite (m), bis hier voll dicht (m), Dichte ganz hinten (Anteil).
-	public float sichtweite = 70f;
+	public Material trampelMaterial;
 
-	public float vollDicht = 22f;
+	// Zum Einstellen: Sichtweite (m), bis hier voll dicht (m), Dichte ganz hinten (Anteil).
+	public float sichtweite = 45f;
+
+	public float vollDicht = 14f;
 
 	public float dichteHinten = 0.1f;
 
-	private const float ZELLE = 12f;
+	// Sekunden, bis niedergetretenes Gras wieder steht.
+	public float erholung = 5f;
+
+	private const float ZELLE = 10f;
 
 	private const int STAPEL = 1023;
 
-	// Muss zur Laenge von _ShootoutFiguren im Gras-Shader passen.
+	// Muss zur Laenge der Felder in den Shadern passen.
 	private const int FIGUREN = 8;
 
+	// Aufloesung der Trampelkarte: Bildpunkte pro Meter (hoechstens 1024 pro Seite).
+	private const float PUNKTE_PRO_METER = 3f;
+
 	private static readonly int FIGUREN_ID = Shader.PropertyToID("_ShootoutFiguren");
-
 	private static readonly int ANZAHL_ID = Shader.PropertyToID("_ShootoutFigurenAnzahl");
-
+	private static readonly int TRAMPEL_ID = Shader.PropertyToID("_ShootoutTrampel");
+	private static readonly int BEREICH_ID = Shader.PropertyToID("_ShootoutTrampelBereich");
+	private static readonly int AKTIV_ID = Shader.PropertyToID("_ShootoutTrampelAktiv");
 	private static readonly int WEITE_ID = Shader.PropertyToID("_Weite");
 
 	private readonly Vector4[] figuren = new Vector4[FIGUREN];
+	private readonly Vector4[] richtungen = new Vector4[FIGUREN];
 
 	private class Zelle
 	{
 		public Vector3 mitte;
-
 		public int anzahl;
-
 		public readonly List<Matrix4x4[]> stapel = new List<Matrix4x4[]>();
 	}
 
 	private List<Zelle> zellen;
+
+	private RenderTexture trampelA;
+	private RenderTexture trampelB;
+	private Vector4 bereich;
 
 	private void Update()
 	{
@@ -64,7 +79,8 @@ public class GrasFeld : MonoBehaviour
 			return;
 		}
 		Vector3 auge = beobachter.position;
-		figurenWeitergeben(auge);
+		figurenSammeln(auge);
+		trampeln();
 		material.SetFloat(WEITE_ID, sichtweite);
 		float weite = sichtweite + ZELLE;
 		foreach (Zelle zelle in zellen)
@@ -74,10 +90,11 @@ public class GrasFeld : MonoBehaviour
 			{
 				continue;
 			}
-			// Wie viele Bueschel dieses Feld zeigt: nah alle, weiter weg weniger (quadratisch).
 			float t = Mathf.Clamp01((abstand - vollDicht) / Mathf.Max(1f, sichtweite - vollDicht));
-			float anteil = Mathf.Lerp(1f, dichteHinten, Mathf.Sqrt(t));
+			float anteil = Mathf.Lerp(dichteHinten, 1f, (1f - t) * (1f - t));
 			int rest = Mathf.Max(1, Mathf.CeilToInt(zelle.anzahl * anteil));
+			// Ab etwas hinter der vollen Dichte das grobe Bueschel (weniger Halme, kaum zu sehen)
+			Mesh netz = abstand > vollDicht * 1.4f && bueschelFern != null ? bueschelFern : bueschel;
 			foreach (Matrix4x4[] stapel in zelle.stapel)
 			{
 				if (rest <= 0)
@@ -85,38 +102,91 @@ public class GrasFeld : MonoBehaviour
 					break;
 				}
 				int zahl = Mathf.Min(rest, stapel.Length);
-				Graphics.DrawMeshInstanced(bueschel, 0, material, stapel, zahl, null, ShadowCastingMode.Off, true, base.gameObject.layer);
+				Graphics.DrawMeshInstanced(netz, 0, material, stapel, zahl, null, ShadowCastingMode.Off, true, base.gameObject.layer);
 				rest -= zahl;
 			}
 		}
 	}
 
-	// Fuesse der naechsten Figuren (Spieler und Bots), w = Radius.
-	private void figurenWeitergeben(Vector3 auge)
+	// Fuesse und Laufrichtungen der naechsten Figuren (Spieler und Bots).
+	private void figurenSammeln(Vector3 auge)
 	{
-		int n = 0;
 		var liste = GrasDruck.Alle;
-		// Mehr als 8 Figuren: die naechsten zur Kamera (einfaches Auswaehlen, die Listen sind klein).
-		var sortiert = liste.Count > FIGUREN ? new List<Transform>(liste) : liste;
-		if (liste.Count > FIGUREN)
+		var sortiert = new List<GrasDruck>(liste);
+		if (sortiert.Count > FIGUREN)
 		{
-			sortiert.Sort((a, b) => (a.position - auge).sqrMagnitude.CompareTo((b.position - auge).sqrMagnitude));
+			sortiert.Sort((a, b) => (a.transform.position - auge).sqrMagnitude.CompareTo((b.transform.position - auge).sqrMagnitude));
 		}
+		int n = 0;
 		for (int i = 0; i < sortiert.Count && n < FIGUREN; i++)
 		{
-			if (sortiert[i] == null)
+			GrasDruck figur = sortiert[i];
+			if (figur == null || !figur.amBoden)
 			{
 				continue;
 			}
-			Vector3 fuss = sortiert[i].position + Vector3.down;
-			figuren[n++] = new Vector4(fuss.x, fuss.y, fuss.z, 1.1f);
+			Vector3 fuss = figur.transform.position + Vector3.down;
+			figuren[n] = new Vector4(fuss.x, fuss.y, fuss.z, 0.75f);
+			Vector3 tempo = figur.tempo / 10f;
+			richtungen[n] = new Vector4(tempo.x, 0f, tempo.z, 0f);
+			n++;
 		}
 		for (int i = n; i < FIGUREN; i++)
 		{
 			figuren[i] = new Vector4(0f, -10000f, 0f, 0f);
+			richtungen[i] = Vector4.zero;
 		}
 		Shader.SetGlobalVectorArray(FIGUREN_ID, figuren);
 		Shader.SetGlobalFloat(ANZAHL_ID, n);
+	}
+
+	private void trampeln()
+	{
+		if (trampelMaterial == null)
+		{
+			Shader.SetGlobalFloat(AKTIV_ID, 0f);
+			return;
+		}
+		trampelMaterial.SetVector("_Bereich", bereich);
+		trampelMaterial.SetFloat("_Erholung", Time.deltaTime / Mathf.Max(0.1f, erholung));
+		trampelMaterial.SetVectorArray("_Figuren", figuren);
+		trampelMaterial.SetVectorArray("_Richtungen", richtungen);
+		trampelMaterial.SetFloat("_Anzahl", Shader.GetGlobalFloat(ANZAHL_ID));
+		Graphics.Blit(trampelA, trampelB, trampelMaterial);
+		RenderTexture tausch = trampelA;
+		trampelA = trampelB;
+		trampelB = tausch;
+		Shader.SetGlobalTexture(TRAMPEL_ID, trampelA);
+		Shader.SetGlobalVector(BEREICH_ID, bereich);
+		Shader.SetGlobalFloat(AKTIV_ID, 1f);
+	}
+
+	private RenderTexture neueKarte(int breite, int hoehe)
+	{
+		var karte = new RenderTexture(breite, hoehe, 0, RenderTextureFormat.ARGBHalf);
+		karte.wrapMode = TextureWrapMode.Clamp;
+		karte.filterMode = FilterMode.Bilinear;
+		karte.Create();
+		// Startwert: nichts niedergedrueckt, Richtung 0
+		RenderTexture vorher = RenderTexture.active;
+		RenderTexture.active = karte;
+		GL.Clear(false, true, new Color(0f, 0.5f, 0.5f, 1f));
+		RenderTexture.active = vorher;
+		return karte;
+	}
+
+	private void OnDestroy()
+	{
+		if (trampelA != null)
+		{
+			trampelA.Release();
+			Destroy(trampelA);
+		}
+		if (trampelB != null)
+		{
+			trampelB.Release();
+			Destroy(trampelB);
+		}
 	}
 
 	private void aufteilen()
@@ -127,9 +197,13 @@ public class GrasFeld : MonoBehaviour
 		Vector2[] groessen = punkte.uv;
 		var gruppen = new Dictionary<Vector2Int, List<Matrix4x4>>();
 		var zufall = new System.Random(17);
+		Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
+		Vector2 max = new Vector2(float.MinValue, float.MinValue);
 		for (int i = 0; i < orte.Length; i++)
 		{
 			Vector3 welt = base.transform.TransformPoint(orte[i]);
+			min = Vector2.Min(min, new Vector2(welt.x, welt.z));
+			max = Vector2.Max(max, new Vector2(welt.x, welt.z));
 			Vector3 oben = normalen.Length > i ? base.transform.TransformDirection(normalen[i]) : Vector3.up;
 			float groesse = groessen.Length > i ? groessen[i].x : 1f;
 			Quaternion drehung = Quaternion.FromToRotation(Vector3.up, oben) * Quaternion.Euler(0f, (float)zufall.NextDouble() * 360f, 0f);
@@ -167,6 +241,24 @@ public class GrasFeld : MonoBehaviour
 				zelle.stapel.Add(liste.GetRange(start, Mathf.Min(STAPEL, liste.Count - start)).ToArray());
 			}
 			zellen.Add(zelle);
+		}
+		// Trampelkarte ueber die ganze Wiese
+		min -= Vector2.one * 2f;
+		max += Vector2.one * 2f;
+		Vector2 groesseWelt = max - min;
+		int breite = Mathf.Clamp(Mathf.CeilToInt(groesseWelt.x * PUNKTE_PRO_METER), 16, 1024);
+		int tiefe = Mathf.Clamp(Mathf.CeilToInt(groesseWelt.y * PUNKTE_PRO_METER), 16, 1024);
+		bereich = new Vector4(min.x, min.y, 1f / groesseWelt.x, 1f / groesseWelt.y);
+		if (trampelMaterial != null && SystemInfo.SupportsRenderTextureFormat(RenderTextureFormat.ARGBHalf))
+		{
+			// Eigene Kopie, sonst aendert das Spiel im Editor das gespeicherte Material.
+			trampelMaterial = new Material(trampelMaterial);
+			trampelA = neueKarte(breite, tiefe);
+			trampelB = neueKarte(breite, tiefe);
+		}
+		else
+		{
+			trampelMaterial = null;
 		}
 	}
 }

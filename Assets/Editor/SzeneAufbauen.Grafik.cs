@@ -177,6 +177,47 @@ public static partial class SzeneAufbauen
 		ueberschreiben.Invoke(parameter, new[] { passend });
 	}
 
+	// Himmel fuer Spiegelungen: oben blau, am Horizont hell, unten erdig. 64 x 64 pro Seite.
+	static Cubemap HimmelsWuerfel()
+	{
+		const int g = 64;
+		var wuerfel = new Cubemap(g, TextureFormat.RGBA32, true);
+		var oben = new Color(0.36f, 0.52f, 0.78f);
+		var horizont = new Color(0.78f, 0.82f, 0.86f);
+		var unten = new Color(0.3f, 0.28f, 0.25f);
+		foreach (CubemapFace seite in System.Enum.GetValues(typeof(CubemapFace)))
+		{
+			if (seite == CubemapFace.Unknown)
+			{
+				continue;
+			}
+			var punkte = new Color[g * g];
+			for (int y = 0; y < g; y++)
+			{
+				for (int x = 0; x < g; x++)
+				{
+					float u = (x + 0.5f) / g * 2f - 1f;
+					float v = (y + 0.5f) / g * 2f - 1f;
+					Vector3 r;
+					switch (seite)
+					{
+						case CubemapFace.PositiveX: r = new Vector3(1f, -v, -u); break;
+						case CubemapFace.NegativeX: r = new Vector3(-1f, -v, u); break;
+						case CubemapFace.PositiveY: r = new Vector3(u, 1f, v); break;
+						case CubemapFace.NegativeY: r = new Vector3(u, -1f, -v); break;
+						case CubemapFace.PositiveZ: r = new Vector3(u, -v, 1f); break;
+						default: r = new Vector3(-u, -v, -1f); break;
+					}
+					float hoehe = r.normalized.y;
+					punkte[y * g + x] = hoehe >= 0f ? Color.Lerp(horizont, oben, Mathf.Pow(hoehe, 0.6f)) : Color.Lerp(horizont, unten, Mathf.Pow(-hoehe, 0.4f));
+				}
+			}
+			wuerfel.SetPixels(punkte, seite);
+		}
+		wuerfel.Apply();
+		return AlsAsset(wuerfel, NACHBEARBEITUNG + "/Himmel.cubemap");
+	}
+
 	// ------------------------------------------------------------------
 	// Wasser
 

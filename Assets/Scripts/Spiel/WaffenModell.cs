@@ -22,6 +22,17 @@ public class WaffenModell : MonoBehaviour
 		figur = GetComponent<Playermanager>();
 	}
 
+	// Wo der Strahl beginnt: in "Ultra" an der Muendung des Modells, sonst an der Spitze des
+	// Laserpointers (null).
+	public Transform muendung(int waffe)
+	{
+		if (!Grafik.Ultra || waffe < 0 || waffe >= modelle.Length || modelle[waffe] == null)
+		{
+			return null;
+		}
+		return modelle[waffe].transform;
+	}
+
 	private void LateUpdate()
 	{
 		bool ultra = Grafik.Ultra && modelle.Length > 0;

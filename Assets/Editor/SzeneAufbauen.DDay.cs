@@ -86,7 +86,8 @@ public static partial class SzeneAufbauen
 		// Unter den Bunkern eben, sonst ragte der Boden in den Innenraum.
 		foreach (var bx in DD_BUNKER_X)
 		{
-			float d = Mathf.Max(Mathf.Abs(x - bx) / 7f, Mathf.Abs(z - DD_BUNKER_Z) / 5.5f);
+			// Halbe Ausdehnung 8 x 7,5 m: Bunker samt Schutzwand am Eingang (z bis +6,6)
+			float d = Mathf.Max(Mathf.Abs(x - bx) / 8f, Mathf.Abs(z - DD_BUNKER_Z - 1f) / 7.5f);
 			h = Mathf.Lerp(h, DD_PLATEAU - 0.2f, 1f - Glatt(Mathf.InverseLerp(1f, 1.5f, d)));
 		}
 		return h;
@@ -118,11 +119,29 @@ public static partial class SzeneAufbauen
 		var laub = DDMaterial("Laub", new Color(0.16f, 0.27f, 0.12f), 0.05f);
 		var rinde = DDMaterial("Rinde", new Color(0.27f, 0.2f, 0.14f), 0.05f);
 		var panzer = DDMaterial("Panzer", new Color(0.28f, 0.31f, 0.22f), 0.15f);
+		var verbrannt = DDMaterial("Verbrannt", new Color(0.07f, 0.065f, 0.06f), 0.05f);
+		var mine = DDMaterial("Mine", new Color(0.24f, 0.26f, 0.2f), 0.3f);
+		var draht = DDMaterial("Draht", new Color(0.23f, 0.2f, 0.18f), 0.35f);
+		var lampenglas = KLeuchten("Bunkerlampe", new Color(1f, 0.85f, 0.6f), 2f);
+		ddBootRumpf = DDMaterial("Bootsrumpf", new Color(0.36f, 0.4f, 0.37f), 0.25f);
+		ddBootInnen = DDMaterial("Bootsinnen", new Color(0.24f, 0.27f, 0.25f), 0.15f);
+		ddModellNummer = 0;
+		// Schalbeton wie am Atlantikwall: waagrechte Bretterabdruecke, Wasserflecken
+		var bunkerBeton = KRaster("Bunkerbeton", (u, v) =>
+		{
+			float brett = Mathf.Repeat(v * 10f, 1f);
+			float fuge = Mathf.SmoothStep(0.02f, 0.08f, Mathf.Min(brett, 1f - brett));
+			float maserung = KWolke(Mathf.Repeat(u * 0.5f, 1f), Mathf.Repeat(v * 10f, 1f), 61);
+			float flecken = Mathf.Pow(KWolke(u, v, 63), 3f);
+			float w = 0.62f + 0.12f * maserung + 0.12f * KWolke(u, v, 65) - 0.25f * flecken;
+			return new Color(w, w * 0.99f, w * 0.95f) * Mathf.Lerp(0.8f, 1f, fuge);
+		}, Color.white, 0.25f, 0.08f, 5f);
 
 		var wurzel = new GameObject("DDay-Karte");
 		var atmosphaere = wurzel.AddComponent<KartenAtmosphaere>();
 		atmosphaere.nebelFarbe = new Color(0.6f, 0.64f, 0.68f);
-		atmosphaere.nebelDichte = 0.006f;
+		// Duenner als frueher: Hinter der Map liegen jetzt Kueste und Berge, die sollen zu sehen sein.
+		atmosphaere.nebelDichte = 0.0025f;
 
 		// Gelaende
 		var boden = new GameObject("Boden");
@@ -144,6 +163,8 @@ public static partial class SzeneAufbauen
 		var wasser = meer.AddComponent<Wasser>();
 		wasser.hochMaterial = WasserHochMaterial(DDAY);
 		wasser.unterseiteMaterial = WasserUnterseiteMaterial(DDAY);
+		FernesMeer(wurzel.transform, new Rect(-170f, -260f, 340f, 248f), 4000f, meer.GetComponent<MeshRenderer>().sharedMaterial, wasser.hochMaterial);
+		DDLandschaft(wurzel);
 
 		var effekte = new GameObject("Effekte");
 		effekte.transform.SetParent(wurzel.transform, false);
@@ -168,20 +189,13 @@ public static partial class SzeneAufbauen
 		{
 			float x = Zufall(zufall, -96f, 96f);
 			float z = Zufall(zufall, -24f, 4f);
-			DDPanzerigel(hindernisse.transform, new Vector3(x, DDHoehe(x, z), z), Zufall(zufall, 0f, 360f), rost);
+			DDPanzerigelModell(hindernisse.transform, new Vector3(x, DDHoehe(x, z), z), Zufall(zufall, 0f, 360f), rost);
 		}
 		for (int i = 0; i < 22; i++)
 		{
 			float x = Zufall(zufall, -96f, 96f);
 			float z = Zufall(zufall, -31f, -20f);
-			var pfahl = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-			pfahl.name = "Holzpfahl";
-			pfahl.transform.SetParent(hindernisse.transform, false);
-			pfahl.transform.localPosition = new Vector3(x, DDHoehe(x, z) + 1.1f, z);
-			// Spitze zum Meer geneigt, wie die Pfahlsperren am Strand.
-			pfahl.transform.localRotation = Quaternion.Euler(-35f, Zufall(zufall, -15f, 15f), 0f);
-			pfahl.transform.localScale = new Vector3(0.28f, 1.5f, 0.28f);
-			pfahl.GetComponent<Renderer>().sharedMaterial = holz;
+			DDHolzrampe(hindernisse.transform, new Vector3(x, DDHoehe(x, z), z), Zufall(zufall, -15f, 15f), holz, mine);
 		}
 
 		// Kieswall oben am Strand, mit Luecken vor den Schluchten.
@@ -196,22 +210,25 @@ public static partial class SzeneAufbauen
 			Klotz(wall.transform, "Wall", new Vector3(x, DDHoehe(x, 11f) + 0.45f, 11f), new Vector3(6.1f, 1.1f, 1.4f), stein, new Vector3(0f, Zufall(zufall, -3f, 3f), 0f));
 		}
 
+		// Stacheldrahtrollen hinter dem Kieswall, mit Luecken
+		var drahtGruppe = new GameObject("Stacheldraht");
+		drahtGruppe.transform.SetParent(wurzel.transform, false);
+		for (float x = -94f; x <= 94f; x += 8f)
+		{
+			if (DDSchlucht(x) > 0.4f || uZufall.Next(4) == 0)
+			{
+				continue;
+			}
+			DDStacheldraht(drahtGruppe.transform, new Vector3(x, DDHoehe(x, 14f), 14f), Zufall(uZufall, -6f, 6f), 6f, draht, holz);
+		}
+
 		// Brennendes Panzerwrack am Strand
 		var wrack = new GameObject("Panzerwrack");
 		wrack.transform.SetParent(wurzel.transform, false);
-		wrack.transform.localPosition = new Vector3(24f, DDHoehe(24f, -7f) + 0.5f, -7f);
+		// Leicht im Sand eingesunken
+		wrack.transform.localPosition = new Vector3(24f, DDHoehe(24f, -7f) - 0.12f, -7f);
 		wrack.transform.localRotation = Quaternion.Euler(0f, 35f, 5f);
-		Klotz(wrack.transform, "Wanne", new Vector3(0f, 0.35f, 0f), new Vector3(3.4f, 1.3f, 6.2f), panzer);
-		Klotz(wrack.transform, "KetteLinks", new Vector3(-1.85f, 0.1f, 0f), new Vector3(0.5f, 1.0f, 6.4f), stahlDunkel);
-		Klotz(wrack.transform, "KetteRechts", new Vector3(1.85f, 0.1f, 0f), new Vector3(0.5f, 1.0f, 6.4f), stahlDunkel);
-		Klotz(wrack.transform, "Turm", new Vector3(0f, 1.45f, -0.4f), new Vector3(2.1f, 0.9f, 2.5f), panzer, new Vector3(0f, 25f, 0f));
-		var rohr = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-		rohr.name = "Rohr";
-		rohr.transform.SetParent(wrack.transform, false);
-		rohr.transform.localPosition = new Vector3(0.6f, 1.5f, 1.2f);
-		rohr.transform.localRotation = Quaternion.Euler(80f, 25f, 0f);
-		rohr.transform.localScale = new Vector3(0.18f, 1.6f, 0.18f);
-		rohr.GetComponent<Renderer>().sharedMaterial = stahlDunkel;
+		DDPanzerModell(wrack, panzer, verbrannt, stahlDunkel, rost);
 		DDFeuer(wrack.transform, new Vector3(0f, 1.9f, -1.2f), 1.5f);
 
 		// Bunker
@@ -219,7 +236,7 @@ public static partial class SzeneAufbauen
 		bunker.transform.SetParent(wurzel.transform, false);
 		foreach (var bx in DD_BUNKER_X)
 		{
-			DDBunker(bunker.transform, new Vector3(bx, DD_PLATEAU - 0.2f, DD_BUNKER_Z), beton, sandsack);
+			DDBunkerNeu(bunker.transform, new Vector3(bx, DD_PLATEAU - 0.2f, DD_BUNKER_Z), bunkerBeton, holz, stahlDunkel, busch, sandsack, lampenglas);
 		}
 
 		// MG-Nester oben an den Schluchten, Grabenlinie dahinter.
@@ -561,6 +578,9 @@ public static partial class SzeneAufbauen
 	// ------------------------------------------------------------------
 	// Bauteile
 
+	static Material ddBootRumpf;
+	static Material ddBootInnen;
+
 	static void DDLandungsboot(Transform eltern, Vector3 position, float gier, bool brennt, Material stahl, Material stahlDunkel)
 	{
 		var boot = new GameObject("Landungsboot");
@@ -578,6 +598,13 @@ public static partial class SzeneAufbauen
 		gelenk.transform.localPosition = new Vector3(0f, 0.3f, 5f);
 		gelenk.transform.localRotation = Quaternion.Euler(28f, 0f, 0f);
 		Klotz(gelenk.transform, "Rampenplatte", new Vector3(0f, 0f, 1.35f), new Vector3(3.4f, 0.2f, 2.7f), stahl);
+		// Die Kaesten bleiben als Kollision, zu sehen ist das genaue Modell.
+		foreach (var anzeige in boot.GetComponentsInChildren<MeshRenderer>(true))
+		{
+			Object.DestroyImmediate(anzeige.GetComponent<MeshFilter>());
+			Object.DestroyImmediate(anzeige);
+		}
+		DDLandungsbootModell(boot, ddBootRumpf, stahl, ddBootInnen, stahlDunkel);
 		DDSpawnZone(boot.transform, new Vector3(0f, 1.4f, -0.8f), new Vector3(2.4f, 0.4f, 5.5f), Teams.ALLIIERTE);
 		if (brennt)
 		{
@@ -585,52 +612,12 @@ public static partial class SzeneAufbauen
 		}
 	}
 
-	static void DDPanzerigel(Transform eltern, Vector3 position, float gier, Material material)
-	{
-		var igel = new GameObject("Panzerigel");
-		igel.transform.SetParent(eltern, false);
-		igel.transform.localPosition = position;
-		igel.transform.localRotation = Quaternion.Euler(0f, gier, 0f);
-		for (int k = 0; k < 3; k++)
-		{
-			var balken = Klotz(igel.transform, "Balken", new Vector3(0f, 0.92f, 0f), new Vector3(0.22f, 0.22f, 2.6f), material);
-			balken.transform.localRotation = Quaternion.Euler(0f, k * 60f, 0f) * Quaternion.Euler(45f, 0f, 0f);
-		}
-	}
-
-	static void DDBunker(Transform eltern, Vector3 position, Material beton, Material sandsack)
-	{
-		const float breite = 10f;
-		const float tiefe = 7f;
-		const float hoehe = 3.4f;
-		const float wand = 0.7f;
-		const float tuer = 1.8f;
-		var bunker = new GameObject("Bunker");
-		bunker.transform.SetParent(eltern, false);
-		bunker.transform.localPosition = position;
-		Klotz(bunker.transform, "Boden", new Vector3(0f, 0.2f, 0f), new Vector3(breite, 0.4f, tiefe), beton);
-		Klotz(bunker.transform, "WandLinks", new Vector3(-(breite - wand) * 0.5f, hoehe * 0.5f, 0f), new Vector3(wand, hoehe, tiefe), beton);
-		Klotz(bunker.transform, "WandRechts", new Vector3((breite - wand) * 0.5f, hoehe * 0.5f, 0f), new Vector3(wand, hoehe, tiefe), beton);
-		// Rueckwand mit Tuer
-		float stueck = (breite - tuer) * 0.5f;
-		float hinten = (tiefe - wand) * 0.5f;
-		Klotz(bunker.transform, "RueckwandLinks", new Vector3(-(tuer + stueck) * 0.5f, hoehe * 0.5f, hinten), new Vector3(stueck, hoehe, wand), beton);
-		Klotz(bunker.transform, "RueckwandRechts", new Vector3((tuer + stueck) * 0.5f, hoehe * 0.5f, hinten), new Vector3(stueck, hoehe, wand), beton);
-		Klotz(bunker.transform, "Tuersturz", new Vector3(0f, hoehe - 0.5f, hinten), new Vector3(tuer, 1f, wand), beton);
-		// Vorderwand mit Sehschlitz zwischen 1,4 und 2,1 m, durch den man schiessen kann.
-		Klotz(bunker.transform, "VorneUnten", new Vector3(0f, 0.7f, -hinten), new Vector3(breite, 1.4f, wand), beton);
-		Klotz(bunker.transform, "VorneOben", new Vector3(0f, 2.75f, -hinten), new Vector3(breite, 1.3f, wand), beton);
-		Klotz(bunker.transform, "Dach", new Vector3(0f, hoehe + 0.3f, 0f), new Vector3(breite + 0.8f, 0.6f, tiefe + 0.8f), beton);
-		// Sandsaecke neben dem Eingang
-		Klotz(bunker.transform, "Sandsack", new Vector3(-3.2f, 0.5f, tiefe * 0.5f + 1.6f), new Vector3(3f, 1f, 0.8f), sandsack, new Vector3(0f, 10f, 0f));
-		Klotz(bunker.transform, "Sandsack", new Vector3(3.2f, 0.5f, tiefe * 0.5f + 1.6f), new Vector3(3f, 1f, 0.8f), sandsack, new Vector3(0f, -10f, 0f));
-	}
-
 	static void DDSandsackRing(Transform eltern, Vector3 mitte, float radius, Material material)
 	{
 		var ring = new GameObject("MG-Nest");
 		ring.transform.SetParent(eltern, false);
 		ring.transform.localPosition = Vector3.zero;
+		var saecke = new Netzbau(1);
 		// Offen nach hinten (Norden), damit man hineinkommt.
 		for (int i = 0; i < 7; i++)
 		{
@@ -638,8 +625,15 @@ public static partial class SzeneAufbauen
 			float rad = winkel * Mathf.Deg2Rad;
 			var position = new Vector3(mitte.x + Mathf.Sin(rad) * radius, 0f, mitte.z - Mathf.Cos(rad) * radius);
 			position.y = DDHoehe(position.x, position.z) + 0.45f;
-			Klotz(ring.transform, "Sandsack", position, new Vector3(1.8f, 0.9f, 0.7f), material, new Vector3(0f, -winkel, 0f));
+			var kasten = Klotz(ring.transform, "Sandsack", position, new Vector3(1.8f, 0.9f, 0.7f), material, new Vector3(0f, -winkel, 0f));
+			// Kasten bleibt als Kollision, zu sehen sind einzelne Saecke
+			Object.DestroyImmediate(kasten.GetComponent<MeshRenderer>());
+			Object.DestroyImmediate(kasten.GetComponent<MeshFilter>());
+			var rechts = Quaternion.Euler(0f, -winkel, 0f) * Vector3.right;
+			var fuss = position - Vector3.up * 0.45f;
+			DDSandsackReihe(saecke, fuss - rechts * 0.95f, fuss + rechts * 0.95f, 4, uZufall);
 		}
+		DDNetz(ring.transform, "Sandsaecke", saecke, new[] { material });
 	}
 
 	// Zickzack-Graben aus Sandsaecken quer ueber die Hochebene, offen an den Schluchten.
@@ -1026,14 +1020,14 @@ public static partial class SzeneAufbauen
 		UltraFeuer(halter, groesse);
 	}
 
-	// Grashalme fuer "Ultra": die ganze gruene Flaeche der Bodentextur, etwa 4 Bueschel pro m2.
+	// Grashalme fuer "Ultra": die ganze gruene Flaeche der Bodentextur, knapp 6 Bueschel pro m2.
 	// Raster mit Zufallsversatz statt reinem Zufall, damit es keine kahlen Stellen gibt.
 	static void DDUltraGras(GameObject wurzel)
 	{
 		var orte = new List<Vector3>();
 		var normalen = new List<Vector3>();
 		var groessen = new List<float>();
-		const float raster = 0.5f;
+		const float raster = 0.42f;
 		for (float z = -20f; z < DD_ZMAX - 1f; z += raster)
 		{
 			for (float x = DD_XMIN + 1f; x < DD_XMAX - 1f; x += raster)

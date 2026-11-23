@@ -23,14 +23,6 @@ public static class Grafik
 	// Werte von "Normal", beim ersten Umschalten gemerkt.
 	private static bool gemerkt;
 
-	private static ShadowQuality schatten;
-
-	private static ShadowResolution schattenAufloesung;
-
-	private static float schattenWeite;
-
-	private static int schattenKaskaden;
-
 	private static AnisotropicFiltering anisotrop;
 
 	private static int lichter;
@@ -56,10 +48,6 @@ public static class Grafik
 	{
 		if (!gemerkt)
 		{
-			schatten = QualitySettings.shadows;
-			schattenAufloesung = QualitySettings.shadowResolution;
-			schattenWeite = QualitySettings.shadowDistance;
-			schattenKaskaden = QualitySettings.shadowCascades;
 			anisotrop = QualitySettings.anisotropicFiltering;
 			lichter = QualitySettings.pixelLightCount;
 			weichePartikel = QualitySettings.softParticles;
@@ -81,12 +69,13 @@ public static class Grafik
 		}
 		else
 		{
-			QualitySettings.shadows = schatten;
-			QualitySettings.shadowResolution = schattenAufloesung;
-			QualitySettings.shadowDistance = schattenWeite;
-			QualitySettings.shadowCascades = schattenKaskaden;
+			// "Normal": einfache Schatten, aber immer welche (Figuren, Haeuser, Baeume).
+			QualitySettings.shadows = ShadowQuality.All;
+			QualitySettings.shadowResolution = ShadowResolution.Medium;
+			QualitySettings.shadowDistance = 70f;
+			QualitySettings.shadowCascades = 2;
 			QualitySettings.anisotropicFiltering = anisotrop;
-			QualitySettings.pixelLightCount = lichter;
+			QualitySettings.pixelLightCount = Mathf.Max(lichter, 4);
 			QualitySettings.softParticles = weichePartikel;
 		}
 		QualitySettings.lodBias = ultra ? 2.5f : lodFaktor;

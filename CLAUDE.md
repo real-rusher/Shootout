@@ -50,7 +50,8 @@ bekannte Fehler stehen in `README.md` und `docs/`. Lies das, bevor du Code aende
   Lobby-Standards in `Spiel/LobbyWahl.cs`.
 * Szene und Prefabs erzeugt `Assets/Editor/SzeneAufbauen*.cs` (Teile: Grundaufbau,
   `.Erweiterung` fuer Bots, Kopfbild und neues UI, `.DDay` fuer die D-Day-Map, `.Karten` fuer
-  die Maps 4 bis 6, `.Grafik` fuer die Grafikstufe "Hoch"). Eigene Shader in `Assets/Shaders/`. Neues UI steht
+  die Maps 4 bis 6, `.Grafik` fuer die Grafikstufe "Hoch", `.Ultra` fuer "Ultra", `.Landschaft`
+  fuer Gelaende und Meer um die Maps, `.DDayModelle` fuer Boote, Panzer, Sperren, Bunker). Eigene Shader in `Assets/Shaders/`. Neues UI steht
   in `Assets/Editor/UiErweiterung.json` (gleiches Format wie `docs/ui_layout.json`).
 * Fertiges Spiel baut GitHub (`.github/workflows/spiel_bauen.yml`, `Editor/CiBau.cs`), Anleitung
   in `docs/SPIEL_BAUEN.md`. Neue Schritte im Szenenaufbau gehoeren in `AufbauSchritte`, damit

@@ -348,6 +348,8 @@ public static partial class SzeneAufbauen
 		// Nur die Kamera des eigenen Spielers wird eingeschaltet (playerlooking.switchCameraTo).
 		kamera.enabled = false;
 		kamera.nearClipPlane = 0.05f;
+		// Weit genug fuer Kueste, Meer und Berge um die Maps (der Nebel blendet vorher aus).
+		kamera.farClipPlane = 2500f;
 		kamera.fieldOfView = Waffen.NORMALES_SICHTFELD;
 		// Die Vorschau des Kopfbild-Editors steht auf einem eigenen Layer, den sieht nur ihre Kamera.
 		kamera.cullingMask = ~(1 << LAYER_VORSCHAU);
@@ -384,12 +386,14 @@ public static partial class SzeneAufbauen
 		MaterialienErsetzen(modell, ERZEUGT + "/Spieler");
 		// Stufe "Ultra": Waffenmodelle statt des Rohrs, Muendung an der Spitze des Laserpointers.
 		var waffenModell = wurzel.AddComponent<WaffenModell>();
-		waffenModell.modelle = UltraWaffen(kameraGo.transform, pointer.transform.localPosition);
+		waffenModell.modelle = UltraWaffen(kameraGo.transform);
 		waffenModell.pointerModell = modell;
 
 		// Koerper: Unity-Kapsel (im Original MeshFilter + CapsuleCollider ohne eigenes Modell)
 		var koerper = GameObject.CreatePrimitive(PrimitiveType.Capsule);
 		koerper.name = "playerbody";
+		// Figuren werfen Schatten (Grafikstufen bestimmen nur, wie weich und wie weit).
+		koerper.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
 		koerper.transform.SetParent(wurzel.transform, false);
 
 		// Namensschild. GESCHAETZT: Hoehe und Groesse.
@@ -477,6 +481,10 @@ public static partial class SzeneAufbauen
 		lichtGo.transform.SetParent(wurzel.transform, false);
 		lichtGo.transform.localPosition = new Vector3(grenzen.center.x, grenzen.min.y + grenzen.size.y * 0.8f, grenzen.center.z);
 		LichtEinstellen(lichtGo.AddComponent<Light>(), LichtWerte(szenenWerte, lichtName));
+		if (prefabName == "Map_InfoRaum")
+		{
+			InfoRaumLicht(wurzel, lichtGo.GetComponent<Light>());
+		}
 
 		// Wurzel auf "Ignore Raycast", die Teile bleiben auf Default und sind treffbar.
 		wurzel.layer = 2;
@@ -527,7 +535,15 @@ public static partial class SzeneAufbauen
 		EditorSceneManager.SaveScene(szene, SZENE);
 
 		RenderSettings.skybox = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Skybox.mat");
-		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Skybox;
+		// Umgebungslicht fest als Himmel, Horizont, Boden. "Skybox" braucht gebackene Lichtdaten,
+		// die es im fertigen Spiel nicht gibt: Dort waren Schatten deshalb komplett schwarz.
+		RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Trilight;
+		RenderSettings.ambientSkyColor = new Color(0.5f, 0.56f, 0.66f);
+		RenderSettings.ambientEquatorColor = new Color(0.42f, 0.42f, 0.4f);
+		RenderSettings.ambientGroundColor = new Color(0.25f, 0.23f, 0.2f);
+		// Ebenso die Spiegelung des Himmels (Metall, Wasser): ein selbst gemalter Himmelswuerfel.
+		RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
+		RenderSettings.customReflection = HimmelsWuerfel();
 		RenderSettings.fog = false;
 
 		// Vorschaubilder der neuen Maps fuer die Knoepfe im Host-Fenster (Index = Map-Nummer).

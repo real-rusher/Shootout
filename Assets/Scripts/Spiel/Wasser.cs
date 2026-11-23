@@ -111,7 +111,9 @@ public class Wasser : MonoBehaviour
 	{
 		float t = Time.time * tempo;
 		float k = 2f * Mathf.PI / wellenlaenge;
-		return Mathf.Sin(z * k + t) * hoehe + Mathf.Sin((x * 0.7f + z * 0.3f) * k * 1.7f + t * 1.3f) * hoehe * 0.4f;
+		// Zum Rand hin flacher: Dort schliesst das ferne Meer an, das sich nicht hebt.
+		float rand = flaeche.size.x > 0f ? Mathf.Clamp01(Mathf.Min(Mathf.Min(x - flaeche.min.x, flaeche.max.x - x), Mathf.Min(z - flaeche.min.z, flaeche.max.z - z)) / 30f) : 1f;
+		return rand * (Mathf.Sin(z * k + t) * hoehe + Mathf.Sin((x * 0.7f + z * 0.3f) * k * 1.7f + t * 1.3f) * hoehe * 0.4f);
 	}
 
 	// Liegt der Punkt unter dieser Wasseroberflaeche?

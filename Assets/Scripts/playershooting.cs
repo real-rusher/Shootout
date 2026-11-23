@@ -29,6 +29,8 @@ public class playershooting : NetworkBehaviour
 
 	public GameObject laser;
 
+	private WaffenModell waffenModell;
+
 	// Aktuelle Waffe (Waffen.GEWEHR, SMG, SNIPER). Nur beim Besitzer gueltig.
 	public int waffe { get; private set; }
 
@@ -55,6 +57,7 @@ public class playershooting : NetworkBehaviour
 		blick = GetComponent<playerlooking>();
 		bewegung = GetComponent<playermovment>();
 		cam = blick.cameraTransform;
+		waffenModell = GetComponent<WaffenModell>();
 		tonQuelle = base.gameObject.AddComponent<AudioSource>();
 		tonQuelle.playOnAwake = false;
 		tonQuelle.spatialBlend = 1f;
@@ -138,6 +141,25 @@ public class playershooting : NetworkBehaviour
 			return;
 		}
 		float rad = maus.scroll.ReadValue().y;
+		// Sniper: Rechtsklick schaltet den Zoom an und aus. Im Zoom stellt das Mausrad die
+		// Stufe ein (nach vorn naeher heran), sonst wechselt es die Waffe.
+		if (waffe == Waffen.SNIPER && maus.rightButton.wasPressedThisFrame)
+		{
+			setzeZoom(zoomStufe < 0 ? 0 : -1);
+			return;
+		}
+		if (zoomStufe >= 0)
+		{
+			if (rad > 0.1f)
+			{
+				setzeZoom(Mathf.Min(zoomStufe + 1, Waffen.SNIPER_ZOOM_SICHTFELD.Length - 1));
+			}
+			else if (rad < -0.1f)
+			{
+				setzeZoom(Mathf.Max(zoomStufe - 1, 0));
+			}
+			return;
+		}
 		if (rad > 0.1f)
 		{
 			waffeWaehlen((waffe + Waffen.LISTE.Length - 1) % Waffen.LISTE.Length);
@@ -145,12 +167,6 @@ public class playershooting : NetworkBehaviour
 		else if (rad < -0.1f)
 		{
 			waffeWaehlen((waffe + 1) % Waffen.LISTE.Length);
-		}
-		// Zoom wie bei Counter-Strike: jeder Rechtsklick eine Stufe weiter, dann wieder aus.
-		if (waffe == Waffen.SNIPER && maus.rightButton.wasPressedThisFrame)
-		{
-			int naechste = zoomStufe + 1;
-			setzeZoom(naechste >= Waffen.SNIPER_ZOOM_SICHTFELD.Length ? -1 : naechste);
 		}
 	}
 
@@ -286,7 +302,8 @@ public class playershooting : NetworkBehaviour
 	{
 		Waffen.Werte werte = Waffen.Hole(laserWaffe);
 		gezeigteWaffe = laserWaffe;
-		Vector3 muendung = playermanager.laserPointer.transform.position;
+		Transform modellMuendung = waffenModell != null ? waffenModell.muendung(laserWaffe) : null;
+		Vector3 muendung = modellMuendung != null ? modellMuendung.position : playermanager.laserPointer.transform.position;
 		Instantiate(laser).GetComponent<LaserEffect>().zeigeStrahl(muendung, trefferpunkt, werte.laserFarbe, werte.laserDicke);
 		// Stufe "Ultra": Muendungsfeuer und Spritzer, wo der Schuss die Wasseroberflaeche trifft.
 		if (Grafik.Ultra)

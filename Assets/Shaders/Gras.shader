@@ -1,16 +1,17 @@
-// Grashalme der Grafikstufe "Ultra". Einzelne Halme als Netz (keine Bildflaechen), Farbe aus
-// den Punkten (Wurzel dunkel, Spitze hell), Wind ueber die Hoehe im Halm (uv.y), mit Boeen, die
-// als Wellen ueber die Wiese laufen. Figuren (GrasFeld setzt _ShootoutFiguren) druecken das
-// Gras zur Seite und nach unten. Wird mit Graphics.DrawMeshInstanced gezeichnet und blendet in
-// der Ferne aus.
+// Grashalme der Grafikstufe "Ultra": dichter Teppich aus duennen Halmen. Alle Halme zeigen mit
+// der Normale nach oben, so wird die Wiese wie ein Ganzes beleuchtet (keine einzelnen Bueschel).
+// Farbe aus den Punkten (Wurzel dunkel, Spitze hell), dazu grosse, sanfte Farbflaechen.
+// Wind: Boeen laufen als Wellen ueber die Wiese, gebogene Halme glaenzen heller.
+// Trampelpfade: _ShootoutTrampel (GrasFeld) sagt, wo und in welche Richtung das Gras liegt.
+// Gezeichnet mit Graphics.DrawMeshInstanced, in der Ferne schrumpfen die Halme in den Boden.
 Shader "Shootout/Gras"
 {
 	Properties
 	{
 		_Color ("Farbe", Color) = (1, 1, 1, 1)
-		_Wind ("Wind", Range(0, 2)) = 0.8
-		_Weite ("Sichtweite", Float) = 70
-		_Glanz ("Glanz", Range(0, 1)) = 0.2
+		_Wind ("Wind", Range(0, 2)) = 1
+		_Weite ("Sichtweite", Float) = 45
+		_Glanz ("Glanz", Range(0, 1)) = 0.25
 	}
 	SubShader
 	{
@@ -28,9 +29,12 @@ Shader "Shootout/Gras"
 		float _Weite;
 		half _Glanz;
 
-		// Global, von GrasFeld: Fuesse der Figuren (xyz) und Radius (w).
+		// Global, von GrasFeld
 		float4 _ShootoutFiguren[8];
 		float _ShootoutFigurenAnzahl;
+		sampler2D _ShootoutTrampel;
+		float4 _ShootoutTrampelBereich;
+		float _ShootoutTrampelAktiv;
 
 		struct Input
 		{
@@ -40,20 +44,37 @@ Shader "Shootout/Gras"
 		void vert (inout appdata_full v)
 		{
 			float3 fuss = mul(unity_ObjectToWorld, float4(0, 0, 0, 1)).xyz;
-			// In der Ferne schrumpfen die Halme in den Boden, statt ploetzlich zu verschwinden.
 			float abstand = distance(fuss, _WorldSpaceCameraPos);
-			float sichtbar = saturate((_Weite - abstand) / (_Weite * 0.25));
+			float sichtbar = saturate((_Weite - abstand) / (_Weite * 0.3));
 			v.vertex.xyz *= sichtbar;
 			float3 welt = mul(unity_ObjectToWorld, v.vertex).xyz;
 			float t = _Time.y;
-			float h = v.texcoord.y * v.texcoord.y;
+			float h = v.texcoord.y;
+			float h2 = h * h;
 
-			// Wind: gleichmaessiges Wiegen plus Boeen, die als breite Wellen ueber die Wiese laufen.
-			float boe = 0.45 + 0.55 * saturate(sin(dot(fuss.xz, float2(0.11, 0.07)) - t * 1.3) * 0.5 + 0.5);
-			float wind = sin(t * 1.6 + fuss.x * 0.35 + fuss.z * 0.3) * 0.6 + sin(t * 3.7 + fuss.x * 1.3 - fuss.z) * 0.25 + 0.5;
-			float3 versatz = float3(wind * 0.2, -abs(wind) * 0.05, wind * 0.12) * h * _Wind * boe;
+			// Wind aus einer Hauptrichtung, Boeen als laufende Wellen (zwei Lagen), dazu Flattern.
+			float2 windRichtung = normalize(float2(1.0, 0.35));
+			float2 quer = float2(-windRichtung.y, windRichtung.x);
+			float welle1 = sin(dot(fuss.xz, windRichtung) * 0.16 - t * 1.9);
+			float welle2 = sin(dot(fuss.xz, normalize(float2(0.8, -0.6))) * 0.33 - t * 2.7 + 1.3);
+			float boe = saturate(0.5 + 0.35 * welle1 + 0.2 * welle2);
+			float flattern = sin(t * 7.0 + dot(fuss.xz, float2(3.1, 2.3)) + h * 3.0) * 0.04;
+			float neigung = (0.15 + 0.85 * boe) * _Wind;
+			float3 versatz = float3(windRichtung.x, 0, windRichtung.y) * (neigung * 0.32 * h2) + float3(quer.x, 0, quer.y) * flattern * h;
+			versatz.y -= neigung * 0.1 * h2;
 
-			// Figuren druecken das Gras weg (bis Radius w, nur wenn sie am Boden sind).
+			// Trampelpfade: niedergedruecktes Gras liegt in Laufrichtung.
+			float2 uv = (welt.xz - _ShootoutTrampelBereich.xy) * _ShootoutTrampelBereich.zw;
+			float innen = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0) * _ShootoutTrampelAktiv;
+			float4 tritt = tex2Dlod(_ShootoutTrampel, float4(saturate(uv), 0, 0));
+			float platt = smoothstep(0.0, 1.0, tritt.r) * innen;
+			float2 liegt = tritt.gb * 2.0 - 1.0;
+			// Hoehe des Punkts ueber dem Boden in Metern: flachgedrueckt liegt der Halm fast am Boden.
+			float hoeheWelt = max(welt.y - fuss.y, 0.0);
+			versatz.xz = lerp(versatz.xz, liegt * 0.8 * hoeheWelt, platt);
+			versatz.y -= platt * 0.72 * hoeheWelt;
+
+			// Figuren direkt daneben druecken zusaetzlich zur Seite (auch in der Luft knapp darueber).
 			float3 druck = 0;
 			for (int i = 0; i < 8; i++)
 			{
@@ -69,19 +90,23 @@ Shader "Shootout/Gras"
 			}
 			druck.xz = druck.xz / max(1.0, length(druck.xz));
 			druck.y = max(druck.y, -1.0);
-			versatz += float3(druck.x * 0.45, druck.y * 0.35, druck.z * 0.45) * h;
+			versatz += float3(druck.x * 0.4, druck.y * 0.3, druck.z * 0.4) * h;
 
 			v.vertex.xyz += mul((float3x3)unity_WorldToObject, versatz);
 
-			// Jedes Bueschel etwas anders getoent
-			float zufall = frac(sin(dot(fuss.xz, float2(12.9898, 78.233))) * 43758.5453);
-			v.color.rgb *= lerp(0.85, 1.12, zufall);
-			v.color.rgb = lerp(v.color.rgb, v.color.rgb * float3(1.15, 1.05, 0.7), step(0.8, zufall) * v.texcoord.y);
+			// Grosse, weiche Farbflaechen statt Zufall pro Bueschel: wirkt wie eine Wiese.
+			float flaeche = sin(fuss.x * 0.045 + sin(fuss.z * 0.03) * 2.0) * sin(fuss.z * 0.05 + 1.7) * 0.5 + 0.5;
+			v.color.rgb *= lerp(0.88, 1.1, flaeche);
+			v.color.rgb = lerp(v.color.rgb, v.color.rgb * float3(1.12, 1.06, 0.75), (1.0 - flaeche) * 0.35 * h);
+			// Glanz: Wo der Wind die Halme biegt, zeigen sie die helle Seite.
+			v.color.a = boe * h * (1.0 - platt);
 		}
 
 		void surf (Input IN, inout SurfaceOutputStandard o)
 		{
-			o.Albedo = IN.color.rgb * _Color.rgb;
+			fixed3 farbe = IN.color.rgb * _Color.rgb;
+			o.Albedo = farbe * (1.0 + 0.35 * IN.color.a);
+			o.Emission = farbe * 0.06 * IN.color.a;
 			o.Smoothness = _Glanz;
 			o.Metallic = 0.0;
 			o.Alpha = 1.0;

@@ -14,14 +14,23 @@ public static partial class SzeneAufbauen
 	// Gemeinsame Hilfen
 
 	// Material mit Textur nach Weltkoordinaten.
-	static Material KRaster(string name, byte[] png, Color farbe, float kachelnProMeter, float glanz)
+	// Material mit Textur nach Weltkoordinaten und Relief (Normalenkarte aus der Helligkeit).
+	static Material KRaster(string name, KPixel pixel, Color farbe, float kachelnProMeter, float glanz, float relief = 6f)
 	{
 		Ordner(KARTEN);
 		// Rueckfall auf Standard, falls der eigene Shader nicht uebersetzt werden konnte.
 		var shader = Shader.Find("Shootout/Weltraster") ?? Shader.Find("Standard");
 		var material = new Material(shader);
 		material.name = name;
-		material.mainTexture = PngAlsTextur(KARTEN + "/" + name + ".png", png, TextureWrapMode.Repeat);
+		material.mainTexture = PngAlsTextur(KARTEN + "/" + name + ".png", KTextur(256, pixel), TextureWrapMode.Repeat);
+		if (material.HasProperty("_BumpMap"))
+		{
+			material.SetTexture("_BumpMap", UNormalTextur(name + "Relief", 256, (u, v) =>
+			{
+				var c = pixel(u, v);
+				return c.r * 0.3f + c.g * 0.55f + c.b * 0.15f;
+			}, relief));
+		}
 		material.color = farbe;
 		material.SetFloat("_Skala", kachelnProMeter);
 		material.SetFloat("_Glanz", glanz);
@@ -180,6 +189,71 @@ public static partial class SzeneAufbauen
 	}
 
 	// ------------------------------------------------------------------
+	// Info-Raum: Lichtstreifen an der Decke
+
+	// Der Raum hat eine Decke (y = 48, das Modell ist riesig, die Figuren klein). Die Sonne der
+	// Szene schien nur aufs Dach, innen leuchtete eine einzige Punktlampe: flach und grau. Jetzt
+	// Lichtstreifen wie in einem echten Klassenraum, ein Deckenlicht von oben mit weichen
+	// Schatten, einige Lampen fuer Helligkeitsverlauf. Die Sonne ist im Raum aus.
+	const float IR_DECKE = 48f;
+
+	static void InfoRaumLicht(GameObject wurzel, Light altesLicht)
+	{
+		// Decke und Waende werfen keinen Schatten, sonst laege der ganze Raum im Schatten der Decke.
+		foreach (var anzeige in wurzel.GetComponentsInChildren<Renderer>(true))
+		{
+			if (anzeige.name.StartsWith("Room_1"))
+			{
+				anzeige.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			}
+		}
+		altesLicht.intensity = 0.35f;
+		var stimmung = wurzel.AddComponent<KartenAtmosphaere>();
+		stimmung.nebelFarbe = new Color(0.75f, 0.76f, 0.78f);
+		stimmung.nebelDichte = 0.0015f;
+		stimmung.umgebungsFaktor = 1.25f;
+		stimmung.sonnenFaktor = 0f;
+
+		var leuchten = KLeuchten("Lichtstreifen", new Color(1f, 0.98f, 0.94f), 2.4f);
+		var rahmen = KFarbe("Lampenrahmen", new Color(0.75f, 0.76f, 0.78f), 0.5f);
+		var lampen = KGruppe(wurzel.transform, "Deckenlampen");
+		// Reihen quer zum Raum, Streifen 22 m lang (ein echter Streifen, im Massstab des Raums)
+		for (float z = -48f; z <= 12f; z += 15f)
+		{
+			for (float x = -80f; x <= 50f; x += 30f)
+			{
+				var streifen = Klotz(lampen.transform, "Lichtstreifen", new Vector3(x, IR_DECKE - 0.35f, z), new Vector3(22f, 0.3f, 2.2f), leuchten);
+				Object.DestroyImmediate(streifen.GetComponent<Collider>());
+				streifen.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+				var gehaeuse = Klotz(lampen.transform, "Gehaeuse", new Vector3(x, IR_DECKE - 0.2f, z), new Vector3(22.8f, 0.4f, 3f), rahmen);
+				Object.DestroyImmediate(gehaeuse.GetComponent<Collider>());
+				gehaeuse.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+			}
+			// Je Reihe zwei Lampen fuer den Helligkeitsverlauf (ohne Schatten, die kommen von oben).
+			foreach (var x in new[] { -50f, 20f })
+			{
+				var lampe = KGruppe(lampen.transform, "Raumlicht");
+				lampe.transform.localPosition = new Vector3(x, IR_DECKE - 6f, z);
+				var licht = lampe.AddComponent<Light>();
+				licht.type = LightType.Point;
+				licht.color = new Color(1f, 0.97f, 0.92f);
+				licht.intensity = 0.55f;
+				licht.range = 55f;
+				licht.shadows = LightShadows.None;
+			}
+		}
+		// Deckenlicht: fast senkrecht von oben, weiche Schatten unter Tischen und Stuehlen.
+		var decke = KGruppe(wurzel.transform, "Deckenlicht");
+		decke.transform.localRotation = Quaternion.Euler(78f, 20f, 0f);
+		var oben = decke.AddComponent<Light>();
+		oben.type = LightType.Directional;
+		oben.color = new Color(1f, 0.97f, 0.93f);
+		oben.intensity = 0.75f;
+		oben.shadows = LightShadows.Soft;
+		oben.shadowStrength = 0.75f;
+	}
+
+	// ------------------------------------------------------------------
 	// Map 4: Wuestenstadt (eigener Grundriss im Stil einer Wuestenstadt)
 
 	const float WS_ZELLE = 30f;
@@ -187,18 +261,30 @@ public static partial class SzeneAufbauen
 	static GameObject WuestenstadtKarte()
 	{
 		var zufall = new System.Random(4141);
-		var sandstein = KRaster("Sandstein", KTextur(256, (u, v) =>
+		wsHausNummer = 0;
+		var sandstein = KRaster("Sandstein", (u, v) =>
 		{
+			// Gemauerte Bloecke: 8 Reihen, versetzt, Fugen vertieft (dunkel = tiefer im Relief).
+			float reihe = Mathf.Floor(v * 8f);
+			float versatz = (reihe % 2f) * 0.5f;
+			float bx = u * 4f + versatz;
+			float by = v * 8f;
+			float fx = bx - Mathf.Floor(bx);
+			float fy = by - reihe;
+			float fuge = Mathf.Min(Mathf.Min(fx, 1f - fx) * 0.5f, Mathf.Min(fy, 1f - fy));
+			float block = KWert(Mathf.FloorToInt(bx) % 4, (int)reihe, 8, 13);
 			float w = KWolke(u, v, 11);
-			float baender = 0.04f * Mathf.Sin(v * Mathf.PI * 16f);
-			return new Color(0.86f, 0.74f, 0.55f) * (0.82f + 0.3f * w + baender);
-		}), Color.white, 0.25f, 0.08f);
-		var putz = KRaster("Putz", KTextur(256, (u, v) =>
+			float kante = Mathf.SmoothStep(0.015f, 0.05f, fuge);
+			var stein = new Color(0.86f, 0.74f, 0.55f) * (0.8f + 0.18f * block + 0.22f * w);
+			var moertel = new Color(0.62f, 0.55f, 0.44f);
+			return Color.Lerp(moertel, stein, kante);
+		}, Color.white, 0.25f, 0.08f, 9f);
+		var putz = KRaster("Putz", (u, v) =>
 		{
 			float w = KWolke(u, v, 23);
 			return Color.Lerp(new Color(0.93f, 0.87f, 0.74f), new Color(0.8f, 0.7f, 0.55f), Mathf.Pow(w, 2.2f));
-		}), Color.white, 0.2f, 0.05f);
-		var pflaster = KRaster("Pflaster", KTextur(256, (u, v) =>
+		}, Color.white, 0.2f, 0.05f);
+		var pflaster = KRaster("Pflaster", (u, v) =>
 		{
 			// Steinplatten: Fugen alle 1/4, jede Platte etwas anders.
 			float px = u * 4f;
@@ -207,7 +293,7 @@ public static partial class SzeneAufbauen
 			float platte = KWert(Mathf.FloorToInt(px), Mathf.FloorToInt(py), 4, 5);
 			Color farbe = new Color(0.78f, 0.68f, 0.52f) * (0.85f + 0.2f * platte + 0.1f * KWolke(u, v, 7));
 			return fuge < 0.04f ? farbe * 0.65f : farbe;
-		}), Color.white, 0.5f, 0.12f);
+		}, Color.white, 0.5f, 0.12f);
 		var holz = KFarbe("WuesteHolz", new Color(0.45f, 0.32f, 0.2f), 0.1f);
 		var dunkel = KFarbe("Fenster", new Color(0.08f, 0.07f, 0.06f), 0.3f);
 		var stoffe = new[]
@@ -221,7 +307,7 @@ public static partial class SzeneAufbauen
 		var palmBlatt = KFarbe("PalmBlatt", new Color(0.24f, 0.45f, 0.18f), 0.1f);
 		var kuppel = KFarbe("Kuppel", new Color(0.2f, 0.5f, 0.55f), 0.4f);
 
-		var wurzel = KWurzel("Wuestenstadt", new Color(0.86f, 0.78f, 0.64f), 0.004f, 1f, 1f);
+		var wurzel = KWurzel("Wuestenstadt", new Color(0.86f, 0.78f, 0.64f), 0.0022f, 1f, 1f);
 		// Falls man doch irgendwo durchfaellt: neu erscheinen statt endlos fallen.
 		wurzel.AddComponent<KartenRegeln>().absturzHoehe = -20f;
 		var boden = Klotz(wurzel.transform, "Boden", new Vector3(0f, -0.5f, 0f), new Vector3(156f, 1f, 156f), pflaster);
@@ -306,6 +392,9 @@ public static partial class SzeneAufbauen
 			}
 		}
 		wurzel.layer = 2;
+		WsAusstattung(deko.transform, stoffe, holz);
+		WsStaub(wurzel.transform);
+		WsLandschaft(wurzel);
 		UltraSpiegelung(wurzel, new Vector3(0f, 15f, 0f), new Vector3(160f, 50f, 160f));
 		return AlsPrefab(wurzel, PREFABS + "/Map_Wuestenstadt.prefab");
 	}
@@ -327,17 +416,8 @@ public static partial class SzeneAufbauen
 			// Bruestung auf dem Dach, damit man dort Deckung hat.
 			Klotz(haus.transform, "Bruestung", new Vector3(0f, hoehe + 0.5f, t.w * 0.5f - 0.2f), new Vector3(t.z, 1f, 0.4f), material);
 			Klotz(haus.transform, "Bruestung", new Vector3(0f, hoehe + 0.5f, -t.w * 0.5f + 0.2f), new Vector3(t.z, 1f, 0.4f), material);
-			// Fenster auf den langen Seiten (dunkle Flaechen, leicht vorgesetzt)
-			for (float s = -t.z * 0.5f + 2f; s < t.z * 0.5f - 1f; s += 3.5f)
-			{
-				for (float h = 2.5f; h < hoehe - 1f; h += 3.5f)
-				{
-					var fenster = Klotz(haus.transform, "Fenster", new Vector3(s, h, t.w * 0.5f + 0.03f), new Vector3(1.2f, 1.6f, 0.06f), dunkel);
-					Object.DestroyImmediate(fenster.GetComponent<Collider>());
-					fenster = Klotz(haus.transform, "Fenster", new Vector3(s, h, -t.w * 0.5f - 0.03f), new Vector3(1.2f, 1.6f, 0.06f), dunkel);
-					Object.DestroyImmediate(fenster.GetComponent<Collider>());
-				}
-			}
+			// Fenster, Balken, Zinnen: ein Netz pro Haus (sonst tausende Einzelteile).
+			WsHausDetails(haus, new Vector3(t.z, hoehe, t.w), material, dunkel, holz, stoffe[uZufall.Next(stoffe.Length)]);
 			// Markise ueber einer Tuer
 			if (zufall.Next(2) == 0)
 			{
@@ -357,6 +437,153 @@ public static partial class SzeneAufbauen
 				}
 			}
 		}
+	}
+
+	static int wsHausNummer;
+
+	// Fenster mit Sims, Holzsturz und Laeden, Holzbalken (Vigas) unter dem Dach, Zinnen auf
+	// der Bruestung. Nur zum Ansehen, ohne Kollider (die Hauswand bleibt die Deckung).
+	static void WsHausDetails(GameObject haus, Vector3 groesse, Material stein, Material dunkel, Material holz, Material laeden)
+	{
+		const int T_STEIN = 0, T_DUNKEL = 1, T_HOLZ = 2, T_LADEN = 3;
+		var n = new Netzbau(4);
+		float breite = groesse.x, hoehe = groesse.y, tiefe = groesse.z;
+		foreach (var seite in new[] { -1f, 1f })
+		{
+			float wand = seite * tiefe * 0.5f;
+			for (float x = -breite * 0.5f + 2f; x < breite * 0.5f - 1f; x += 3.5f)
+			{
+				for (float h = 2.5f; h < hoehe - 1.5f; h += 3.5f)
+				{
+					// Fensteroeffnung (dunkel, knapp vor der Wand), Sims, Sturz, Laeden
+					n.Quader(Matrix4x4.TRS(new Vector3(x, h, wand + seite * 0.02f), Quaternion.identity, new Vector3(1.1f, 1.5f, 0.04f)), T_DUNKEL, Color.white);
+					n.Quader(Matrix4x4.TRS(new Vector3(x, h - 0.85f, wand + seite * 0.12f), Quaternion.identity, new Vector3(1.5f, 0.14f, 0.28f)), T_STEIN, Color.white);
+					n.Quader(Matrix4x4.TRS(new Vector3(x, h + 0.86f, wand + seite * 0.1f), Quaternion.identity, new Vector3(1.6f, 0.2f, 0.22f)), T_HOLZ, Color.white);
+					foreach (var lr in new[] { -1f, 1f })
+					{
+						var drehung = Quaternion.Euler(0f, lr * seite * 25f, 0f);
+						var mitte = new Vector3(x + lr * 0.85f, h, wand + seite * 0.18f);
+						n.Quader(Matrix4x4.TRS(mitte, drehung, new Vector3(0.55f, 1.5f, 0.05f)), T_LADEN, Color.white);
+					}
+				}
+			}
+			// Vigas: runde Balkenkoepfe unter der Dachkante
+			for (float x = -breite * 0.5f + 0.6f; x < breite * 0.5f - 0.3f; x += 1.1f)
+			{
+				n.Rohr(new Vector3(x, hoehe - 0.35f, wand), new Vector3(x, hoehe - 0.37f, wand + seite * 0.5f), 0.09f, 0.085f, 8, T_HOLZ, Color.white, Color.white, 0f, 1f, true);
+			}
+			// Zinnen auf der Bruestung
+			for (float x = -breite * 0.5f + 0.4f; x < breite * 0.5f - 0.2f; x += 1.2f)
+			{
+				n.Quader(Matrix4x4.TRS(new Vector3(x, hoehe + 1.2f, wand - seite * 0.2f), Quaternion.identity, new Vector3(0.55f, 0.4f, 0.42f)), T_STEIN, Color.white);
+			}
+		}
+		// Umlaufendes Gesims knapp unter der Dachkante
+		foreach (var seite in new[] { -1f, 1f })
+		{
+			n.Quader(Matrix4x4.TRS(new Vector3(0f, hoehe - 0.25f, seite * tiefe * 0.5f), Quaternion.identity, new Vector3(breite + 0.3f, 0.14f, 0.3f)), T_STEIN, Color.white);
+			n.Quader(Matrix4x4.TRS(new Vector3(seite * breite * 0.5f, hoehe - 0.25f, 0f), Quaternion.identity, new Vector3(0.3f, 0.14f, tiefe + 0.3f)), T_STEIN, Color.white);
+		}
+		var netz = AlsAsset(n.Fertig("HausDetails"), KARTEN + "/Haus" + (wsHausNummer++) + ".asset");
+		var go = new GameObject("Details");
+		go.transform.SetParent(haus.transform, false);
+		go.AddComponent<MeshFilter>().sharedMesh = netz;
+		go.AddComponent<MeshRenderer>().sharedMaterials = new[] { stein, dunkel, holz, laeden };
+	}
+
+	// Leben in den Gassen: Pflanzkuebel an den Hauswaenden, Waescheleinen ueber den Gassen,
+	// Laternen. Alles ohne Einfluss aufs Spiel (Kuebel sind niedrig, Leinen hoch).
+	static void WsAusstattung(Transform eltern, Material[] stoffe, Material holz)
+	{
+		var ton = KFarbe("Terrakotta", new Color(0.62f, 0.33f, 0.2f), 0.15f);
+		var seil = KFarbe("Waescheleine", new Color(0.55f, 0.5f, 0.42f), 0.05f);
+		var glas = KLeuchten("Laternenglas", new Color(1f, 0.75f, 0.4f), 1.5f);
+		var gruppe = KGruppe(eltern, "Ausstattung");
+		float[] gassen = { -45f, -15f, 15f, 45f };
+		for (int i = 0; i < 36; i++)
+		{
+			// Gasse waehlen, dann an eine der beiden Hauswaende
+			float gasse = gassen[uZufall.Next(gassen.Length)];
+			float entlang = Zufall(uZufall, -70f, 70f);
+			float wand = gasse + (uZufall.Next(2) == 0 ? -4.4f : 4.4f);
+			bool nordSued = uZufall.Next(2) == 0;
+			var ort = nordSued ? new Vector3(wand, 0f, entlang) : new Vector3(entlang, 0f, wand);
+			if (Mathf.Abs(Mathf.Abs(ort.x) - 2f * WS_ZELLE) < 10f && Mathf.Abs(ort.z) < 10f)
+			{
+				continue;
+			}
+			var topf = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+			topf.name = "Pflanzkuebel";
+			topf.transform.SetParent(gruppe.transform, false);
+			topf.transform.localPosition = ort + Vector3.up * 0.35f;
+			topf.transform.localScale = new Vector3(0.7f, 0.35f, 0.7f);
+			topf.GetComponent<Renderer>().sharedMaterial = ton;
+			KNetzKollider(topf);
+			var pflanze = new GameObject("Pflanze");
+			pflanze.transform.SetParent(gruppe.transform, false);
+			pflanze.transform.localPosition = ort + Vector3.up * 0.65f;
+			pflanze.transform.localScale = Vector3.one * Zufall(uZufall, 0.35f, 0.55f);
+			pflanze.transform.localRotation = Quaternion.Euler(0f, Zufall(uZufall, 0f, 360f), 0f);
+			pflanze.AddComponent<MeshFilter>().sharedMesh = uBuesche[uZufall.Next(uBuesche.Length)];
+			pflanze.AddComponent<MeshRenderer>().sharedMaterials = new[] { uRinde, uBusch };
+		}
+		for (int i = 0; i < 14; i++)
+		{
+			float gasse = gassen[uZufall.Next(gassen.Length)];
+			float entlang = Mathf.Round(Zufall(uZufall, -65f, 65f) / 30f) * 30f + Zufall(uZufall, -8f, 8f);
+			bool nordSued = uZufall.Next(2) == 0;
+			float hoehe = Zufall(uZufall, 4.5f, 6f);
+			var a = nordSued ? new Vector3(gasse - 4.6f, hoehe, entlang) : new Vector3(entlang, hoehe, gasse - 4.6f);
+			var b = nordSued ? new Vector3(gasse + 4.6f, hoehe, entlang) : new Vector3(entlang, hoehe, gasse + 4.6f);
+			var leine = Klotz(gruppe.transform, "Waescheleine", (a + b) * 0.5f - Vector3.up * 0.15f, new Vector3(0.03f, 0.03f, 9.2f), seil);
+			leine.transform.localRotation = Quaternion.LookRotation(b - a);
+			Object.DestroyImmediate(leine.GetComponent<Collider>());
+			int tuecher = 2 + uZufall.Next(3);
+			for (int k = 0; k < tuecher; k++)
+			{
+				float t = (k + 1f) / (tuecher + 1f) + Zufall(uZufall, -0.05f, 0.05f);
+				var punkt = Vector3.Lerp(a, b, t) - Vector3.up * (0.15f + 0.6f * Mathf.Sin(t * Mathf.PI) * 0.25f);
+				var tuch = Klotz(gruppe.transform, "Tuch", punkt - Vector3.up * 0.5f, new Vector3(Zufall(uZufall, 0.7f, 1.2f), Zufall(uZufall, 0.8f, 1.3f), 0.02f), stoffe[uZufall.Next(stoffe.Length)]);
+				tuch.transform.localRotation = Quaternion.LookRotation(b - a) * Quaternion.Euler(0f, 90f, Zufall(uZufall, -4f, 4f));
+				Object.DestroyImmediate(tuch.GetComponent<Collider>());
+			}
+			// Laterne in der Mitte der Leine
+			var laterne = Klotz(gruppe.transform, "Laterne", Vector3.Lerp(a, b, 0.5f) - Vector3.up * 0.55f, new Vector3(0.22f, 0.32f, 0.22f), glas);
+			Object.DestroyImmediate(laterne.GetComponent<Collider>());
+			var kappe = Klotz(gruppe.transform, "Laternenkappe", Vector3.Lerp(a, b, 0.5f) - Vector3.up * 0.36f, new Vector3(0.28f, 0.06f, 0.28f), holz);
+			Object.DestroyImmediate(kappe.GetComponent<Collider>());
+		}
+	}
+
+	// Feiner Staub, der langsam durch die Luft treibt
+	static void WsStaub(Transform eltern)
+	{
+		DDPartikelMaterialien();
+		var staub = DDPartikel(eltern, "Staub", new Vector3(0f, 4f, 0f), ddRauchMaterial);
+		staub.transform.localRotation = Quaternion.identity;
+		var main = staub.main;
+		main.startLifetime = new ParticleSystem.MinMaxCurve(8f, 14f);
+		main.startSpeed = new ParticleSystem.MinMaxCurve(0.2f, 0.6f);
+		main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.22f);
+		main.startColor = new ParticleSystem.MinMaxGradient(new Color(0.95f, 0.85f, 0.65f, 0.35f), new Color(1f, 0.92f, 0.75f, 0.2f));
+		main.maxParticles = 900;
+		var emission = staub.emission;
+		emission.rateOverTime = 70f;
+		var form = staub.shape;
+		form.shapeType = ParticleSystemShapeType.Box;
+		form.scale = new Vector3(150f, 8f, 150f);
+		var rauschen = staub.noise;
+		rauschen.enabled = true;
+		rauschen.strength = 0.4f;
+		rauschen.frequency = 0.15f;
+		var geschwindigkeit = staub.velocityOverLifetime;
+		geschwindigkeit.enabled = true;
+		geschwindigkeit.x = new ParticleSystem.MinMaxCurve(0.6f, 1.2f);
+		geschwindigkeit.y = new ParticleSystem.MinMaxCurve(-0.05f, 0.05f);
+		geschwindigkeit.z = new ParticleSystem.MinMaxCurve(0.2f, 0.4f);
+		var farbe = staub.colorOverLifetime;
+		farbe.enabled = true;
+		farbe.color = new ParticleSystem.MinMaxGradient(Verlauf(new[] { Color.white, Color.white }, new[] { 0f, 1f, 0f }));
 	}
 
 	static void WsTorbogen(Transform eltern, Vector3 ort, float gier, Material material)
@@ -505,21 +732,44 @@ public static partial class SzeneAufbauen
 	static GameObject TunnelKarte()
 	{
 		var zufall = new System.Random(5151);
-		var beton = KRaster("Beton", KTextur(256, (u, v) =>
+		var beton = KRaster("Beton", (u, v) =>
 		{
+			// Schalbeton: Platten mit Fugen, Ankerloecher, Wasserflecken, die nach unten laufen.
+			float px = u * 2f;
+			float py = v * 2f;
+			float fx = px - Mathf.Floor(px);
+			float fy = py - Mathf.Floor(py);
+			float fuge = Mathf.Min(Mathf.Min(fx, 1f - fx), Mathf.Min(fy, 1f - fy));
 			float w = KWolke(u, v, 31);
-			float flecken = Mathf.Pow(KWolke(u + 0.37f, v, 37), 3f);
-			return new Color(0.5f, 0.5f, 0.48f) * (0.75f + 0.35f * w - 0.25f * flecken);
-		}), Color.white, 0.22f, 0.15f);
-		var boden = KRaster("Tunnelboden", KTextur(256, (u, v) =>
+			float flecken = Mathf.Pow(KWolke(u, Mathf.Repeat(v * 0.25f, 1f), 37), 3f);
+			float loch = 1f;
+			foreach (var a in new[] { new Vector2(0.2f, 0.2f), new Vector2(0.8f, 0.2f), new Vector2(0.2f, 0.8f), new Vector2(0.8f, 0.8f) })
+			{
+				loch = Mathf.Min(loch, Mathf.SmoothStep(0.015f, 0.03f, new Vector2(fx - a.x, fy - a.y).magnitude));
+			}
+			var farbe = new Color(0.52f, 0.52f, 0.5f) * (0.78f + 0.3f * w - 0.3f * flecken);
+			farbe *= Mathf.Lerp(0.55f, 1f, Mathf.SmoothStep(0.004f, 0.012f, fuge));
+			return farbe * Mathf.Lerp(0.35f, 1f, loch);
+		}, Color.white, 0.22f, 0.15f, 7f);
+		var boden = KRaster("Tunnelboden", (u, v) =>
 		{
+			// Estrich mit Dehnfugen, Oelflecken und einer gelben Mittellinie.
+			float fy = Mathf.Repeat(v * 3f, 1f);
+			float fuge = Mathf.Min(fy, 1f - fy);
 			float w = KWolke(u, v, 41);
-			float streifen = Mathf.Abs(u - 0.5f) < 0.01f ? 0.6f : 0f;
-			return new Color(0.3f, 0.3f, 0.29f) * (0.8f + 0.3f * w) + new Color(0.5f, 0.45f, 0.1f) * streifen;
-		}), Color.white, 0.18f, 0.3f);
+			float oel = Mathf.Pow(KWolke(Mathf.Repeat(u * 2f, 1f), Mathf.Repeat(v * 2f, 1f), 43), 4f);
+			float streifen = Mathf.Abs(u - 0.5f) < 0.012f ? 0.6f : 0f;
+			var farbe = new Color(0.32f, 0.32f, 0.31f) * (0.8f + 0.3f * w - 0.5f * oel) + new Color(0.5f, 0.45f, 0.1f) * streifen;
+			return farbe * Mathf.Lerp(0.5f, 1f, Mathf.SmoothStep(0.004f, 0.012f, fuge));
+		}, Color.white, 0.18f, 0.3f, 6f);
 		var rohr = KFarbe("Rohr", new Color(0.35f, 0.22f, 0.15f), 0.4f);
 		var holz = KFarbe("TunnelHolz", new Color(0.4f, 0.3f, 0.2f), 0.1f);
 		var birne = KLeuchten("Gluehbirne", new Color(1f, 0.85f, 0.55f), 3f);
+		var sockel = KFarbe("Sockel", new Color(0.16f, 0.16f, 0.17f), 0.2f);
+		var rost = KFarbe("Gitterrost", new Color(0.22f, 0.17f, 0.13f), 0.45f);
+		rost.SetFloat("_Metallic", 0.6f);
+		EditorUtility.SetDirty(rost);
+		var pfuetze = KFarbe("Pfuetze", new Color(0.05f, 0.05f, 0.06f), 0.97f);
 
 		var wurzel = KWurzel("Tunnel", new Color(0.04f, 0.04f, 0.05f), 0.012f, 0.15f, 0f);
 		// Taschenlampe an jeder Figur. Falls man doch irgendwo durchfaellt: neu erscheinen.
@@ -644,6 +894,7 @@ public static partial class SzeneAufbauen
 							leitung.transform.localScale = new Vector3(0.3f, laenge * 0.5f, 0.3f);
 							leitung.GetComponent<Renderer>().sharedMaterial = rohr;
 						}
+						TuGangDetails(bau.transform, deko.transform, gangMitte, richtung, quer, laenge, beton, sockel, rost, pfuetze);
 					}
 				}
 				// Licht: nicht in jedem Knoten, manche flackern. Das macht die Gaenge unheimlich.
@@ -680,6 +931,58 @@ public static partial class SzeneAufbauen
 		return AlsPrefab(wurzel, PREFABS + "/Map_Tunnel.prefab");
 	}
 
+	// Ein Gang bekommt Betonrippen alle 4 m (Pfeiler an den Waenden, Balken unter der Decke),
+	// dunkle Sockelleisten, eine Kabeltrasse mit Kabeln, ab und zu eine Pfuetze und einen Rost.
+	static void TuGangDetails(Transform bau, Transform deko, Vector3 mitte, Vector3 richtung, Vector3 quer, float laenge, Material beton, Material sockel, Material rost, Material pfuetze)
+	{
+		int rippen = Mathf.Max(1, Mathf.FloorToInt(laenge / 4f));
+		for (int i = 0; i < rippen; i++)
+		{
+			var ort = mitte + richtung * ((i + 0.5f) * laenge / rippen - laenge * 0.5f);
+			foreach (var s in new[] { -1f, 1f })
+			{
+				Klotz(bau, "Rippe", ort + quer * s * (TU_BREITE * 0.5f - 0.12f) + Vector3.up * TU_HOEHE * 0.5f, abs(quer) * 0.25f + abs(richtung) * 0.4f + Vector3.up * TU_HOEHE, beton);
+			}
+			Klotz(bau, "Rippe", ort + Vector3.up * (TU_HOEHE - 0.18f), abs(quer) * TU_BREITE + abs(richtung) * 0.4f + Vector3.up * 0.36f, beton);
+		}
+		foreach (var s in new[] { -1f, 1f })
+		{
+			var leiste = Klotz(deko, "Sockel", mitte + quer * s * (TU_BREITE * 0.5f - 0.05f) + Vector3.up * 0.15f, abs(richtung) * laenge + abs(quer) * 0.1f + Vector3.up * 0.3f, sockel);
+			Object.DestroyImmediate(leiste.GetComponent<Collider>());
+		}
+		// Kabeltrasse auf einer Seite, mit drei Kabeln
+		float seite = uZufall.Next(2) == 0 ? -1f : 1f;
+		var trasse = Klotz(deko, "Kabeltrasse", mitte + quer * seite * (TU_BREITE * 0.5f - 0.4f) + Vector3.up * (TU_HOEHE - 1.1f), abs(richtung) * laenge + abs(quer) * 0.4f + Vector3.up * 0.05f, rost);
+		Object.DestroyImmediate(trasse.GetComponent<Collider>());
+		for (int k = 0; k < 3; k++)
+		{
+			var kabel = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+			kabel.name = "Kabel";
+			Object.DestroyImmediate(kabel.GetComponent<Collider>());
+			kabel.transform.SetParent(deko, false);
+			kabel.transform.localPosition = mitte + quer * seite * (TU_BREITE * 0.5f - 0.27f - k * 0.12f) + Vector3.up * (TU_HOEHE - 1.04f);
+			kabel.transform.localRotation = Quaternion.FromToRotation(Vector3.up, richtung);
+			kabel.transform.localScale = new Vector3(0.06f, laenge * 0.5f, 0.06f);
+			kabel.GetComponent<Renderer>().sharedMaterial = k == 1 ? rost : pfuetze;
+		}
+		if (uZufall.Next(3) == 0)
+		{
+			var lache = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+			lache.name = "Pfuetze";
+			Object.DestroyImmediate(lache.GetComponent<Collider>());
+			lache.transform.SetParent(deko, false);
+			lache.transform.localPosition = mitte + richtung * Zufall(uZufall, -laenge * 0.3f, laenge * 0.3f) + quer * Zufall(uZufall, -1.5f, 1.5f) + Vector3.up * 0.005f;
+			lache.transform.localScale = new Vector3(Zufall(uZufall, 1f, 2.2f), 0.005f, Zufall(uZufall, 0.7f, 1.6f));
+			lache.GetComponent<Renderer>().sharedMaterial = pfuetze;
+			lache.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+		}
+		if (uZufall.Next(2) == 0)
+		{
+			var gitter = Klotz(deko, "Rost", mitte + richtung * Zufall(uZufall, -laenge * 0.3f, laenge * 0.3f) + Vector3.up * 0.01f, abs(richtung) * 0.9f + abs(quer) * 1.2f + Vector3.up * 0.02f, rost);
+			Object.DestroyImmediate(gitter.GetComponent<Collider>());
+		}
+	}
+
 	// Knoten mit Spawnbereich (siehe DDSpawnZone oben): dort keine Kisten.
 	static bool TuSpawnKnoten(int x, int z)
 	{
@@ -710,27 +1013,27 @@ public static partial class SzeneAufbauen
 	static GameObject HimmelsinselnKarte()
 	{
 		var zufall = new System.Random(6161);
-		var fels = KRaster("Inselfels", KTextur(256, (u, v) =>
+		var fels = KRaster("Inselfels", (u, v) =>
 		{
 			float w = KWolke(u, v, 51);
 			return Color.Lerp(new Color(0.36f, 0.32f, 0.3f), new Color(0.55f, 0.5f, 0.44f), w);
-		}), Color.white, 0.15f, 0.1f);
-		var gras = KRaster("Inselgras", KTextur(256, (u, v) =>
+		}, Color.white, 0.15f, 0.1f);
+		var gras = KRaster("Inselgras", (u, v) =>
 		{
 			float w = KWolke(u, v, 61);
 			return Color.Lerp(new Color(0.22f, 0.42f, 0.16f), new Color(0.42f, 0.6f, 0.25f), w);
-		}), Color.white, 0.3f, 0.05f);
+		}, Color.white, 0.3f, 0.05f);
 		var holz = KFarbe("Bruckenholz", new Color(0.46f, 0.33f, 0.2f), 0.1f);
 		var seil = KFarbe("Seil", new Color(0.6f, 0.52f, 0.36f), 0.05f);
-		var ruine = KRaster("Ruinenstein", KTextur(256, (u, v) =>
+		var ruine = KRaster("Ruinenstein", (u, v) =>
 		{
 			float w = KWolke(u, v, 71);
 			return new Color(0.78f, 0.76f, 0.7f) * (0.8f + 0.3f * w);
-		}), Color.white, 0.3f, 0.1f);
+		}, Color.white, 0.3f, 0.1f);
 		var feld = KLeuchten("Sprungfeld", new Color(0.2f, 0.9f, 1f), 2.5f);
 		var wolke = KWolkenMaterial();
 
-		var wurzel = KWurzel("Himmelsinseln", new Color(0.72f, 0.82f, 0.94f), 0.003f, 1.1f, 1f);
+		var wurzel = KWurzel("Himmelsinseln", new Color(0.72f, 0.82f, 0.94f), 0.0012f, 1.1f, 1f);
 		wurzel.AddComponent<KartenRegeln>().absturzHoehe = -25f;
 
 		var inseln = new[]
@@ -805,6 +1108,7 @@ public static partial class SzeneAufbauen
 		DDSpawnZone(wurzel.transform, inseln[6].ort + Vector3.up * 2f, new Vector3(10f, 0.5f, 10f), Teams.VERTEIDIGER);
 		wurzel.layer = 2;
 		HiUltraGras(wurzel, inseln);
+		HiLandschaft(wurzel, wolke);
 		UltraSpiegelung(wurzel, new Vector3(0f, 15f, 0f), new Vector3(200f, 80f, 140f));
 		return AlsPrefab(wurzel, PREFABS + "/Map_Himmelsinseln.prefab");
 	}
@@ -1004,7 +1308,7 @@ public static partial class SzeneAufbauen
 		var groessen = new List<float>();
 		foreach (var insel in inseln)
 		{
-			int anzahl = Mathf.RoundToInt(Mathf.PI * insel.radius * insel.radius * 4.5f);
+			int anzahl = Mathf.RoundToInt(Mathf.PI * insel.radius * insel.radius * 5.7f);
 			for (int i = 0; i < anzahl; i++)
 			{
 				float winkel = Zufall(uZufall, 0f, Mathf.PI * 2f);

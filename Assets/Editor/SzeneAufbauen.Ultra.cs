@@ -26,6 +26,8 @@ public static partial class SzeneAufbauen
 	static Mesh[] uBuesche;
 	static Mesh uPalmKrone;
 	static Mesh uGrasBueschel;
+	static Mesh uGrasBueschelFern;
+	static Material uTrampeln;
 
 	// Eigener Zufall fuer Ultra-Teile, damit die Maps sonst genau so bleiben wie vorher.
 	static System.Random uZufall;
@@ -71,7 +73,15 @@ public static partial class SzeneAufbauen
 			uBuesche[i] = AlsAsset(UBuschNetz(200 + i), ULTRA + "/Busch" + i + ".asset");
 		}
 		uPalmKrone = AlsAsset(UPalmKroneNetz(300), ULTRA + "/Palmkrone.asset");
-		uGrasBueschel = AlsAsset(UGrasNetz(400), ULTRA + "/Grasbueschel.asset");
+		uGrasBueschel = AlsAsset(UGrasNetz(400, 24, 1f), ULTRA + "/Grasbueschel.asset");
+		uGrasBueschelFern = AlsAsset(UGrasNetz(401, 9, 1.7f), ULTRA + "/GrasbueschelFern.asset");
+		var trampelShader = Shader.Find("Hidden/Shootout/Trampeln");
+		if (trampelShader != null)
+		{
+			uTrampeln = new Material(trampelShader);
+			uTrampeln.name = "Trampeln";
+			uTrampeln = AlsAsset(uTrampeln, ULTRA + "/Trampeln.mat");
+		}
 	}
 
 	// ------------------------------------------------------------------
@@ -155,7 +165,9 @@ public static partial class SzeneAufbauen
 		var feld = wurzel.AddComponent<GrasFeld>();
 		feld.punkte = AlsAsset(netz, ULTRA + "/" + name + ".asset");
 		feld.bueschel = uGrasBueschel;
+		feld.bueschelFern = uGrasBueschelFern;
 		feld.material = uGras;
+		feld.trampelMaterial = uTrampeln;
 	}
 
 	// Spiegelungen: eine Sonde ueber der ganzen Map, nur in "Ultra" an.
@@ -297,7 +309,16 @@ public static partial class SzeneAufbauen
 	// ------------------------------------------------------------------
 	// Waffen: Muendung im Ursprung, die Waffe liegt entlang -z (zum Schuetzen hin).
 
-	static GameObject[] UltraWaffen(Transform kamera, Vector3 muendung)
+	// Lage der Muendung vor der Kamera, je Waffe (Index = Waffen-Nummer). Gewehr und Sniper
+	// liegen naeher und mittiger, sonst sah man nur die Spitze. Das SMG bleibt, wie es war.
+	static readonly Vector3[] W_MUENDUNG =
+	{
+		new Vector3(0.2f, -0.17f, 0.95f),
+		new Vector3(0.45f, -0.35f, 1.2f),
+		new Vector3(0.21f, -0.19f, 1.17f),
+	};
+
+	static GameObject[] UltraWaffen(Transform kamera)
 	{
 		var stahl = UWaffenMaterial("Waffenstahl", new Color(0.12f, 0.12f, 0.13f), 0.85f, 0.55f);
 		var polymer = UWaffenMaterial("Polymer", new Color(0.07f, 0.07f, 0.075f), 0f, 0.35f);
@@ -315,7 +336,7 @@ public static partial class SzeneAufbauen
 			var netz = AlsAsset(netze[i], ULTRA + "/Waffe" + namen[i] + ".asset");
 			var go = new GameObject("Waffe " + namen[i]);
 			go.transform.SetParent(kamera, false);
-			go.transform.localPosition = muendung;
+			go.transform.localPosition = W_MUENDUNG[i];
 			go.AddComponent<MeshFilter>().sharedMesh = netz;
 			go.AddComponent<MeshRenderer>().sharedMaterials = materialien;
 			go.SetActive(false);
@@ -620,33 +641,39 @@ public static partial class SzeneAufbauen
 		return n.Fertig("Palmkrone");
 	}
 
-	// Ein Bueschel aus neun gebogenen Halmen. uv.y = Hoehe im Halm (fuer den Wind).
-	static Mesh UGrasNetz(int saat)
+	// Ein Bueschel aus duennen, gebogenen Halmen (Wurzel dunkel, Spitze hell). Alle Normalen zeigen
+	// nach oben: Die Wiese wird so wie ein Ganzes beleuchtet. uv.y = Hoehe im Halm (fuer den Wind).
+	// breite > 1 fuer das grobe Bueschel in der Ferne (weniger, breitere Halme).
+	static Mesh UGrasNetz(int saat, int halme, float breite)
 	{
 		var z = new System.Random(saat);
 		var n = new Netzbau(1);
-		for (int h = 0; h < 9; h++)
+		for (int h = 0; h < halme; h++)
 		{
-			var fuss = new Vector3(Zufall(z, -0.13f, 0.13f), 0f, Zufall(z, -0.13f, 0.13f));
-			float hoehe = Zufall(z, 0.35f, 0.7f);
-			float breite = Zufall(z, 0.025f, 0.04f);
-			var richtung = Quaternion.Euler(0f, Zufall(z, 0f, 360f), 0f) * Vector3.forward;
-			var quer = Vector3.Cross(Vector3.up, richtung);
-			float biegung = Zufall(z, 0.1f, 0.35f);
-			// Manche Halme trockener (gelblich)
-			var spitze = z.Next(4) == 0 ? new Color(0.62f, 0.6f, 0.3f) : new Color(Zufall(z, 0.36f, 0.46f), Zufall(z, 0.56f, 0.66f), Zufall(z, 0.18f, 0.26f));
-			var wurzel = new Color(0.12f, 0.2f, 0.06f);
+			float winkel = Zufall(z, 0f, Mathf.PI * 2f);
+			float r = Mathf.Sqrt((float)z.NextDouble()) * 0.22f;
+			var fuss = new Vector3(Mathf.Cos(winkel) * r, 0f, Mathf.Sin(winkel) * r);
+			float hoehe = Zufall(z, 0.38f, 0.72f);
+			float b = Zufall(z, 0.018f, 0.03f) * breite;
+			// Halme neigen sich nach aussen und leicht in eine gemeinsame Richtung
+			var richtung = (new Vector3(fuss.x, 0f, fuss.z).normalized * 0.6f + Quaternion.Euler(0f, Zufall(z, 0f, 360f), 0f) * Vector3.forward * 0.4f).normalized;
+			var quer = Vector3.Cross(Vector3.up, richtung).normalized;
+			float biegung = Zufall(z, 0.08f, 0.3f);
+			float frisch = Zufall(z, 0f, 1f);
+			var spitze = Color.Lerp(new Color(0.42f, 0.68f, 0.2f), new Color(0.56f, 0.8f, 0.28f), frisch);
+			var mitte = Color.Lerp(new Color(0.16f, 0.36f, 0.08f), new Color(0.22f, 0.44f, 0.1f), frisch);
+			var wurzel = new Color(0.06f, 0.13f, 0.04f);
 			const int stuecke = 4;
 			int basis = n.Anzahl;
 			for (int i = 0; i <= stuecke; i++)
 			{
 				float s = (float)i / stuecke;
-				var mitte = fuss + Vector3.up * hoehe * s + richtung * biegung * s * s;
-				float b = breite * (1f - s * 0.9f);
-				var farbe = Color.Lerp(wurzel, spitze, Mathf.Sqrt(s));
-				var normale = (Vector3.up * 0.6f + richtung * -0.4f).normalized;
-				n.Punkt(mitte - quer * b, normale, new Vector2(0f, s), farbe);
-				n.Punkt(mitte + quer * b, normale, new Vector2(1f, s), farbe);
+				var ort = fuss + Vector3.up * hoehe * s + richtung * biegung * s * s;
+				// Spitz zulaufend, ganz oben ein Punkt
+				float halbe = b * (1f - s);
+				var farbe = s < 0.5f ? Color.Lerp(wurzel, mitte, s * 2f) : Color.Lerp(mitte, spitze, (s - 0.5f) * 2f);
+				n.Punkt(ort - quer * halbe, Vector3.up, new Vector2(0f, s), farbe);
+				n.Punkt(ort + quer * halbe, Vector3.up, new Vector2(1f, s), farbe);
 			}
 			for (int i = 0; i < stuecke; i++)
 			{
@@ -655,7 +682,7 @@ public static partial class SzeneAufbauen
 				n.Dreieck(0, a + 1, a + 2, a + 3);
 			}
 		}
-		return n.Fertig("Grasbueschel");
+		return n.Fertig("Grasbueschel" + saat);
 	}
 
 	// ------------------------------------------------------------------
