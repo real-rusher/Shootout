@@ -81,54 +81,7 @@ public static partial class SzeneAufbauen
 		}
 		try
 		{
-			Ordner(PREFABS);
-			Ordner(ERZEUGT);
-			Ordner("Assets/Scenes");
-
-			var werte = D(JsonDatei(WERTE_DATEN));
-			var komponenten = D(werte["komponenten"]);
-			var szenenWerte = D(werte["szene"]);
-
-			Fortschritt("Sprites", 0.05f);
-			LayerVorschauEinrichten();
-			LayerEinrichten(LAYER_NACHBEARBEITUNG, "Nachbearbeitung");
-			// Im Editor wurden Shader beim ersten Zeigen im Hintergrund uebersetzt, bis dahin
-			// war alles kurz blau. Ohne das wartet der Editor kurz, der Ladebildschirm deckt es ab.
-			EditorSettings.asyncShaderCompilation = false;
-			SpritesEinstellen();
-			ZielfernrohrErzeugen();
-			Fortschritt("Ultra-Grafik", 0.08f);
-			UltraVorbereiten();
-
-			Fortschritt("Laser", 0.1f);
-			var laser = LaserPrefab(komponenten);
-
-			Fortschritt("Scoreboard-Zeile", 0.2f);
-			var zeile = ZeilenPrefab();
-
-			Fortschritt("Spieler", 0.3f);
-			var spieler = SpielerPrefab(komponenten, laser);
-
-			Fortschritt("Bot", 0.35f);
-			var bot = BotPrefab(spieler);
-
-			Fortschritt("Maps", 0.45f);
-			var zimmer = MapPrefab(GLB_ZIMMER, "Shooter-Map", "Map_Zimmer", MapWerte(szenenWerte, "Map1_"), "Point Light Raum", szenenWerte);
-			var infoRaum = MapPrefab(GLB_INFORAUM, "MessyRoomparts", "Map_InfoRaum", MapWerte(szenenWerte, "Map2_"), "Point Light Info", szenenWerte);
-
-			Fortschritt("D-Day-Map", 0.5f);
-			var dDay = DDayKarte();
-
-			Fortschritt("Wuestenstadt", 0.55f);
-			var wuestenstadt = WuestenstadtKarte();
-			Fortschritt("Tunnel", 0.6f);
-			var tunnel = TunnelKarte();
-			Fortschritt("Himmelsinseln", 0.65f);
-			var himmelsinseln = HimmelsinselnKarte();
-
-			Fortschritt("Szene", 0.7f);
-			SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum, bot, dDay, new[] { wuestenstadt, tunnel, himmelsinseln });
-
+			AufbauSchritte();
 			EditorUtility.ClearProgressBar();
 			EditorUtility.DisplayDialog("Shootout",
 				"Fertig: " + SZENE + " und die Prefabs in " + PREFABS + ".\n\n" +
@@ -141,6 +94,81 @@ public static partial class SzeneAufbauen
 			Debug.LogException(fehler);
 			EditorUtility.DisplayDialog("Shootout", "Aufbau abgebrochen:\n" + fehler.Message + "\n\nDetails in der Konsole.", "OK");
 		}
+	}
+
+	// Fuer den automatischen Build (CiBau): ohne Rueckfragen, Fehler gehen nach oben.
+	public static void AufbauenOhneFragen()
+	{
+		foreach (var glb in new[] { GLB_ZIMMER, GLB_INFORAUM, GLB_SPIELER })
+		{
+			if (AssetDatabase.LoadAssetAtPath<GameObject>(glb) == null)
+			{
+				throw new Exception(glb + " ist nicht als Modell importiert (git lfs?).");
+			}
+		}
+		if (Resources.Load<TMP_Settings>("TMP Settings") == null)
+		{
+			throw new Exception("TextMeshPro-Grundausstattung fehlt (tools/tmp_entpacken.py).");
+		}
+		try
+		{
+			AufbauSchritte();
+		}
+		finally
+		{
+			EditorUtility.ClearProgressBar();
+		}
+	}
+
+	static void AufbauSchritte()
+	{
+		Ordner(PREFABS);
+		Ordner(ERZEUGT);
+		Ordner("Assets/Scenes");
+
+		var werte = D(JsonDatei(WERTE_DATEN));
+		var komponenten = D(werte["komponenten"]);
+		var szenenWerte = D(werte["szene"]);
+
+		Fortschritt("Sprites", 0.05f);
+		LayerVorschauEinrichten();
+		LayerEinrichten(LAYER_NACHBEARBEITUNG, "Nachbearbeitung");
+		// Im Editor wurden Shader beim ersten Zeigen im Hintergrund uebersetzt, bis dahin
+		// war alles kurz blau. Ohne das wartet der Editor kurz, der Ladebildschirm deckt es ab.
+		EditorSettings.asyncShaderCompilation = false;
+		SpritesEinstellen();
+		ZielfernrohrErzeugen();
+		Fortschritt("Ultra-Grafik", 0.08f);
+		UltraVorbereiten();
+
+		Fortschritt("Laser", 0.1f);
+		var laser = LaserPrefab(komponenten);
+
+		Fortschritt("Scoreboard-Zeile", 0.2f);
+		var zeile = ZeilenPrefab();
+
+		Fortschritt("Spieler", 0.3f);
+		var spieler = SpielerPrefab(komponenten, laser);
+
+		Fortschritt("Bot", 0.35f);
+		var bot = BotPrefab(spieler);
+
+		Fortschritt("Maps", 0.45f);
+		var zimmer = MapPrefab(GLB_ZIMMER, "Shooter-Map", "Map_Zimmer", MapWerte(szenenWerte, "Map1_"), "Point Light Raum", szenenWerte);
+		var infoRaum = MapPrefab(GLB_INFORAUM, "MessyRoomparts", "Map_InfoRaum", MapWerte(szenenWerte, "Map2_"), "Point Light Info", szenenWerte);
+
+		Fortschritt("D-Day-Map", 0.5f);
+		var dDay = DDayKarte();
+
+		Fortschritt("Wuestenstadt", 0.55f);
+		var wuestenstadt = WuestenstadtKarte();
+		Fortschritt("Tunnel", 0.6f);
+		var tunnel = TunnelKarte();
+		Fortschritt("Himmelsinseln", 0.65f);
+		var himmelsinseln = HimmelsinselnKarte();
+
+		Fortschritt("Szene", 0.7f);
+		SzeneBauen(szenenWerte, spieler, zeile, zimmer, infoRaum, bot, dDay, new[] { wuestenstadt, tunnel, himmelsinseln });
 	}
 
 	// ------------------------------------------------------------------

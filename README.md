@@ -1,6 +1,6 @@
 # Shootout
 
-Aktuell: Version 0.2.8
+Aktuell: Version 0.2.9
 
 Kleiner LAN-Mehrspieler-Shooter in Unity: jeder gegen jeden, ein Lasertreffer
 toetet sofort, zwei Maps (Zimmer und Info-Raum). Das Original haben Schueler
@@ -140,6 +140,7 @@ Die neueste Version steht oben. "Netz" heisst: Host und Client muessen diese Ver
 
 | Version | Aenderung |
 |---|---|
+| 0.2.9 | Automatischer Windows-Build auf GitHub (`.github/workflows/spiel_bauen.yml`, `Editor/CiBau.cs`, `tools/tmp_entpacken.py`): fertige `Shootout_Windows.zip` unter Releases und auf dem Branch `fertiges-spiel`. Einrichten: `docs/SPIEL_BAUEN.md`. Spiel selbst unveraendert. |
 | 0.2.8 | Neue Grafikstufe "Ultra" (Einstellungen > Video, schliesst "Hoch" ein, `Editor/SzeneAufbauen.Ultra.cs`): Baeume aus Aesten und Blattbueschen, Buesche und Palmkronen mit Wind (Shader `Shootout/Laub`), einzelne Grashalme per Instancing (`Spiel/GrasFeld.cs`, Shader `Shootout/Gras`), Feuer aus Flammen-Daumenkino mit Kern, Funken und dichtem Rauch, Wasserspritzer bei Schuessen ins Wasser, beim Hineinspringen und Waten (`Spiel/UltraEffekte.cs`, `Spiel/WasserSpuren.cs`), Muendungsfeuer mit Licht, Waffenmodelle fuer Gewehr, SMG und Sniper statt des Rohrs (`Spiel/WaffenModell.cs`), Spiegelungssonden pro Map, feinere Texturen, Deferred Rendering mit Bildschirm-Spiegelungen. Kollider bleiben in allen Stufen gleich. Kein neuer Netzcode: Die Waffe anderer Spieler kommt aus dem bestehenden Schuss-RPC. Szene neu aufbauen. |
 | 0.2.7 | Tunnel: Taschenlampe an jeder Figur (`Spiel/Taschenlampe.cs`, an `KartenRegeln.taschenlampe`), die eigene mit Schatten, die anderen sieht man auch. Himmelsinseln: Felsen ragten als graue Kuppeln ohne Kollider ueber die Inseln, jetzt darunter und fest. Neue Maps: Zylinder und Kugeln mit Netz-Kollider (passt bei ungleicher Skalierung), Markisen und Marktdaecher fest, keine Kisten mehr in Spawnbereichen, Eckpfosten im Tunnel, Absturz unter -20 m laesst auch in Wuestenstadt und Tunnel neu erscheinen. Szene neu aufbauen. |
 | 0.2.6 | Behoben: Ohne das Paket "Post Processing" brach das Uebersetzen ab (und der Aufbau lief mit altem Code, Fehler "dDayKnopf"). Das Paket wird jetzt nur ueber Reflexion angesprochen: Fehlt es, laeuft alles, nur "Krasse Grafik" ohne Nachbearbeitung, mit Hinweis in der Konsole. Szene neu aufbauen. |

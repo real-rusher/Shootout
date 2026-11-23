@@ -1,0 +1,137 @@
+# Baut das Spiel fuer Windows, sobald auf main oder claude/ausbau eine neue Version ankommt.
+# Ergebnis: Shootout_Windows.zip unter "Releases" und auf dem Branch "fertiges-spiel".
+# Braucht die Unity-Lizenz als Secrets (siehe docs/SPIEL_BAUEN.md). Ohne sie endet der Lauf
+# mit einem Hinweis, ohne Fehler.
+name: Spiel bauen
+
+on:
+  push:
+    branches: [main, claude/ausbau]
+    paths-ignore: ["**.md", "docs/**"]
+  workflow_dispatch:
+
+concurrency:
+  group: spiel-bauen-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+      UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+    steps:
+      - name: Unity-Lizenz vorhanden?
+        id: lizenz
+        run: |
+          if [ -z "$UNITY_LICENSE" ] || [ -z "$UNITY_EMAIL" ] || [ -z "$UNITY_PASSWORD" ]; then
+            echo "::warning::Unity-Lizenz fehlt (Secrets UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD). Anleitung: docs/SPIEL_BAUEN.md"
+            echo "da=nein" >> "$GITHUB_OUTPUT"
+          else
+            echo "da=ja" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.lizenz.outputs.da == 'ja'
+        with:
+          lfs: true
+
+      # Das Unity-Abbild ist gross, auf dem Server wird sonst der Platz knapp.
+      - name: Platz schaffen
+        if: steps.lizenz.outputs.da == 'ja'
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: false
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: false
+          swap-storage: false
+
+      - name: TextMeshPro-Grundausstattung
+        if: steps.lizenz.outputs.da == 'ja'
+        run: python3 tools/tmp_entpacken.py
+
+      - name: Version lesen
+        if: steps.lizenz.outputs.da == 'ja'
+        id: version
+        run: echo "nummer=$(grep -oP 'VERSION = "\K[^"]+' Assets/Scripts/Netz/Spielversion.cs)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        if: steps.lizenz.outputs.da == 'ja'
+        with:
+          path: Library
+          key: Library-Windows-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/**') }}
+          restore-keys: Library-Windows-
+
+      # Fuer 2021.3.45f2 gibt es kein fertiges Abbild, f1 ist dieselbe Unity-Version mit
+      # einem kleineren Patchstand.
+      - name: Bauen
+        if: steps.lizenz.outputs.da == 'ja'
+        uses: game-ci/unity-builder@v4
+        with:
+          unityVersion: 2021.3.45f1
+          targetPlatform: StandaloneWindows64
+          buildName: Shootout
+          buildMethod: CiBau.Bauen
+          versioning: None
+
+      - name: Packen
+        if: steps.lizenz.outputs.da == 'ja'
+        run: |
+          cd build/StandaloneWindows64
+          sudo rm -rf ./*_BurstDebugInformation_DoNotShip ./*_BackUpThisFolder_ButDontShipItWithYourGame
+          zip -qr "$GITHUB_WORKSPACE/Shootout_Windows.zip" .
+          ls -la "$GITHUB_WORKSPACE/Shootout_Windows.zip"
+
+      - name: Release
+        if: steps.lizenz.outputs.da == 'ja'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          nummer="${{ steps.version.outputs.nummer }}"
+          tag="spiel-$nummer"
+          if ! gh release view "$tag" > /dev/null 2>&1; then
+            gh release create "$tag" --target "$GITHUB_SHA" --title "Shootout $nummer" \
+              --notes "Fertiges Spiel fuer Windows. ZIP herunterladen, entpacken, Shootout.exe starten. Alle Mitspieler brauchen dieselbe Version."
+          fi
+          gh release upload "$tag" Shootout_Windows.zip --clobber
+
+      # Immer nur der neueste Stand, ohne Verlauf: Sonst waechst das Repo mit jedem Build.
+      - name: Branch fertiges-spiel
+        if: steps.lizenz.outputs.da == 'ja'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          nummer="${{ steps.version.outputs.nummer }}"
+          mkdir veroeffentlichen
+          cd veroeffentlichen
+          git init -q -b fertiges-spiel
+          groesse=$(stat -c %s ../Shootout_Windows.zip)
+          if [ "$groesse" -lt 95000000 ]; then
+            cp ../Shootout_Windows.zip .
+            datei="Shootout_Windows.zip anklicken, dann rechts \"Download raw file\"."
+          else
+            datei="Die ZIP ist zu gross fuer einen Branch, sie liegt nur unter Releases."
+          fi
+          {
+            echo "# Shootout $nummer, fertig zum Spielen"
+            echo
+            echo "1. $datei"
+            echo "   Oder unter Releases: https://github.com/$GITHUB_REPOSITORY/releases/tag/spiel-$nummer"
+            echo "2. Entpacken, Shootout.exe starten."
+            echo "3. Beim ersten Start fragt Windows nach der Firewall: Zulassen, sonst geht LAN nicht."
+            echo
+            echo "Alle Mitspieler brauchen dieselbe Version ($nummer), sonst lehnt der Host ab."
+            echo
+            echo "Gebaut aus $GITHUB_SHA. Dieser Branch wird bei jedem Build ersetzt."
+          } > README.md
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -qm "Shootout $nummer fuer Windows"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" fertiges-spiel
